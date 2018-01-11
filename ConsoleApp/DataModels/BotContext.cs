@@ -7,12 +7,8 @@ namespace ConsoleApp.DataModels
 {
     public class BotContext : DbContext
     {
-        public BotContext() : base()
-        {
-        }
-
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-            => optionsBuilder.UseSqlServer(@"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=master;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=True;ApplicationIntent=ReadWrite;MultiSubnetFailover=False");
+            => optionsBuilder.UseSqlServer(Program.Configuration["DbConnectionString"]);
 
         public DbSet<Server> Servers { get; set; }
         public DbSet<User> Users { get; set; }

@@ -11,13 +11,11 @@ namespace ConsoleApp.Client
     {
         public static DiscordSocketClient Client { get; set; }
         public static CommandService Commands { get; set; }
-        private static string _discordBotUserToken;
 
-        public ClientManager(string discordBotUserToken)
+        public ClientManager()
         {
             Client = new DiscordSocketClient();
             Commands = new CommandService();
-            _discordBotUserToken = discordBotUserToken;
 
             Commands.AddModulesAsync(Assembly.GetEntryAssembly()).GetAwaiter().GetResult();
 
@@ -27,7 +25,7 @@ namespace ConsoleApp.Client
 
         public async Task Start()
         {
-            await Client.LoginAsync(TokenType.Bot, _discordBotUserToken);
+            await Client.LoginAsync(TokenType.Bot, Program.Configuration["DiscordBotUserToken"]);
             await Client.StartAsync();
             await Task.Delay(-1);
         }

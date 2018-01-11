@@ -25,7 +25,7 @@ namespace ConsoleApp
                     .AddUserSecrets("Stupify");
                 Configuration = builder.Build();
 
-                _clientManager = new ClientManager(Configuration["DiscordBotUserToken"]);
+                _clientManager = new ClientManager();
                 await _clientManager.Start();
             }
             catch (Exception e)
