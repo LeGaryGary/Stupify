@@ -1,25 +1,31 @@
 ﻿using System;
+using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
 using ConsoleApp.Client;
-using Discord;
-using Discord.Commands;
-using Discord.WebSocket;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
 
 namespace ConsoleApp
 {
     internal class Program
     {
-        private static void Main(string[] args) => new Program().StartAsync().GetAwaiter().GetResult();
+        public static IConfigurationRoot Configuration { get; set; }
 
         private ClientManager _clientManager;
+
+        private static void Main(string[] args) => new Program().StartAsync().GetAwaiter().GetResult();
 
         public async Task StartAsync()
         {
             try
             {
-                _clientManager = new ClientManager();
+                var builder = new ConfigurationBuilder()
+                    .SetBasePath(Directory.GetCurrentDirectory())
+                    .AddJsonFile("appsettings.json")
+                    .AddUserSecrets("Stupify");
+                Configuration = builder.Build();
+
+                _clientManager = new ClientManager(Configuration["DiscordBotUserToken"]);
                 await _clientManager.Start();
             }
             catch (Exception e)
