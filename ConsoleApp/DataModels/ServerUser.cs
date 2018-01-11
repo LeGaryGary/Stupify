@@ -5,9 +5,9 @@ namespace ConsoleApp.DataModels
 {
     public class ServerUser
     {
-        public long ServerUserId { get; set; }
-        public long UserId { get; set; }
-        public long ServerId { get; set; }
+        public int ServerUserId { get; set; }
+        public int UserId { get; set; }
+        public int ServerId { get; set; }
 
         public virtual User User { get; set; }
         public virtual Server Server { get; set; }

@@ -7,9 +7,10 @@ namespace ConsoleApp.DataModels
 {
     public class User
     {
+        public int UserId { get; set; }
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
-        public long UserId { get; set; }
+        public long DiscordUserId { get; set; }
 
-        public virtual List<ServerUser> ServerUsers { get; set; }
+        public virtual ICollection<ServerUser> ServerUsers { get; set; }
     }
 }

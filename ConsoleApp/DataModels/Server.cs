@@ -5,9 +5,10 @@ namespace ConsoleApp.DataModels
 {
     public class Server
     {
+        public int ServerId { get; set; }
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
-        public long ServerId { get; set; }
+        public long DiscordGuildId { get; set; }
 
-        public virtual List<User> Users { get; set; }
+        public virtual ICollection<User> Users { get; set; }
     }
 }

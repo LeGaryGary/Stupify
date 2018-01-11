@@ -23,7 +23,7 @@ namespace ConsoleApp.DataModels
         {
             try
             {
-                return ServerUsers.FirstOrDefault(x => x.Server.ServerId == serverId && x.User.UserId == userId) ??
+                return ServerUsers.FirstOrDefault(x => x.Server.DiscordGuildId == serverId && x.User.DiscordUserId == userId) ??
                        AddServerUser(serverId, userId);
             }
             catch (Exception e)
@@ -35,35 +35,35 @@ namespace ConsoleApp.DataModels
 
         public ServerUser AddServerUser(long serverId, long userId)
         {
-            var user = Users.FirstOrDefault(x => x.UserId == userId) ?? AddUser(userId);
-            var server = Servers.FirstOrDefault(x => x.ServerId == serverId) ?? AddServer(serverId);
+            var user = Users.FirstOrDefault(x => x.DiscordUserId == userId) ?? AddUser(userId);
+            var server = Servers.FirstOrDefault(x => x.DiscordGuildId == serverId) ?? AddServer(serverId);
             ServerUsers.Add(new ServerUser()
             {
                 User = user,
                 Server = server
             });
             SaveChanges();
-            return ServerUsers.FirstOrDefault(x => x.Server.ServerId == serverId && x.User.UserId == userId);
+            return ServerUsers.FirstOrDefault(x => x.Server.DiscordGuildId == serverId && x.User.DiscordUserId == userId);
         }
 
         private Server AddServer(long serverId)
         {
             Servers.Add(new Server()
             {
-                ServerId = serverId
+                DiscordGuildId = serverId
             });
             SaveChanges();
-            return Servers.FirstOrDefault(x => x.ServerId == serverId);
+            return Servers.FirstOrDefault(x => x.DiscordGuildId == serverId);
         }
 
         private User AddUser(long userId)
         {
             Users.Add(new User()
             {
-                UserId = userId
+                DiscordUserId = userId
             });
             SaveChanges();
-            return Users.FirstOrDefault(x => x.UserId == userId);
+            return Users.FirstOrDefault(x => x.DiscordUserId == userId);
         }
     }
 }

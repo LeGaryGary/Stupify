@@ -11,7 +11,7 @@ namespace ConsoleApp.Commands
     public class QuoteModule : ModuleBase<SocketCommandContext>
     {
         [Command("addquote")]
-        public async Task AddQuote(string quoteBody)
+        public async Task AddQuote([RemainderAttribute] string quoteBody)
         {
             using (var db = new BotContext())
             {
@@ -27,8 +27,7 @@ namespace ConsoleApp.Commands
                 db.Quotes.Add(new Quote()
                     {
                         QuoteBody = quoteBody,
-                        ServerUserId = db.GetServerUser((long)Context.User.Id, (long)Context.Guild.Id).ServerUserId
-                    //ServerUser = db.GetServerUser((long)Context.User.Id, (long)Context.Guild.Id)
+                        ServerUser = db.GetServerUser((long)Context.User.Id, (long)Context.Guild.Id)
                 });
                 try
                 {
