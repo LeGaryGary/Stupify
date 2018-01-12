@@ -1,32 +1,19 @@
 ﻿using System;
-using System.IO;
-using System.Reflection;
 using System.Threading.Tasks;
-using ConsoleApp.Client;
-using Microsoft.Extensions.Configuration;
+using StupifyConsoleApp.Client;
 
-namespace ConsoleApp
+namespace StupifyConsoleApp
 {
     internal class Program
     {
-        public static IConfigurationRoot Configuration { get; set; }
-
-        private ClientManager _clientManager;
-
-        private static void Main(string[] args) => new Program().StartAsync().GetAwaiter().GetResult();
+        private static void Main(string[] args) 
+            => new Program().StartAsync().GetAwaiter().GetResult();
 
         public async Task StartAsync()
         {
             try
             {
-                var builder = new ConfigurationBuilder()
-                    .SetBasePath(Directory.GetCurrentDirectory())
-                    .AddJsonFile("appsettings.json")
-                    .AddUserSecrets("Stupify");
-                Configuration = builder.Build();
-
-                _clientManager = new ClientManager();
-                await _clientManager.Start();
+                await ClientManager.Start();
             }
             catch (Exception e)
             {

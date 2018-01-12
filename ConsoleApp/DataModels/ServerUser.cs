@@ -1,7 +1,6 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
-namespace ConsoleApp.DataModels
+namespace StupifyConsoleApp.DataModels
 {
     public class ServerUser
     {

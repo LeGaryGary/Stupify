@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Linq;
-using Discord.Net.Udp;
+using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore;
 
-namespace ConsoleApp.DataModels
+namespace StupifyConsoleApp.DataModels
 {
     public class BotContext : DbContext
     {
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-            => optionsBuilder.UseSqlServer(Program.Configuration["DbConnectionString"]);
+            => optionsBuilder.UseSqlServer(Config.DbConnectionString);
 
         public DbSet<Server> Servers { get; set; }
         public DbSet<User> Users { get; set; }

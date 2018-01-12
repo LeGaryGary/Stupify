@@ -1,22 +1,16 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
-using ConsoleApp.DataModels;
+﻿using System.Threading.Tasks;
 using Discord.Commands;
 using Discord.WebSocket;
 
-namespace ConsoleApp.Client
+namespace StupifyConsoleApp.Client
 {
     internal static class MessageHandler
     {
-        static MessageHandler()
-        {
-        }
 
         internal static async Task HandleCommand(SocketMessage messageParam)
         {
             // Don't process the command if it was a System Message
-            var message = messageParam as SocketUserMessage;
-            if (message == null) return;
+            if (!(messageParam is SocketUserMessage message)) return;
 
             // Create a number to track where the prefix ends and the command begins
             var argPos = 0;

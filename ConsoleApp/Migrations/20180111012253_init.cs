@@ -1,9 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
-using System;
-using System.Collections.Generic;
 
-namespace ConsoleApp.Migrations
+namespace StupifyConsoleApp.Migrations
 {
     public partial class init : Migration
     {

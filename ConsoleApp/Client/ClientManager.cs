@@ -5,14 +5,14 @@ using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 
-namespace ConsoleApp.Client
+namespace StupifyConsoleApp.Client
 {
-    internal class ClientManager
+    internal static class ClientManager
     {
         public static DiscordSocketClient Client { get; set; }
         public static CommandService Commands { get; set; }
 
-        public ClientManager()
+        static ClientManager()
         {
             Client = new DiscordSocketClient();
             Commands = new CommandService();
@@ -23,9 +23,9 @@ namespace ConsoleApp.Client
             Client.MessageReceived += MessageHandler.HandleCommand;
         }
 
-        public async Task Start()
+        public static async Task Start()
         {
-            await Client.LoginAsync(TokenType.Bot, Program.Configuration["DiscordBotUserToken"]);
+            await Client.LoginAsync(TokenType.Bot, Config.DiscordBotUserToken);
             await Client.StartAsync();
             await Task.Delay(-1);
         }

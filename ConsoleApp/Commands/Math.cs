@@ -1,10 +1,7 @@
-﻿using System;
-using System.Globalization;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Discord.Commands;
 
-namespace ConsoleApp.Commands
+namespace StupifyConsoleApp.Commands
 {
     public class Math : ModuleBase<SocketCommandContext>
     {

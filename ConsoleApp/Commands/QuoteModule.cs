@@ -1,17 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using ConsoleApp.DataModels;
 using Discord.Commands;
+using StupifyConsoleApp.DataModels;
 
-namespace ConsoleApp.Commands
+namespace StupifyConsoleApp.Commands
 {
     public class QuoteModule : ModuleBase<SocketCommandContext>
     {
         [Command("addquote")]
-        public async Task AddQuote([RemainderAttribute] string quoteBody)
+        public async Task AddQuote([Remainder] string quoteBody)
         {
             using (var db = new BotContext())
             {
