@@ -57,7 +57,7 @@ namespace StupifyConsoleApp.Commands
                 var message = quote.QuoteBody + " - " + db.UsernameFromServerUser(quote.ServerUser);
                 sw.Stop();
                 await ReplyAsync(message);
-                await ReplyAsync("Debug: ms to execute " + sw.ElapsedMilliseconds);
+                if (Config.Debug) await ReplyAsync("Debug: ms to execute " + sw.ElapsedMilliseconds);
             }
         }
     }

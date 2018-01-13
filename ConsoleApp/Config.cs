@@ -9,6 +9,7 @@ namespace StupifyConsoleApp
 
         public static string DbConnectionString => Configuration["DbConnectionString"];
         public static string DiscordBotUserToken => Configuration["DiscordBotUserToken"];
+        public static bool Debug => bool.Parse(Configuration["Debug"]);
 
         static Config()
         {
