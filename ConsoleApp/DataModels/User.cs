@@ -10,5 +10,14 @@ namespace StupifyConsoleApp.DataModels
         public long DiscordUserId { get; set; }
 
         public virtual ICollection<ServerUser> ServerUsers { get; set; }
+
+        public User()
+        {
+        }
+
+        public User(long discordUserId)
+        {
+            DiscordUserId = discordUserId;
+        }
     }
 }
