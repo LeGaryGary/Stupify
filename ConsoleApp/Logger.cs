@@ -21,16 +21,11 @@ namespace StupifyConsoleApp
 
         public async Task Log(string message, bool requireDebug)
         {
-            if (!requireDebug)
+            if (!requireDebug || Config.Debug)
             {
-                await Console.Out.WriteLineAsync(message).ConfigureAwait(false);
-                await File.AppendAllTextAsync(Path, message + Environment.NewLine).ConfigureAwait(false);
-            }
-            else if (Config.Debug)
-            {
-                message = "Debug: " + message;
-                await Console.Out.WriteLineAsync(message).ConfigureAwait(false);
-                await File.AppendAllTextAsync(Path, message + Environment.NewLine).ConfigureAwait(false);
+                var consoleWrite = Console.Out.WriteLineAsync(message);
+                var writeToLogFile = File.AppendAllTextAsync(Path, message + Environment.NewLine);
+                await Task.WhenAll(consoleWrite, writeToLogFile);
             }
         }
     }

@@ -27,7 +27,7 @@ namespace StupifyConsoleApp.Client
             if (!(message.HasCharPrefix('!', ref argPos) ||
                   message.HasMentionPrefix(ClientManager.Client.CurrentUser, ref argPos)))
             {
-                await AddStatsAsync(context, 0).ConfigureAwait(false);
+                await AddStatsAsync(context).ConfigureAwait(false);
                 return;
             }
             
@@ -40,7 +40,6 @@ namespace StupifyConsoleApp.Client
                 return;
             }
 
-
             // Execute the command. (result does not indicate a return value, 
             // rather an object stating if the command executed successfully)
             var sw = new Stopwatch();
@@ -50,18 +49,17 @@ namespace StupifyConsoleApp.Client
                 if (result.Error == CommandError.UnknownCommand)
                     await context.Channel.SendMessageAsync("Command not found!");
                 else
-                    await ClientManager.Log(result.ErrorReason.ToString()).ConfigureAwait(false);
+                    await ClientManager.Log(result.ErrorReason).ConfigureAwait(false);
             sw.Stop();
-            await ClientManager.Log("This command took "+sw.ElapsedMilliseconds+"ms", true).ConfigureAwait(false);
+            await ClientManager.Log("This command took "+sw.ElapsedMilliseconds+"ms", true);
         }
 
-        private static Task AddStatsAsync(SocketCommandContext context, int argPos = 0)
+        private static async Task AddStatsAsync(SocketCommandContext context, int argPos = 0)
         {
             using (var db = new BotContext())
             {
-                db.GetServerUser((long) context.User.Id, (long) context.Guild.Id);
+                await db.GetServerUserAsync((long) context.User.Id, (long) context.Guild.Id);
             }
-            return Task.CompletedTask;
         }
     }
 }

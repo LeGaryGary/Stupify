@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using StupifyConsoleApp.Client;
 
@@ -17,26 +18,28 @@ namespace StupifyConsoleApp.DataModels
         public DbSet<ServerUser> ServerUsers { get; set; }
         public DbSet<Quote> Quotes { get; set; }
 
-        public ServerUser GetServerUser(long userId, long serverId)
+        public async Task<ServerUser> GetServerUserAsync(long userId, long serverId)
         {
-            var serverUser = ServerUsers.FirstOrDefault(
+            var serverUser = await ServerUsers.FirstOrDefaultAsync(
                 x => x.Server.DiscordGuildId == serverId && x.User.DiscordUserId == userId);
 
             if (serverUser != null) return serverUser;
 
-            var user = Users.FirstOrDefault(
-                x => x.DiscordUserId == userId) ?? new User(userId);
-            var server = Servers.FirstOrDefault(
-                x => x.DiscordGuildId == serverId) ?? new Server(serverId);
+            //No ServerUser Exists => create one
 
-            ServerUsers.Add(new ServerUser()
+            var userTask = Users.FirstOrDefaultAsync(
+                x => x.DiscordUserId == userId);
+            var serverTask = Servers.FirstOrDefaultAsync(
+                x => x.DiscordGuildId == serverId);
+
+            await ServerUsers.AddAsync(new ServerUser()
             {
-                User = user,
-                Server = server
+                User = await userTask ?? new User(userId),
+                Server = await serverTask ?? new Server(serverId)
             });
-            SaveChanges();
+            await SaveChangesAsync();
 
-            return ServerUsers.FirstOrDefault(
+            return await ServerUsers.FirstOrDefaultAsync(
                        su => su.Server.DiscordGuildId == serverId &&
                              su.User.DiscordUserId == userId) 
                    ?? throw new InvalidOperationException("Newly added serveruser not found!");

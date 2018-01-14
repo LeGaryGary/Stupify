@@ -9,9 +9,9 @@ namespace StupifyConsoleApp.Client
 {
     internal static class ClientManager
     {
-        public static Logger Logger { get; set; }
-        public static DiscordSocketClient Client { get; set; }
-        public static CommandService Commands { get; set; }
+        public static Logger Logger { get; }
+        public static DiscordSocketClient Client { get; }
+        public static CommandService Commands { get; }
         public static bool IsReady { get; private set; }
 
         static ClientManager()

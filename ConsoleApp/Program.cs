@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 using StupifyConsoleApp.Client;
 
 namespace StupifyConsoleApp
@@ -7,12 +9,11 @@ namespace StupifyConsoleApp
     {
         private static void Main(string[] args)
         {
-            new Program().StartAsync().GetAwaiter().GetResult();
-        }
-
-        public async Task StartAsync()
-        {
-            await ClientManager.Start();
+            var clientTask = ClientManager.Start();
+            while (!clientTask.GetAwaiter().IsCompleted)
+            {
+                Console.ReadLine();
+            }
         }
     }
 }
