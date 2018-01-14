@@ -23,7 +23,7 @@ namespace StupifyConsoleApp.Commands
                 });
                 await db.SaveChangesAsync();
                 var reply = ReplyAsync("Done!");
-                var log = ClientManager.Log("The following quote has been added!: " + quoteBody);
+                var log = ClientManager.LogAsync("The following quote has been added!: " + quoteBody);
                 await Task.WhenAll(reply, log);
             }
         }

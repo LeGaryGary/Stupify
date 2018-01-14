@@ -12,6 +12,7 @@ namespace StupifyConsoleApp
         public static string DiscordBotUserToken => Configuration["DiscordBotUserToken"];
         public static bool Debug => bool.Parse(Configuration["Debug"]);
         public static string LoggingDirectory => Configuration["LoggingDirectory"];
+        public static string CommandPrefix => Configuration["CommandPrefix"]+" ";
 
         static Config()
         {
