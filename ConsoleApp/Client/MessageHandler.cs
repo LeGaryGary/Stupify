@@ -22,6 +22,8 @@ namespace StupifyConsoleApp.Client
 
             AddStats(context);
 
+            if (context.User.Id == ClientManager.Client.CurrentUser.Id) return;
+
             // Determine if the message is a command, based on if it starts with '!' or a mention prefix
             if (!(message.HasCharPrefix('!', ref argPos) || message.HasMentionPrefix(ClientManager.Client.CurrentUser, ref argPos))) return;
             
