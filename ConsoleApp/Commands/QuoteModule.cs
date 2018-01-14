@@ -36,6 +36,7 @@ namespace StupifyConsoleApp.Commands
                     .Quotes
                     .Include(q => q.ServerUser.User)
                     .Include(q => q.ServerUser.Server)
+                    .Where(q => (ulong) q.ServerUser.Server.DiscordGuildId == Context.Guild.Id)
                     .OrderBy(r => Guid.NewGuid())
                     .FirstOrDefault();
                 if (quote == null)
