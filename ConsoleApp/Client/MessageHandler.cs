@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Diagnostics;
+using System.Threading.Tasks;
 using Discord.Commands;
 using Discord.WebSocket;
 using StupifyConsoleApp.DataModels;
@@ -20,11 +21,17 @@ namespace StupifyConsoleApp.Client
             // Create a Command Context
             var context = new SocketCommandContext(ClientManager.Client, message);
 
-            AddStats(context);
-
             // Determine if the message is a command, based on if it starts with '!' or a mention prefix
-            if (!(message.HasCharPrefix('!', ref argPos) || message.HasMentionPrefix(ClientManager.Client.CurrentUser, ref argPos))) return;
-            
+            if (!(message.HasCharPrefix('!', ref argPos) ||
+                  message.HasMentionPrefix(ClientManager.Client.CurrentUser, ref argPos)))
+            {
+                await AddStatsAsync(context, 0).ConfigureAwait(false);
+                return;
+            }
+
+
+            await AddStatsAsync(context, argPos).ConfigureAwait(false);
+
             //Check is client is ready
             if (!ClientManager.IsReady)
             {
@@ -32,19 +39,28 @@ namespace StupifyConsoleApp.Client
                 return;
             }
 
+
             // Execute the command. (result does not indicate a return value, 
             // rather an object stating if the command executed successfully)
+            var sw = new Stopwatch();
+            sw.Start();
             var result = await ClientManager.Commands.ExecuteAsync(context, argPos);
             if (!result.IsSuccess)
-                await context.Channel.SendMessageAsync("Internal error");
+                if (result.Error == CommandError.UnknownCommand)
+                    await context.Channel.SendMessageAsync("Command not found!");
+                else
+                    await ClientManager.Log(result.ErrorReason.ToString()).ConfigureAwait(false);
+            sw.Stop();
+            await ClientManager.Log("This command took "+sw.ElapsedMilliseconds+"ms", true).ConfigureAwait(false);
         }
 
-        private static void AddStats(SocketCommandContext context)
+        private static Task AddStatsAsync(SocketCommandContext context, int argPos = 0)
         {
             using (var db = new BotContext())
             {
                 db.GetServerUser((long) context.User.Id, (long) context.Guild.Id);
             }
+            return Task.CompletedTask;
         }
     }
 }

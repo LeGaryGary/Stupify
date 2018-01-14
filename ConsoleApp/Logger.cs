@@ -8,7 +8,7 @@ namespace StupifyConsoleApp
     {
         private readonly string _filePath;
 
-        private string Path => Directory.GetCurrentDirectory() + "\\Logs\\" + _filePath;
+        private string Path => Directory.GetCurrentDirectory() + _filePath;
 
         public Logger(string directory)
         {
@@ -19,10 +19,19 @@ namespace StupifyConsoleApp
             _filePath = directory + "\\" + DateTime.Now.ToString("yyyyMMddhhmmss") + ".txt";
         }
 
-        public async Task Log(string message)
+        public async Task Log(string message, bool requireDebug)
         {
-            await Console.Out.WriteLineAsync(message).ConfigureAwait(false);
-            await File.AppendAllTextAsync(Path, message + Environment.NewLine).ConfigureAwait(false);
+            if (!requireDebug)
+            {
+                await Console.Out.WriteLineAsync(message).ConfigureAwait(false);
+                await File.AppendAllTextAsync(Path, message + Environment.NewLine).ConfigureAwait(false);
+            }
+            else if (Config.Debug)
+            {
+                message = "Debug: " + message;
+                await Console.Out.WriteLineAsync(message).ConfigureAwait(false);
+                await File.AppendAllTextAsync(Path, message + Environment.NewLine).ConfigureAwait(false);
+            }
         }
     }
 }

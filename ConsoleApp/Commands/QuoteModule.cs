@@ -28,11 +28,8 @@ namespace StupifyConsoleApp.Commands
         }
 
         [Command("randomquote")]
-        public async Task RandomQuote([Remainder] string quoteBody = null)
+        public async Task RandomQuote([Remainder] string request = null)
         {
-            var sw = new Stopwatch();
-            sw.Start();
-
             using (var db = new BotContext())
             {
                 var quote = db
@@ -46,11 +43,8 @@ namespace StupifyConsoleApp.Commands
                     await ReplyAsync("No quotes were found, try !addquote <quote>");
                     return;
                 }
-
                 var message = quote.QuoteBody + " - " + db.UsernameFromServerUser(quote.ServerUser);
-                sw.Stop();
                 await ReplyAsync(message);
-                if (Config.Debug) await ReplyAsync("Debug: ms to execute " + sw.ElapsedMilliseconds);
             }
         }
     }

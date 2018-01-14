@@ -44,12 +44,12 @@ namespace StupifyConsoleApp.Client
 
         public static async Task Log(LogMessage message)
         {
-            await Logger.Log(message.ToString());
+            await Logger.Log(message.ToString(), false).ConfigureAwait(false);
         }
 
-        public static async Task Log(string message)
+        public static async Task Log(string message, bool requireDebug = false)
         {
-            await Logger.Log(message).ConfigureAwait(false);
+            await Logger.Log(message, requireDebug).ConfigureAwait(false);
         }
     }
 }
