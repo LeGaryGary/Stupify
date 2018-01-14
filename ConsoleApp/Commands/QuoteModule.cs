@@ -16,24 +16,17 @@ namespace StupifyConsoleApp.Commands
         {
             using (var db = new BotContext())
             {
-                db.Quotes.Add(new Quote()
+                await db.Quotes.AddAsync(new Quote
                 {
                     QuoteBody = quoteBody,
                     ServerUser = db.GetServerUser((long) Context.User.Id, (long) Context.Guild.Id)
                 });
-                try
-                {
-                    db.SaveChanges();
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                }
-
+                await db.SaveChangesAsync();
                 await ReplyAsync("Done!");
+                await ClientManager.Log("The following quote has been added!: " + quoteBody);
             }
         }
-        
+
         [Command("randomquote")]
         public async Task RandomQuote([Remainder] string quoteBody = null)
         {

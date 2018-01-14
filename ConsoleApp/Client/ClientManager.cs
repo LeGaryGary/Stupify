@@ -1,5 +1,4 @@
-﻿using System;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
@@ -9,19 +8,19 @@ namespace StupifyConsoleApp.Client
 {
     internal static class ClientManager
     {
+        public static Logger Logger { get; set; }
         public static DiscordSocketClient Client { get; set; }
         public static CommandService Commands { get; set; }
-
         public static bool IsReady { get; private set; }
 
         static ClientManager()
         {
-            Client = new DiscordSocketClient(new DiscordSocketConfig()
+            Client = new DiscordSocketClient(new DiscordSocketConfig
             {
-                
-                AlwaysDownloadUsers = true,
+                AlwaysDownloadUsers = true
             });
             Commands = new CommandService();
+            Logger = new Logger(Config.LoggingDirectory);
 
             Commands.AddModulesAsync(Assembly.GetEntryAssembly()).GetAwaiter().GetResult();
 
@@ -37,16 +36,20 @@ namespace StupifyConsoleApp.Client
             await Task.Delay(-1);
         }
 
-        private static Task Log(LogMessage message)
-        {
-            Console.WriteLine(message.ToString());
-            return Task.CompletedTask;
-        }
-
         private static Task Ready()
         {
             IsReady = true;
             return Task.CompletedTask;
+        }
+
+        public static async Task Log(LogMessage message)
+        {
+            await Logger.Log(message.ToString());
+        }
+
+        public static async Task Log(string message)
+        {
+            await Logger.Log(message).ConfigureAwait(false);
         }
     }
 }
