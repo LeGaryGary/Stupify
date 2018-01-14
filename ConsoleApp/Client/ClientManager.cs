@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
@@ -49,7 +50,7 @@ namespace StupifyConsoleApp.Client
 
         public static async Task Log(string message, bool requireDebug = false)
         {
-            await Logger.Log(message, requireDebug).ConfigureAwait(false);
+            await Logger.Log(DateTime.Now.ToString("T")+" "+message, requireDebug).ConfigureAwait(false);
         }
     }
 }

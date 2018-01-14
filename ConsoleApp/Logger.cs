@@ -6,9 +6,9 @@ namespace StupifyConsoleApp
 {
     public class Logger
     {
-        private readonly string _filePath;
+        private readonly string _relativeLogFilePath;
 
-        private string Path => Directory.GetCurrentDirectory() + _filePath;
+        private string Path => Directory.GetCurrentDirectory()+"\\"+_relativeLogFilePath;
 
         public Logger(string directory)
         {
@@ -16,7 +16,7 @@ namespace StupifyConsoleApp
                 System.IO.Path.Combine(
                     Directory.GetCurrentDirectory(),
                     directory));
-            _filePath = directory + "\\" + DateTime.Now.ToString("yyyyMMddhhmmss") + ".txt";
+            _relativeLogFilePath = directory + "\\" + DateTime.Now.ToString("yyyyMMddhhmmss") + ".txt";
         }
 
         public async Task Log(string message, bool requireDebug)
