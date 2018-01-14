@@ -21,6 +21,8 @@ namespace StupifyConsoleApp.Client
             // Create a Command Context
             var context = new SocketCommandContext(ClientManager.Client, message);
 
+            if (context.User.Id == ClientManager.Client.CurrentUser.Id) return;
+
             // Determine if the message is a command, based on if it starts with '!' or a mention prefix
             if (!(message.HasCharPrefix('!', ref argPos) ||
                   message.HasMentionPrefix(ClientManager.Client.CurrentUser, ref argPos)))
@@ -28,8 +30,7 @@ namespace StupifyConsoleApp.Client
                 await AddStatsAsync(context, 0).ConfigureAwait(false);
                 return;
             }
-
-
+            
             await AddStatsAsync(context, argPos).ConfigureAwait(false);
 
             //Check is client is ready
