@@ -12,7 +12,6 @@ namespace StupifyConsoleApp.Client
         public static Logger Logger { get; }
         public static DiscordSocketClient Client { get; }
         public static CommandService Commands { get; }
-        public static bool IsReady { get; private set; }
 
         static ClientManager()
         {
@@ -25,9 +24,8 @@ namespace StupifyConsoleApp.Client
 
             Commands.AddModulesAsync(Assembly.GetEntryAssembly()).GetAwaiter().GetResult();
 
-            Client.Log += Log;
+            Client.Log += LogAsync;
             Client.MessageReceived += MessageHandler.Handle;
-            Client.Ready += Ready;
         }
 
         public static async Task Start()
@@ -37,20 +35,14 @@ namespace StupifyConsoleApp.Client
             await Task.Delay(-1);
         }
 
-        private static Task Ready()
+        public static async Task LogAsync(LogMessage message)
         {
-            IsReady = true;
-            return Task.CompletedTask;
+            await Logger.Log(message.ToString(), false);
         }
 
-        public static async Task Log(LogMessage message)
+        public static async Task LogAsync(string message, bool requireDebug = false)
         {
-            await Logger.Log(message.ToString(), false).ConfigureAwait(false);
-        }
-
-        public static async Task Log(string message, bool requireDebug = false)
-        {
-            await Logger.Log(DateTime.Now.ToString("T")+" "+message, requireDebug).ConfigureAwait(false);
+            await Logger.Log(DateTime.Now.ToString("T")+" "+message, requireDebug);
         }
     }
 }
