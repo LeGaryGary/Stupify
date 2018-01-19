@@ -7,7 +7,7 @@ using Discord.WebSocket;
 
 namespace StupifyConsoleApp.Client
 {
-    internal static class ClientManager
+    public static class ClientManager
     {
         public static Logger Logger { get; }
         public static DiscordSocketClient Client { get; }

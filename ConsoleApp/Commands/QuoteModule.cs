@@ -45,7 +45,7 @@ namespace StupifyConsoleApp.Commands
                     await ReplyAsync("No quotes were found, try !addquote <quote>");
                     return;
                 }
-                var message = quote.QuoteBody + " - " + db.UsernameFromServerUser(quote.ServerUser);
+                var message = quote.QuoteBody + " - " + ClientManager.Client.UsernameFromServerUser(quote.ServerUser);
                 await ReplyAsync(message);
             }
         }

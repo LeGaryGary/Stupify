@@ -16,6 +16,19 @@ namespace StupifyConsoleApp.Client
             var argPos = 0;
             var context = new SocketCommandContext(ClientManager.Client, message);
 
+            using (var db = new BotContext())
+            {
+                var serverUser = await db.GetServerUserAsync(context.User.Id, context.Guild.Id, true);
+                if (serverUser.Muted)
+                {
+                    var deleteTask = context.Message.DeleteAsync();
+                    var dmChannel = await context.User.GetOrCreateDMChannelAsync();
+                    await dmChannel.SendMessageAsync("You are muted, congrats muggle, you did it");
+                    await deleteTask;
+                    return;
+                }
+            }
+            
             if (!(message.HasStringPrefix(Config.CommandPrefix, ref argPos) ||
                   message.HasMentionPrefix(ClientManager.Client.CurrentUser, ref argPos))) return;
 

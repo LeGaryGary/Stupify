@@ -11,9 +11,10 @@ using System;
 namespace StupifyConsoleApp.Migrations
 {
     [DbContext(typeof(BotContext))]
-    partial class BotContextModelSnapshot : ModelSnapshot
+    [Migration("20180118235911_stories")]
+    partial class stories
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
