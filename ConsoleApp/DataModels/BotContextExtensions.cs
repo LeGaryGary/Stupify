@@ -42,15 +42,17 @@ namespace StupifyConsoleApp.DataModels
 
         public static async Task<ServerStory> GetLatestServerStoryAsync(this BotContext context, long serverId)
         {
-            var ssId = await context.ServerStories.Where(ss => ss.Server.DiscordGuildId == serverId).MaxAsync(ss => ss.ServerStoryId);
-            return context.ServerStories.First(ss => ss.ServerStoryId == ssId);
+            var serverStories = await context.ServerStories.Where(ss => ss.Server.DiscordGuildId == serverId).ToListAsync();
+            var maxSsId = serverStories.Select(x => x.ServerStoryId).Max();
+            return context.ServerStories.First(ss => ss.ServerStoryId == maxSsId);
         }
 
         public static async Task<ServerStoryPart> GetLastestServerStoryPartAsync(
             this BotContext context,
             ServerStory serverStory)
         {
-            var sspId = await context.ServerStoryParts.Where(ssp => ssp.ServerStoryPartId == serverStory.ServerStoryId).MaxAsync(ssp => ssp.ServerStoryPartId);
+            var serverStoryParts = await context.ServerStoryParts.Where(ssp => ssp.ServerStory.ServerStoryId == serverStory.ServerStoryId).ToListAsync();
+            var sspId = serverStoryParts.Select(x => x.ServerStoryPartId).Max();
             return await context.ServerStoryParts.FirstAsync(ssp => ssp.ServerStoryPartId == sspId);
         }
     }

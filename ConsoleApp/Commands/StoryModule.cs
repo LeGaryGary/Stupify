@@ -24,10 +24,9 @@ namespace StupifyConsoleApp.Commands
                 server.StoryInProgress = true;
                 var serverStory = new ServerStory
                 {
-                    Server = db.Servers.First(s => (ulong) s.ServerId == Context.Guild.Id),
+                    Server = server,
                     StartTime = DateTime.Now,
-                    StoryInitiatedBy = db.ServerUsers.First(su
-                        => (ulong) su.UserId == Context.User.Id && (ulong) su.ServerId == Context.Guild.Id),
+                    StoryInitiatedBy = await db.GetServerUserAsync(Context.User.Id, Context.Guild.Id),
                 };
                 db.ServerStories.Add(serverStory);
                 db.ServerStoryParts.Add(new ServerStoryPart
@@ -40,7 +39,7 @@ namespace StupifyConsoleApp.Commands
                 });
                 await db.SaveChangesAsync();
                 await ReplyAsync(
-                    $"The story begins here, who knows where it will go! Use the command {Config.CommandPrefix} andthen {{Your part of the story!}}" +
+                    $"The story begins here, who knows where it will go! Use the command {Config.CommandPrefix} andthen {{Your part of the story!}}" + Environment.NewLine +
                     $"To end the story use {Config.CommandPrefix} theend, goodluck!");
 
             }
@@ -68,7 +67,7 @@ namespace StupifyConsoleApp.Commands
                     timeSpan < TimeSpan.FromMinutes(1))
                 {
                     await ReplyAsync(
-                        $"Please give other people a chance! Or at the very least, wait another {timeSpan.Seconds} Seconds!");
+                        $"Please give other people a chance! Or at the very least, wait another {60-timeSpan.Seconds} Seconds!");
                     return;
                 }
 
@@ -80,6 +79,8 @@ namespace StupifyConsoleApp.Commands
                     PartNumber = lastPart.PartNumber + 1,
                     TimeOfAddition = DateTime.Now
                 });
+                await db.SaveChangesAsync();
+                await ReplyAsync("ADDED");
             }
         }
 
