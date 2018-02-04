@@ -52,5 +52,10 @@ namespace BotDataGraph.MessageAnalyser.Models
         {
             return new { this.userId, this.content, this.time, this.serverId, this.channelId, startupTime = startup };
         }
+
+        public object Parameters(string startup, int lastNode)
+        {
+            return new { this.userId, this.content, this.time, this.serverId, this.channelId, startupTime = startup, lastNodeId = lastNode };
+        }
     }
 }

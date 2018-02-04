@@ -50,30 +50,40 @@ namespace BotDataGraph.MessageAnalyser
 
         private async Task<int> AddMessageNode(Message message, ISession session)
         {
-            return await session.WriteTransactionAsync(async tx =>
+            var lastMessageNodeId = session.ReadTransaction(
+                tx =>
                 {
-                    var records = new List<IRecord>();
 
+                    var reader = tx.Run(
+                        "MATCH (c:Channel {channelId: $channelId})-[]-(message:Message) "
+                        + "return id(message) "
+                        + "ORDER BY message.time DESC "
+                        + "LIMIT 1",
+                        message.Parameters(this.startupTime));
+
+                    return reader.Single()[0].As<int>();
+                });
+
+            return session.WriteTransaction(
+                tx =>
+                {
                     // TODO: Separate out query to check for user and channel existence then create them separately
-                    var reader = await tx.RunAsync(
-                                     "MATCH (startup:Startup { time: $startupTime})" +
-                                     "MERGE (u:User {userId: $userId})" +
-                                     "MERGE (s:Server { serverId: $serverId})" +
-                                     "MERGE (channel:Channel {channelId: $channelId})" +
-                                     "MERGE (u)-[sent:SENT]->(m:Message { content: $content, time: $time})" + 
-                                     "MERGE (m)-[inStartup:IN_STARTUP]->(startup)" +
-                                     "MERGE (m)-[channelRelate:IN_CHANNEL]->(channel)" +
-                                     "MERGE (u)-[su:SERVER_USER]-(s)" + 
-                                     "MERGE (s)-[sc:SERVER_CHANNEL]->(channel)" +
-                                     "return id(m)",
-                                     message.Parameters(this.startupTime));
+                    var reader = tx.Run(
+                        "match (mOld:Message) WHERE ID(mOld) = $lastNodeId " +
+                        "MATCH (startup:Startup { time: $startupTime})" +
+                        "MERGE (u:User {userId: $userId})" +
+                        "MERGE (s:Server { serverId: $serverId})" +
+                        "MERGE (channel:Channel {channelId: $channelId})" +
+                        "MERGE (u)-[sent:SENT]->(m:Message { content: $content, time: $time})" + 
+                        "MERGE (m)-[inStartup:IN_STARTUP]->(startup)" +
+                        "MERGE (m)-[channelRelate:IN_CHANNEL]->(channel)" +
+                        "MERGE (u)-[su:SERVER_USER]-(s)" + 
+                        "MERGE (s)-[sc:SERVER_CHANNEL]->(channel)" +
+                        "MERGE (mOld)-[nextMessage:NEXT_MESSAGE]->(m)" +
+                        "return id(m)",
+                        message.Parameters(this.startupTime, lastMessageNodeId));
 
-                    while (await reader.FetchAsync())
-                    {
-                        records.Add(reader.Current);
-                    }
-
-                    return records.Single()[0].As<int>();
+                    return reader.Single()[0].As<int>();
                 });
         }
     }
