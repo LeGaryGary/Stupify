@@ -9,16 +9,12 @@ namespace StupifyConsoleApp.Client
 {
     public static class ClientManager
     {
-        public static Logger Logger { get; }
-        public static DiscordSocketClient Client { get; }
-        public static CommandService Commands { get; }
-
         static ClientManager()
         {
             Client = new DiscordSocketClient(new DiscordSocketConfig
-            {
-                AlwaysDownloadUsers = true
-            });
+                                                 {
+                                                     AlwaysDownloadUsers = true
+                                                 });
             Commands = new CommandService();
             Logger = new Logger(Config.LoggingDirectory);
 
@@ -28,6 +24,12 @@ namespace StupifyConsoleApp.Client
             Client.MessageReceived += MessageHandler.Handle;
         }
 
+        public static DiscordSocketClient Client { get; }
+
+        public static CommandService Commands { get; }
+
+        private static Logger Logger { get; }
+
         public static async Task Start()
         {
             await Client.LoginAsync(TokenType.Bot, Config.DiscordBotUserToken);
@@ -35,14 +37,14 @@ namespace StupifyConsoleApp.Client
             await Task.Delay(-1);
         }
 
-        public static async Task LogAsync(LogMessage message)
-        {
-            await Logger.Log(message.ToString(), false);
-        }
-
         public static async Task LogAsync(string message, bool requireDebug = false)
         {
             await Logger.Log(DateTime.Now.ToString("T")+" "+message, requireDebug);
+        }
+
+        private static async Task LogAsync(LogMessage message)
+        {
+            await Logger.Log(message.ToString(), false);
         }
     }
 }
