@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Discord.Commands;
 using Microsoft.EntityFrameworkCore;
@@ -93,7 +94,7 @@ namespace StupifyConsoleApp.Commands
 
                 if (!server.StoryInProgress)
                 {
-                    await ReplyAsync($"Theres no story in progress! try {Config.CommandPrefix} beginstory");
+                    await ReplyAsync($"There's no story in progress! try {Config.CommandPrefix} beginstory");
                     return;
                 }
 
@@ -109,6 +110,29 @@ namespace StupifyConsoleApp.Commands
                 server.StoryInProgress = false;
                 await db.SaveChangesAsync();
                 await ReplyAsync("The end!");
+            }
+        }
+
+        [Command("tellmeastory")]
+        public async Task ReplayStory()
+        {
+            using (var db = new BotContext())
+            {
+                var serverStories = await db.ServerStories.Where(ss => ss.Server.DiscordGuildId == (long) Context.Guild.Id).ToListAsync();
+                var storyId = serverStories.OrderByDescending(r => Guid.NewGuid()).FirstOrDefault()?.ServerStoryId;
+
+                if (storyId != null)
+                {
+                    var parts = await db.ServerStoryParts.Where(ssp => ssp.ServerStory.ServerStoryId == storyId).ToListAsync();
+                    var reply = string.Empty;
+                    parts.ForEach(p => reply+=p.Part+Environment.NewLine);
+                    await ReplyAsync(reply);
+                }
+
+                else
+                {
+                    await ReplyAsync($"What... You want me to make one up?? (This server doesn't have any! (((Try {Config.CommandPrefix} beginstory))))");
+                }
             }
         }
     }

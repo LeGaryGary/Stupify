@@ -34,25 +34,15 @@ namespace StupifyConsoleApp.Client
             var argPos = 0;
             var context = new SocketCommandContext(ClientManager.Client, message);
 
-            var neo4JMessage = new Message
-                {
-                    Time = context.Message.CreatedAt.DateTime,
-                    UserId = context.User.Id,
-                    Content = context.Message.Content,
-                    ServerId = context.Guild.Id,
-                    ChannelId = context.Channel.Id
-                };
-            var addMessageNodeTask = Neo4JMessageHandler.Handle(neo4JMessage);
+            var addMessageNodeTask = PassMessageToNeo4J(context);
 
             using (var db = new BotContext())
             {
                 var serverUser = await db.GetServerUserAsync(context.User.Id, context.Guild.Id, true);
                 if (serverUser.Muted)
                 {
-                    var deleteTask = context.Message.DeleteAsync();
-                    var dmChannel = await context.User.GetOrCreateDMChannelAsync();
-                    await dmChannel.SendMessageAsync("You are muted, congrats muggle, you did it");
-                    await deleteTask;
+                    await context.Message.DeleteAsync();
+                    await addMessageNodeTask;
                     return;
                 }
             }
@@ -60,6 +50,7 @@ namespace StupifyConsoleApp.Client
             if (!(message.HasStringPrefix(Config.CommandPrefix, ref argPos)
                   || message.HasMentionPrefix(ClientManager.Client.CurrentUser, ref argPos)))
             {
+                await addMessageNodeTask;
                 return;
             }
 
@@ -72,6 +63,10 @@ namespace StupifyConsoleApp.Client
                 {
                     await context.Channel.SendMessageAsync("Command not found!");
                 }
+                else if (result.Error == CommandError.BadArgCount)
+                {
+                    await context.Channel.SendMessageAsync("That's not right!");
+                }
                 else
                 {
                     await ClientManager.LogAsync(result.ErrorReason);
@@ -80,6 +75,22 @@ namespace StupifyConsoleApp.Client
             sw.Stop();
             await ClientManager.LogAsync("This command took " + sw.ElapsedMilliseconds + "ms", true);
             await addMessageNodeTask;
+        }
+
+        private static async Task PassMessageToNeo4J(SocketCommandContext context)
+        {
+            if (Config.Neo4JMessageHandlerEnabled)
+            {
+                var neo4JMessage = new Message
+                {
+                    Time = context.Message.CreatedAt.DateTime,
+                    UserId = context.User.Id,
+                    Content = context.Message.Content,
+                    ServerId = context.Guild.Id,
+                    ChannelId = context.Channel.Id
+                };
+                await Neo4JMessageHandler.Handle(neo4JMessage);
+            }
         }
     }
 }
