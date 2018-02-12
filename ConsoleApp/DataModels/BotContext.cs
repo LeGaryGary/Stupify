@@ -1,8 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using StupifyConsoleApp.Client;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace StupifyConsoleApp.DataModels
 {
@@ -19,5 +15,6 @@ namespace StupifyConsoleApp.DataModels
         public DbSet<Quote> Quotes { get; set; }
         public DbSet<ServerStory> ServerStories { get; set; }
         public DbSet<ServerStoryPart> ServerStoryParts { get; set; }
+        public DbSet<Segment> Segments { get; set; }
     }
 }

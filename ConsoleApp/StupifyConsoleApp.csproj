@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BotDataGraph\BotDataGraph.csproj" />
+    <ProjectReference Include="..\TicTacZap\TicTacZap.csproj" />
   </ItemGroup>
 
   <ItemGroup>

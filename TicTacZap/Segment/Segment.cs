@@ -93,14 +93,14 @@ namespace TicTacZap.Segment
             }
         }
 
-        public string Render()
+        public string TextRender()
         {
             var stringBuilder = new StringBuilder();
-            for (var x = 0; x < Blocks.GetLength(0); x++)
+            for (var y = 0; y < Blocks.GetLength(0); y++)
             {
-                for (var y = 0; y < Blocks.GetLength(1); y++)
+                for (var x = 0; x < Blocks.GetLength(1); x++)
                 {
-                    
+                    stringBuilder.Append(" ");
                     switch (Blocks[x,y]?.Type)
                     {
                         case BlockType.Controller:

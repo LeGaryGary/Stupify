@@ -9,6 +9,8 @@ namespace StupifyConsoleApp.DataModels
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
         public long DiscordUserId { get; set; }
 
+        public decimal Balance { get; set; }
+
         public virtual ICollection<ServerUser> ServerUsers { get; set; }
     }
 }

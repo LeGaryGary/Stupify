@@ -14,7 +14,7 @@ namespace TicTacZap.Segment.Blocks
         public bool AddInput(IBlock block)
         {
             InputBlocks.Add(block);
-            if (block.LoopsExists())
+            if (!block.LoopsExists())
             {
                 InputBlocks.Remove(block);
                 return false;
