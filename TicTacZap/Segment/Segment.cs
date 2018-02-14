@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Text;
-using TicTacZap.Block;
 using TicTacZap.Segment.Blocks;
 
 namespace TicTacZap.Segment
@@ -33,17 +32,6 @@ namespace TicTacZap.Segment
 
             Blocks[x, y] = block;
             return true;
-        }
-
-        public bool SetOutput(int x, int y, Direction direction)
-        {
-            var block = Blocks[x,y];
-            if (block is SegmentControllerBlock) return false;
-
-            var connectionBlock = GetBlockInDirection(x, y, direction);
-            block.OutputDistance = BlockOutputDistance(x, y);
-
-            return connectionBlock != null && connectionBlock.AddInput(block) && block.SetOutputBlock(connectionBlock);
         }
 
         private static IBlock NewBlock(BlockType blockType)
