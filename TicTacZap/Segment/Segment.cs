@@ -13,7 +13,7 @@ namespace TicTacZap.Segment
 
         public IBlock[,] Blocks { get; } = new IBlock[9,9];
 
-        public decimal OutputPerTick { get; } = 0;
+        public decimal OutputPerTick { get; private set; }
 
         public Segment()
         {
@@ -37,10 +37,18 @@ namespace TicTacZap.Segment
 
         private void UpdateOutputs()
         {
-            for (int y = 0; y < Blocks.GetLength(1); y++)
+            var output = 0m;
+            for (var y = 0; y < Blocks.GetLength(1); y++)
             {
-                
+                for (var x = 0; x < Blocks.GetLength(0); x++)
+                {
+                    var block = Blocks[x, y];
+                    block.UpdateOutput();
+                    output += block.OutputPerTick;
+                }
             }
+
+            OutputPerTick = output;
         }
 
         private static IBlock NewBlock(BlockType blockType)
@@ -65,6 +73,12 @@ namespace TicTacZap.Segment
         private int BlockOutputDistance(int x, int y)
         {
             return Math.Abs(x - _lastX) + Math.Abs(y - _lastY);
+        }
+
+        private int DistanceToBlock(int x, int y, Direction direction)
+        {
+            GetBlockInDirection(x, y, direction);
+            return BlockOutputDistance(x, y);
         }
 
         private IBlock GetBlockInDirection(int x, int y, Direction direction)

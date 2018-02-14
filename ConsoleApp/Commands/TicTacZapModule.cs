@@ -128,6 +128,7 @@ namespace StupifyConsoleApp.Commands
                 UserId = user.UserId
             };
             await Db.Segments.AddAsync(segment);
+            await Db.SaveChangesAsync();
             await TicTacZapController.AddSegment(segment.SegmentId);
             
         }
