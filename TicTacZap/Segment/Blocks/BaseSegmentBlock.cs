@@ -3,7 +3,7 @@ using TicTacZap.Block;
 
 namespace TicTacZap.Segment.Blocks
 {
-    public abstract class BaseSegmentBlock : IBlock
+    internal abstract class BaseSegmentBlock : IBlock
     {
         public BlockType Type { get; protected set; }
         public List<IBlock> InputBlocks { get; } = new List<IBlock>();

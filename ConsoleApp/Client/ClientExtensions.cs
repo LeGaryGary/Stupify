@@ -8,11 +8,10 @@ namespace StupifyConsoleApp.Client
 {
     public static class ClientExtensions
     {
-        public static string UsernameFromServerUser(this DiscordSocketClient client, ServerUser quoteServerUser)
+        public static string UsernameFromServerUser(this DiscordSocketClient client, ServerUser serverUser)
         {
-            var discordUserId = quoteServerUser.User.DiscordUserId;
-            var guild = client.GetGuild(((ulong) quoteServerUser.Server.DiscordGuildId));
-            var user = guild.GetUser((ulong) discordUserId);
+            var guild = client.GetGuild((ulong) serverUser.Server.DiscordGuildId);
+            var user = guild.GetUser((ulong) serverUser.User.DiscordUserId);
             return user.Username;
         }
     }

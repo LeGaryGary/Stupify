@@ -1,15 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27130.2010
+VisualStudioVersion = 15.0.27130.2027
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StupifyConsoleApp", "ConsoleApp\StupifyConsoleApp.csproj", "{F8E1FABB-B372-48FB-A512-5E69C2BFA9F0}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BotDataGraph", "BotDataGraph\BotDataGraph.csproj", "{D74AD772-6445-40E2-944D-3A03C9820CDB}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TicTacZap", "TicTacZap\TicTacZap.csproj", "{A9A21A02-676D-4F47-809C-EFC1010C3062}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TicTacZapTestConsoleApp", "TicTacZapTestConsoleApp\TicTacZapTestConsoleApp.csproj", "{39935F35-32C4-4BEE-9651-F9E9930874F4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,10 +27,6 @@ Global
 		{A9A21A02-676D-4F47-809C-EFC1010C3062}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A9A21A02-676D-4F47-809C-EFC1010C3062}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A9A21A02-676D-4F47-809C-EFC1010C3062}.Release|Any CPU.Build.0 = Release|Any CPU
-		{39935F35-32C4-4BEE-9651-F9E9930874F4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{39935F35-32C4-4BEE-9651-F9E9930874F4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{39935F35-32C4-4BEE-9651-F9E9930874F4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{39935F35-32C4-4BEE-9651-F9E9930874F4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,6 +1,6 @@
 ﻿namespace TicTacZap.Segment.Blocks
 {
-    public class BasicSegmentBlock : BaseSegmentBlock
+    internal class BasicSegmentBlock : BaseSegmentBlock
     {
         public BasicSegmentBlock()
         {

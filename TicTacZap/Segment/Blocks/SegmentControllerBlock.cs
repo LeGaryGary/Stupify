@@ -1,7 +1,7 @@
 ﻿
 namespace TicTacZap.Segment.Blocks
 {
-    public class SegmentControllerBlock : BaseSegmentBlock
+    internal class SegmentControllerBlock : BaseSegmentBlock
     {
         public SegmentControllerBlock()
         {

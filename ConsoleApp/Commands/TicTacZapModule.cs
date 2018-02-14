@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord.Commands;
@@ -10,62 +11,130 @@ namespace StupifyConsoleApp.Commands
 {
     public class TicTacZapModule : ModuleBase<SocketCommandContext>
     {
+        private BotContext Db { get; } = new BotContext();
+
         [Command("balance")]
         public async Task ShowBalance()
         {
-            using (var db = new BotContext())
+            var balance = await Balance();
+            await ReplyAsync($"Your balance is: {balance}");
+        }
+
+        [Command("segment")]
+        public async Task ShowSegment(int segmentId)
+        {
+            await ReplyAsync(TicTacZapController.RenderSegment(segmentId));
+        }
+
+        [Command("segments")]
+        public async Task ListSegments()
+        {
+            var segments = await GetSegments();
+            var renderSegmentList = RenderSegmentList(segments);
+            if (renderSegmentList == string.Empty)
             {
-                var balance = await Balance(db);
-                await ReplyAsync($"Your balance is: {balance}");
+                await ReplyAsync("You dont have any segments, buy your first one: `!s buysegment`");
+            }
+            else
+            {
+                await ReplyAsync(renderSegmentList);
             }
         }
 
         [Command("buysegment")]
         public async Task BuySegment()
         {
-            using (var db = new BotContext())
+            var user = await GetUserAsync();
+
+            var price = SegmentPrice(await SegmentCountAsync());
+            if (price > user.Balance)
             {
-                var user = await GetUser(db);
-                var segments = await SegmentCount(db);
-
-                var price = Convert.ToInt32(Math.Pow(2, segments)-1);
-                if (price <= user.Balance)
-                {
-                    var segment = new Segment
-                    {
-                        OutputPerTick = 1,
-                        UserId = user.UserId
-                    };
-                    db.Segments.Add(segment);
-                    await db.SaveChangesAsync();
-
-                    await TicTacZapController.AddSegment(segment.SegmentId);
-
-                    user.Balance -= price;
-                    await db.SaveChangesAsync();
-                }
-                else
-                {
-                    await ReplyAsync($"Come back when you have more money (you need {price} units to buy this)") ;
-                }
+                await ReplyAsync($"Come back when you have more money (you need {price} units to buy this)");
+                return;
             }
+
+            await NewSegment(user);
+            user.Balance -= price;
+            
+            await Db.SaveChangesAsync();
+            await ReplyAsync("You have purchased a segment!");
         }
 
-        private async Task<int> SegmentCount(BotContext db)
+        [Command("deletesegment")]
+        public async Task DeleteSegmentCommand(int segmentId)
         {
-            var user = await GetUser(db);
-            return await db.Segments.Where(s => s.UserId == user.UserId).CountAsync();
+            if (!await UserHasSegmentAsync(segmentId))
+            {
+                await ReplyAsync("You don't own a segment with this Id!");
+            }
+
+            await DeleteSegment(segmentId);
+            await ReplyAsync("Its gone...");
         }
 
-        private async Task<decimal> Balance(BotContext db)
+        private async Task DeleteSegment(int segmentId)
         {
-            var user = await GetUser(db);
+            var dbSegment = Db.Segments.First(s => s.SegmentId == segmentId);
+            Db.Segments.Remove(dbSegment);
+            await Db.SaveChangesAsync();
+
+            TicTacZapController.DeleteSegment(segmentId);
+        }
+
+        private async Task<bool> UserHasSegmentAsync(int segmentId)
+        {
+            return (await GetSegments()).Select(s => s.SegmentId).Contains(segmentId);
+        }
+
+        private static string RenderSegmentList(IEnumerable<Segment> segments)
+        {
+            var str = string.Empty;
+            foreach (var segment in segments)
+            {
+                str += $"Segment Id: {segment.SegmentId} Output: {segment.OutputPerTick}" + Environment.NewLine;
+            }
+
+            return str;
+        }
+
+        private async Task<IEnumerable<Segment>> GetSegments()
+        {
+            var user = await GetUserAsync();
+            return Db.Segments.Where(s => s.UserId == user.UserId);
+        }
+
+        private async Task<int> SegmentCountAsync()
+        {
+            var user = await GetUserAsync();
+            return await Db.Segments.Where(s => s.UserId == user.UserId).CountAsync();
+        }
+
+        private async Task<decimal> Balance()
+        {
+            var user = await GetUserAsync();
             return user.Balance;
         }
 
-        private async Task<User> GetUser(BotContext db)
+        private async Task<User> GetUserAsync()
         {
-            return await db.Users.FirstAsync(u => u.DiscordUserId == (long) Context.User.Id);
+            return await Db.Users.FirstAsync(u => u.DiscordUserId == (long) Context.User.Id);
+        }
+
+        private async Task NewSegment(User user)
+        {
+            var segment = new Segment
+            {
+                OutputPerTick = 1,
+                UserId = user.UserId
+            };
+            await Db.Segments.AddAsync(segment);
+            await TicTacZapController.AddSegment(segment.SegmentId);
+            
+        }
+
+        private static decimal SegmentPrice(int segmentCount)
+        {
+            return Convert.ToDecimal(Math.Pow(2, segmentCount)-1) * 100;
         }
     }
 }

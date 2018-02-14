@@ -11,14 +11,20 @@ namespace TicTacZap.Segment
         private int _lastX;
 
         public IBlock Controller { get; } = new SegmentControllerBlock();
+
         public IBlock[,] Blocks { get; } = new IBlock[9,9];
 
         public decimal OutputPerTick => Controller.OutputPerTick;
 
-
         public Segment()
         {
             Blocks[4, 4] = Controller;
+        }
+
+        public bool AddBlock(int x, int y, BlockType blockType)
+        {
+            var block = NewBlock(blockType);
+            return AddBlock(x, y, block);
         }
 
         public bool AddBlock(int x, int y, IBlock block)
@@ -38,6 +44,25 @@ namespace TicTacZap.Segment
             block.OutputDistance = BlockOutputDistance(x, y);
 
             return connectionBlock != null && connectionBlock.AddInput(block) && block.SetOutputBlock(connectionBlock);
+        }
+
+        private static IBlock NewBlock(BlockType blockType)
+        {
+            IBlock block;
+
+            switch (blockType)
+            {
+                case BlockType.Controller:
+                    block = new SegmentControllerBlock();
+                    break;
+                case BlockType.Basic:
+                    block = new BasicSegmentBlock();
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(blockType), blockType, null);
+            }
+
+            return block;
         }
 
         private int BlockOutputDistance(int x, int y)
@@ -100,17 +125,16 @@ namespace TicTacZap.Segment
             {
                 for (var x = 0; x < Blocks.GetLength(1); x++)
                 {
-                    stringBuilder.Append(" ");
                     switch (Blocks[x,y]?.Type)
                     {
                         case BlockType.Controller:
-                            stringBuilder.Append("C");
+                            stringBuilder.Append(" C");
                             break;
                         case BlockType.Basic:
-                            stringBuilder.Append("B");
+                            stringBuilder.Append(" B");
                             break;
                         default:
-                            stringBuilder.Append(" ");
+                            stringBuilder.Append(" ~ ");
                             break;
                     }
                 }
@@ -129,6 +153,6 @@ namespace TicTacZap.Segment
         
         decimal OutputPerTick { get; }
 
-        bool AddBlock(int x, int y, IBlock block);
+        bool AddBlock(int x, int y, BlockType blockType);
     }
 }

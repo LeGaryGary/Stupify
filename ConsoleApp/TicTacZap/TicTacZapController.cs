@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
@@ -14,17 +13,17 @@ namespace StupifyConsoleApp.TicTacZap
 {
     public static class TicTacZapController
     {
-        private static string _path;
+        private static readonly string Path;
         private const string Extension = ".SEG";
 
         private static Dictionary<int, Segment> Segments { get; } = new Dictionary<int, Segment>();
 
         static TicTacZapController()
         {
-            _path = Directory.GetCurrentDirectory() + @"\Segments";
-            if (!Directory.Exists(_path)) Directory.CreateDirectory(_path);
+            Path = Directory.GetCurrentDirectory() + @"\Segments";
+            Directory.CreateDirectory(Path);
 
-            foreach (var filePath in Directory.GetFiles(_path))
+            foreach (var filePath in Directory.GetFiles(Path))
             {
                 if (!filePath.EndsWith(Extension, StringComparison.InvariantCultureIgnoreCase))
                 {
@@ -32,7 +31,7 @@ namespace StupifyConsoleApp.TicTacZap
                 }
 
                 
-                var substring = filePath.Substring(_path.Length + 1, filePath.Length - (Extension.Length + _path.Length+1));
+                var substring = filePath.Substring(Path.Length + 1, filePath.Length - (Extension.Length + Path.Length+1));
 
                 var segmentId = int.Parse(substring);
                 var fileText = File.ReadAllText(filePath);
@@ -59,6 +58,12 @@ namespace StupifyConsoleApp.TicTacZap
                 await ClientManager.LogAsync(e.ToString());
                 throw;
             }
+        }
+
+        public static string RenderSegment(int segmentId)
+        {
+            var segment = Segments[segmentId];
+            return segment.TextRender();
         }
 
         private static async Task UpdateBalances()
@@ -103,9 +108,16 @@ namespace StupifyConsoleApp.TicTacZap
             var segment = new Segment();
             Segments.Add(segmentId, segment);
 
-            var streamWriter = File.CreateText(_path + $@"\{segmentId+Extension}");
+            var streamWriter = File.CreateText(Path + $@"\{segmentId+Extension}");
             await streamWriter.WriteAsync(JsonConvert.SerializeObject(segment));
             streamWriter.Close();
+        }
+
+        public static void DeleteSegment(int segmentId)
+        {
+            Segments.Remove(segmentId);
+
+            File.Delete(Path+"\\"+segmentId+Extension);
         }
     }
 }
