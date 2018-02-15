@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using StupifyConsoleApp.Client;
 using StupifyConsoleApp.DataModels;
+using TicTacZap;
 using TicTacZap.Segment.Blocks;
 using Segment = TicTacZap.Segment.Segment;
 
@@ -15,27 +15,35 @@ namespace StupifyConsoleApp.TicTacZap
 {
     public static class TicTacZapController
     {
-        private static readonly string Path;
-        private const string Extension = ".SEG";
+        private static readonly string SegmentsPath;
+        private const string SegmentExtension = ".SEG";
+
+        private static readonly string InventoriesPath;
+        private const string InventoryExtension = ".INV";
 
         private static Dictionary<int, Segment> Segments { get; } = new Dictionary<int, Segment>();
 
-        private static Dictionary<int, int?> UserSelection { get; } = new Dictionary<int, int?>();
+        private static Dictionary<int, int?> UserSelection { get; } = new Dictionary<int, int?>(); 
+
+        public static ShopInventory Shop { get; } = new ShopInventory();
 
         static TicTacZapController()
         {
-            Path = Directory.GetCurrentDirectory() + @"\Segments";
-            Directory.CreateDirectory(Path);
+            SegmentsPath = Directory.GetCurrentDirectory() + @"\Segments";
+            InventoriesPath = Directory.GetCurrentDirectory() + @"\Inventories";
 
-            foreach (var filePath in Directory.GetFiles(Path))
+            Directory.CreateDirectory(SegmentsPath);
+            Directory.CreateDirectory(InventoriesPath);
+
+            foreach (var filePath in Directory.GetFiles(SegmentsPath))
             {
-                if (!filePath.EndsWith(Extension, StringComparison.InvariantCultureIgnoreCase))
+                if (!filePath.EndsWith(SegmentExtension, StringComparison.InvariantCultureIgnoreCase))
                 {
                     continue;
                 }
 
                 
-                var substring = filePath.Substring(Path.Length + 1, filePath.Length - (Extension.Length + Path.Length+1));
+                var substring = filePath.Substring(SegmentsPath.Length + 1, filePath.Length - (SegmentExtension.Length + SegmentsPath.Length+1));
 
                 var segmentId = int.Parse(substring);
                 var fileText = File.ReadAllText(filePath);
@@ -66,6 +74,31 @@ namespace StupifyConsoleApp.TicTacZap
             }
         }
 
+        public static async Task<string> RenderInventory(int userId)
+        {
+            var inventory = await GetInventory(userId);
+            return inventory.TextRender();
+        }
+
+        private static async Task<Inventory> GetInventory(int userId)
+        {
+            if (File.Exists(InventoriesPath + $@"\{userId+InventoryExtension}"))
+            {
+                var fileText = File.ReadAllText(InventoriesPath + $@"\{userId+InventoryExtension}");
+                return JsonConvert.DeserializeObject<Inventory>(fileText);
+            }
+
+            var inventory = new Inventory();
+            await SaveInventory(userId, inventory);
+            return inventory;
+        }
+
+        private static async Task SaveInventory(int userId, Inventory inventory)
+        {
+            var fileText = JsonConvert.SerializeObject(inventory);
+            await File.WriteAllTextAsync(InventoriesPath + $@"\{userId+InventoryExtension}", fileText);
+        }
+
         public static string RenderSegment(int segmentId)
         {
             var segment = Segments[segmentId];
@@ -83,16 +116,21 @@ namespace StupifyConsoleApp.TicTacZap
         {
             var fileText = SerializeSegment(segment);
 
-            var streamWriter = File.CreateText(Path + $@"\{segmentId + Extension}");
+            var streamWriter = File.CreateText(SegmentsPath + $@"\{segmentId + SegmentExtension}");
             await streamWriter.WriteAsync(fileText);
             streamWriter.Close();
+        }
+
+        public static async Task DeleteSegmentAsync(int segmentId)
+        {
+            await Task.Run(() => DeleteSegment(segmentId));
         }
 
         public static void DeleteSegment(int segmentId)
         {
             Segments.Remove(segmentId);
 
-            File.Delete(Path+"\\"+segmentId+Extension);
+            File.Delete(SegmentsPath+"\\"+segmentId+SegmentExtension);
         }
 
         public static async Task<bool> AddBlock(int segmentId, int x, int y, BlockType blockType)
@@ -103,7 +141,7 @@ namespace StupifyConsoleApp.TicTacZap
             return addBlockResult;
         }
 
-        public static async Task<bool> DeleteBlock(int segmentId, int x, int y)
+        public static async Task<BlockType?> DeleteBlockAsync(int segmentId, int x, int y)
         {
             var segment = Segments[segmentId];
             var deleteBlockResult = segment.DeleteBlock(x, y);
@@ -203,6 +241,22 @@ namespace StupifyConsoleApp.TicTacZap
             if (UserSelection.ContainsKey(userId)) return UserSelection[userId];
             UserSelection.Add(userId, null);
             return null;
+        }
+
+        public static async Task AddToInventoryAsync(BlockType blockType, int quantity, int userId)
+        {
+            var inventory = await GetInventory(userId);
+            inventory.AddBlocks(blockType, quantity);
+            await SaveInventory(userId, inventory);
+        }
+
+        public static async Task<bool> RemoveFromInventory(BlockType blockType, int quantity, int userId)
+        {
+            var inventory = await GetInventory(userId);
+            if (!inventory.RemoveBlocks(blockType, quantity)) return false;
+            await SaveInventory(userId, inventory);
+            return true;
+
         }
     }
 }
