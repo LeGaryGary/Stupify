@@ -21,6 +21,18 @@ namespace StupifyConsoleApp.Commands
             await ReplyAsync($"Your balance is: {balance}");
         }
 
+        [Command("motherlode")]
+        public async Task DebugMotherlode()
+        {
+            var user = await GetUserAsync();
+            var balance = user.Balance;
+
+            user.Balance += 1000000;
+
+            await Db.SaveChangesAsync();
+            await ReplyAsync($"You filthy cheater! Fine. I updated the balance. (balance: {user.Balance})");
+        }
+
         [Command("segment")]
         public async Task ShowSegment(int segmentId)
         {
@@ -54,11 +66,11 @@ namespace StupifyConsoleApp.Commands
                 return;
             }
 
-            await NewSegment(user);
+            int id = await NewSegment(user);
             user.Balance -= price;
             
             await Db.SaveChangesAsync();
-            await ReplyAsync("You have purchased a segment!");
+            await ReplyAsync($"You have purchased a segment! (id: {id})");
         }
 
         [Command("deletesegment")]
@@ -70,7 +82,7 @@ namespace StupifyConsoleApp.Commands
             }
 
             await DeleteSegment(segmentId);
-            await ReplyAsync("Its gone...");
+            await ReplyAsync("It's gone...");
         }
 
         [Command("addblock")]
@@ -128,7 +140,7 @@ namespace StupifyConsoleApp.Commands
             return await Db.Users.FirstAsync(u => u.DiscordUserId == (long) Context.User.Id);
         }
 
-        private async Task NewSegment(User user)
+        private async Task<int> NewSegment(User user)
         {
             var segment = new Segment
             {
@@ -139,6 +151,8 @@ namespace StupifyConsoleApp.Commands
             await Db.SaveChangesAsync();
             await TicTacZapController.AddSegment(segment.SegmentId);
             await UpdateDbSegmentOutput(segment.SegmentId);
+
+            return segment.SegmentId;
         }
 
         private async Task UpdateDbSegmentOutput(int segmentId)
