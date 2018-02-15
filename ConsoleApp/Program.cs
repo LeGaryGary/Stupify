@@ -1,24 +1,35 @@
 ﻿using System;
 using System.Threading.Tasks;
 using StupifyConsoleApp.Client;
+using StupifyConsoleApp.TicTacZap;
 
 namespace StupifyConsoleApp
 {
     internal class Program
     {
-        private static void Main(string[] args) 
-            => new Program().StartAsync().GetAwaiter().GetResult();
-
-        public async Task StartAsync()
+        private static void Main(string[] args)
         {
-            try
+            var startTask = ClientManager.Start();
+            var TickTacZapTask = TicTacZapController.Run();
+            while (!startTask.IsCompleted)
             {
-                await ClientManager.Start();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                Console.ReadLine();
+                switch (Console.ReadLine()?.ToLower())
+                {
+                    case "help":
+                        Console.WriteLine("Commands are: " +
+                                          "start " +
+                                          "stop");
+                        break;
+                    case "start":
+                        ClientManager.Client.StartAsync().GetAwaiter().GetResult();
+                        break;
+                    case "stop":
+                        ClientManager.Client.StopAsync().GetAwaiter().GetResult();
+                        break;
+                    default:
+                        Console.WriteLine("Unknown command, try help");
+                        break;
+                }
             }
         }
     }

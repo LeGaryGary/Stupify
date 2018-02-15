@@ -1,51 +1,95 @@
-﻿using System.Threading.Tasks;
+﻿using System.Diagnostics;
+using System.Threading.Tasks;
+
+using BotDataGraph.MessageAnalyser;
+
 using Discord.Commands;
 using Discord.WebSocket;
+
 using StupifyConsoleApp.DataModels;
 
 namespace StupifyConsoleApp.Client
 {
+    using BotDataGraph.MessageAnalyser.Models;
+
     internal static class MessageHandler
     {
+        private static readonly Neo4JMessageHandler Neo4JMessageHandler;
+
+        static MessageHandler()
+        {
+            if (Config.Neo4JMessageHandlerEnabled)
+            {
+                Neo4JMessageHandler = new Neo4JMessageHandler(Config.Neo4JUri, Config.Neo4JAuth);
+            }
+        }
 
         internal static async Task Handle(SocketMessage messageParam)
         {
-            // Don't process the command if it was a System Message
-            if (!(messageParam is SocketUserMessage message)) return;
-
-
-            // Create a number to track where the prefix ends and the command begins
-            var argPos = 0;
-
-            // Create a Command Context
-            var context = new SocketCommandContext(ClientManager.Client, message);
-
-            AddStats(context);
-
-            if (context.User.Id == ClientManager.Client.CurrentUser.Id) return;
-
-            // Determine if the message is a command, based on if it starts with '!' or a mention prefix
-            if (!(message.HasCharPrefix('!', ref argPos) || message.HasMentionPrefix(ClientManager.Client.CurrentUser, ref argPos))) return;
-            
-            //Check is client is ready
-            if (!ClientManager.IsReady)
+            if (!(messageParam is SocketUserMessage message) || messageParam.Author.IsBot)
             {
-                await context.Channel.SendMessageAsync("Bot is starting up!");
                 return;
             }
 
-            // Execute the command. (result does not indicate a return value, 
-            // rather an object stating if the command executed successfully)
-            var result = await ClientManager.Commands.ExecuteAsync(context, argPos);
-            if (!result.IsSuccess)
-                await context.Channel.SendMessageAsync("Internal error");
-        }
+            var argPos = 0;
+            var context = new SocketCommandContext(ClientManager.Client, message);
 
-        private static void AddStats(SocketCommandContext context)
-        {
+            var addMessageNodeTask = PassMessageToNeo4J(context);
+
             using (var db = new BotContext())
             {
-                db.GetServerUser((long) context.User.Id, (long) context.Guild.Id);
+                var serverUser = await db.GetServerUserAsync(context.User.Id, context.Guild.Id, true);
+                if (serverUser.Muted)
+                {
+                    await context.Message.DeleteAsync();
+                    await addMessageNodeTask;
+                    return;
+                }
+            }
+
+            if (!(message.HasStringPrefix(Config.CommandPrefix, ref argPos)
+                  || message.HasMentionPrefix(ClientManager.Client.CurrentUser, ref argPos)))
+            {
+                await addMessageNodeTask;
+                return;
+            }
+
+            var sw = new Stopwatch();
+            sw.Start();
+            var result = await ClientManager.Commands.ExecuteAsync(context, argPos);
+            if (!result.IsSuccess)
+            {
+                if (result.Error == CommandError.UnknownCommand)
+                {
+                    await context.Channel.SendMessageAsync("Command not found!");
+                }
+                else if (result.Error == CommandError.BadArgCount)
+                {
+                    await context.Channel.SendMessageAsync("That's not right!");
+                }
+                else
+                {
+                    await ClientManager.LogAsync(result.ErrorReason);
+                }
+            }
+            sw.Stop();
+            await ClientManager.LogAsync("This command took " + sw.ElapsedMilliseconds + "ms", true);
+            await addMessageNodeTask;
+        }
+
+        private static async Task PassMessageToNeo4J(SocketCommandContext context)
+        {
+            if (Config.Neo4JMessageHandlerEnabled)
+            {
+                var neo4JMessage = new Message
+                {
+                    Time = context.Message.CreatedAt.DateTime,
+                    UserId = context.User.Id,
+                    Content = context.Message.Content,
+                    ServerId = context.Guild.Id,
+                    ChannelId = context.Channel.Id
+                };
+                await Neo4JMessageHandler.Handle(neo4JMessage);
             }
         }
     }

@@ -11,9 +11,10 @@ using System;
 namespace StupifyConsoleApp.Migrations
 {
     [DbContext(typeof(BotContext))]
-    partial class BotContextModelSnapshot : ModelSnapshot
+    [Migration("20180115002719_muted-column")]
+    partial class mutedcolumn
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -36,20 +37,6 @@ namespace StupifyConsoleApp.Migrations
                     b.ToTable("Quotes");
                 });
 
-            modelBuilder.Entity("StupifyConsoleApp.DataModels.Segment", b =>
-                {
-                    b.Property<int>("SegmentId")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<decimal>("OutputPerTick");
-
-                    b.Property<int>("UserId");
-
-                    b.HasKey("SegmentId");
-
-                    b.ToTable("Segments");
-                });
-
             modelBuilder.Entity("StupifyConsoleApp.DataModels.Server", b =>
                 {
                     b.Property<int>("ServerId")
@@ -57,57 +44,9 @@ namespace StupifyConsoleApp.Migrations
 
                     b.Property<long>("DiscordGuildId");
 
-                    b.Property<bool>("StoryInProgress");
-
                     b.HasKey("ServerId");
 
                     b.ToTable("Servers");
-                });
-
-            modelBuilder.Entity("StupifyConsoleApp.DataModels.ServerStory", b =>
-                {
-                    b.Property<int>("ServerStoryId")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<DateTime>("EndTime");
-
-                    b.Property<int?>("ServerId");
-
-                    b.Property<DateTime>("StartTime");
-
-                    b.Property<int?>("StoryInitiatedByServerUserId");
-
-                    b.HasKey("ServerStoryId");
-
-                    b.HasIndex("ServerId");
-
-                    b.HasIndex("StoryInitiatedByServerUserId");
-
-                    b.ToTable("ServerStories");
-                });
-
-            modelBuilder.Entity("StupifyConsoleApp.DataModels.ServerStoryPart", b =>
-                {
-                    b.Property<int>("ServerStoryPartId")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<string>("Part");
-
-                    b.Property<int?>("PartAuthorServerUserId");
-
-                    b.Property<int>("PartNumber");
-
-                    b.Property<int?>("ServerStoryId");
-
-                    b.Property<DateTime>("TimeOfAddition");
-
-                    b.HasKey("ServerStoryPartId");
-
-                    b.HasIndex("PartAuthorServerUserId");
-
-                    b.HasIndex("ServerStoryId");
-
-                    b.ToTable("ServerStoryParts");
                 });
 
             modelBuilder.Entity("StupifyConsoleApp.DataModels.ServerUser", b =>
@@ -135,8 +74,6 @@ namespace StupifyConsoleApp.Migrations
                     b.Property<int>("UserId")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<decimal>("Balance");
-
                     b.Property<long>("DiscordUserId");
 
                     b.HasKey("UserId");
@@ -150,28 +87,6 @@ namespace StupifyConsoleApp.Migrations
                         .WithMany("Quotes")
                         .HasForeignKey("ServerUserId")
                         .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("StupifyConsoleApp.DataModels.ServerStory", b =>
-                {
-                    b.HasOne("StupifyConsoleApp.DataModels.Server", "Server")
-                        .WithMany("ServerStories")
-                        .HasForeignKey("ServerId");
-
-                    b.HasOne("StupifyConsoleApp.DataModels.ServerUser", "StoryInitiatedBy")
-                        .WithMany()
-                        .HasForeignKey("StoryInitiatedByServerUserId");
-                });
-
-            modelBuilder.Entity("StupifyConsoleApp.DataModels.ServerStoryPart", b =>
-                {
-                    b.HasOne("StupifyConsoleApp.DataModels.ServerUser", "PartAuthor")
-                        .WithMany()
-                        .HasForeignKey("PartAuthorServerUserId");
-
-                    b.HasOne("StupifyConsoleApp.DataModels.ServerStory", "ServerStory")
-                        .WithMany("ServerStoryParts")
-                        .HasForeignKey("ServerStoryId");
                 });
 
             modelBuilder.Entity("StupifyConsoleApp.DataModels.ServerUser", b =>

@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>Stupify</id>
+    <version>0.1.0</version>
+    <authors>Jordan</authors>
+    <owners>Jordan</owners>
+    <projectUrl>https://github.com/Jordank321/Stupify</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>A discord bot</description>
+    <releaseNotes></releaseNotes>
+    <copyright>Copyright 2018</copyright>
+    <tags></tags>
+  </metadata>
+</package>

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord.Commands;
@@ -12,52 +11,41 @@ namespace StupifyConsoleApp.Commands
     public class QuoteModule : ModuleBase<SocketCommandContext>
     {
         [Command("addquote")]
-        public async Task AddQuote([Remainder] string quoteBody)
+        public async Task AddQuoteAsync([Remainder] string quoteBody)
         {
             using (var db = new BotContext())
             {
-                db.Quotes.Add(new Quote()
+                await db.Quotes.AddAsync(new Quote
                 {
                     QuoteBody = quoteBody,
-                    ServerUser = db.GetServerUser((long) Context.User.Id, (long) Context.Guild.Id)
+                    ServerUser = await db.GetServerUserAsync((long) Context.User.Id, (long) Context.Guild.Id)
                 });
-                try
-                {
-                    db.SaveChanges();
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                }
-
-                await ReplyAsync("Done!");
+                await db.SaveChangesAsync();
+                var reply = ReplyAsync("Done!");
+                var log = ClientManager.LogAsync("The following quote has been added!: " + quoteBody);
+                await Task.WhenAll(reply, log);
             }
         }
-        
-        [Command("randomquote")]
-        public async Task RandomQuote([Remainder] string quoteBody = null)
-        {
-            var sw = new Stopwatch();
-            sw.Start();
 
+        [Command("randomquote")]
+        public async Task RandomQuoteAsync([Remainder] string request = null)
+        {
             using (var db = new BotContext())
             {
-                var quote = db
+                var quote = await db
                     .Quotes
                     .Include(q => q.ServerUser.User)
                     .Include(q => q.ServerUser.Server)
+                    .Where(q => (ulong) q.ServerUser.Server.DiscordGuildId == Context.Guild.Id)
                     .OrderBy(r => Guid.NewGuid())
-                    .FirstOrDefault();
+                    .FirstOrDefaultAsync();
                 if (quote == null)
                 {
                     await ReplyAsync("No quotes were found, try !addquote <quote>");
                     return;
                 }
-
-                var message = quote.QuoteBody + " - " + db.UsernameFromServerUser(quote.ServerUser);
-                sw.Stop();
+                var message = quote.QuoteBody + " - " + ClientManager.Client.UsernameFromServerUser(quote.ServerUser);
                 await ReplyAsync(message);
-                if (Config.Debug) await ReplyAsync("Debug: ms to execute " + sw.ElapsedMilliseconds);
             }
         }
     }

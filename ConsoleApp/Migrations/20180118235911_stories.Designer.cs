@@ -11,9 +11,10 @@ using System;
 namespace StupifyConsoleApp.Migrations
 {
     [DbContext(typeof(BotContext))]
-    partial class BotContextModelSnapshot : ModelSnapshot
+    [Migration("20180118235911_stories")]
+    partial class stories
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -34,20 +35,6 @@ namespace StupifyConsoleApp.Migrations
                     b.HasIndex("ServerUserId");
 
                     b.ToTable("Quotes");
-                });
-
-            modelBuilder.Entity("StupifyConsoleApp.DataModels.Segment", b =>
-                {
-                    b.Property<int>("SegmentId")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<decimal>("OutputPerTick");
-
-                    b.Property<int>("UserId");
-
-                    b.HasKey("SegmentId");
-
-                    b.ToTable("Segments");
                 });
 
             modelBuilder.Entity("StupifyConsoleApp.DataModels.Server", b =>
@@ -134,8 +121,6 @@ namespace StupifyConsoleApp.Migrations
                 {
                     b.Property<int>("UserId")
                         .ValueGeneratedOnAdd();
-
-                    b.Property<decimal>("Balance");
 
                     b.Property<long>("DiscordUserId");
 

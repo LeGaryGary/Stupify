@@ -7,6 +7,7 @@ namespace StupifyConsoleApp.DataModels
         public int ServerUserId { get; set; }
         public int UserId { get; set; }
         public int ServerId { get; set; }
+        public bool Muted { get; set; }
 
         public virtual User User { get; set; }
         public virtual Server Server { get; set; }

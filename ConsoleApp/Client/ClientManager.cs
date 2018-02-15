@@ -7,28 +7,28 @@ using Discord.WebSocket;
 
 namespace StupifyConsoleApp.Client
 {
-    internal static class ClientManager
+    public static class ClientManager
     {
-        public static DiscordSocketClient Client { get; set; }
-        public static CommandService Commands { get; set; }
-
-        public static bool IsReady { get; private set; }
-
         static ClientManager()
         {
-            Client = new DiscordSocketClient(new DiscordSocketConfig()
-            {
-                
-                AlwaysDownloadUsers = true,
-            });
+            Client = new DiscordSocketClient(new DiscordSocketConfig
+                                                 {
+                                                     AlwaysDownloadUsers = true
+                                                 });
             Commands = new CommandService();
+            Logger = new Logger(Config.LoggingDirectory);
 
             Commands.AddModulesAsync(Assembly.GetEntryAssembly()).GetAwaiter().GetResult();
 
-            Client.Log += Log;
+            Client.Log += LogAsync;
             Client.MessageReceived += MessageHandler.Handle;
-            Client.Ready += Ready;
         }
+
+        public static DiscordSocketClient Client { get; }
+
+        public static CommandService Commands { get; }
+
+        private static Logger Logger { get; }
 
         public static async Task Start()
         {
@@ -37,16 +37,14 @@ namespace StupifyConsoleApp.Client
             await Task.Delay(-1);
         }
 
-        private static Task Log(LogMessage message)
+        public static async Task LogAsync(string message, bool requireDebug = false)
         {
-            Console.WriteLine(message.ToString());
-            return Task.CompletedTask;
+            await Logger.Log(DateTime.Now.ToString("T")+" "+message, requireDebug);
         }
 
-        private static Task Ready()
+        private static async Task LogAsync(LogMessage message)
         {
-            IsReady = true;
-            return Task.CompletedTask;
+            await Logger.Log(message.ToString(), false);
         }
     }
 }
