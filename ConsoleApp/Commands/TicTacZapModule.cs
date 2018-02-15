@@ -97,7 +97,7 @@ namespace StupifyConsoleApp.Commands
         [Command("addblock")]
         public async Task AddBlockCommand(int segmentId, int x, int y, string type)
         {
-            await TicTacZapController.AddBlock(segmentId, x, y, (BlockType)Enum.Parse(typeof(BlockType), type));
+            await TicTacZapController.AddBlock(segmentId, x - 1, y - 1, (BlockType)Enum.Parse(typeof(BlockType), type));
             await UpdateDbSegmentOutput(segmentId);
             await ShowSegment(segmentId);
         }
