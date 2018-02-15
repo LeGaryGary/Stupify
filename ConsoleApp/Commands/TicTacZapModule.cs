@@ -12,6 +12,8 @@ namespace StupifyConsoleApp.Commands
 {
     public class TicTacZapModule : ModuleBase<SocketCommandContext>
     {
+        private string SegmentOwnershipProblemString = "You don't own a segment with this Id!";
+        private string selectSegmentMessage = $"Please select a segment with {Config.CommandPrefix} segment [segmentId]";
         private BotContext Db { get; } = new BotContext();
 
         [Command("balance")]
@@ -36,7 +38,13 @@ namespace StupifyConsoleApp.Commands
         [Command("segment")]
         public async Task ShowSegment(int segmentId)
         {
-            await ReplyAsync(TicTacZapController.RenderSegment(segmentId));
+            if (await UserHasSegmentAsync(segmentId))
+            {
+                TicTacZapController.SetUserSegmentSelection((await GetUserAsync()).UserId, segmentId);
+                await ReplyAsync("```"+TicTacZapController.RenderSegment(segmentId)+"```");
+                return;
+            }
+            await ReplyAsync(SegmentOwnershipProblemString);
         }
 
         [Command("segments")]
@@ -78,7 +86,8 @@ namespace StupifyConsoleApp.Commands
         {
             if (!await UserHasSegmentAsync(segmentId))
             {
-                await ReplyAsync("You don't own a segment with this Id!");
+                await ReplyAsync(SegmentOwnershipProblemString);
+                return;
             }
 
             await DeleteSegment(segmentId);
@@ -90,6 +99,33 @@ namespace StupifyConsoleApp.Commands
         {
             await TicTacZapController.AddBlock(segmentId, x, y, (BlockType)Enum.Parse(typeof(BlockType), type));
             await UpdateDbSegmentOutput(segmentId);
+            await ShowSegment(segmentId);
+        }
+
+        [Command("addblock")]
+        public async Task AddBlockCommand(int x, int y, string type)
+        {
+            var selectionSegmentId = TicTacZapController.GetUserSelection((await GetUserAsync()).UserId);
+            if (selectionSegmentId != null)
+            {
+                await AddBlockCommand((int)selectionSegmentId, x, y, type);
+                return;
+            }
+
+            await ReplyAsync(selectSegmentMessage);
+        }
+
+        [Command("removeblock")]
+        public async Task RemoveBlockCommand(int segmentId, int x, int y)
+        {
+            if (await UserHasSegmentAsync(segmentId))
+            {
+                await TicTacZapController.DeleteBlock(segmentId, x, y);
+                await ShowSegment(segmentId);
+                return;
+            }
+
+            await ReplyAsync(SegmentOwnershipProblemString);
         }
 
         private async Task DeleteSegment(int segmentId)

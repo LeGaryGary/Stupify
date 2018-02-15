@@ -13,7 +13,7 @@ namespace TicTacZap.Segment
 
         public IBlock[,] Blocks { get; } = new IBlock[9,9];
 
-        public decimal OutputPerTick { get; private set; }
+        public decimal OutputPerTick { get; set; }
 
         public Segment()
         {
@@ -31,6 +31,14 @@ namespace TicTacZap.Segment
             if (Blocks[x, y] != null) return false;
 
             Blocks[x, y] = block;
+            UpdateOutputs();
+            return true;
+        }
+
+        public bool DeleteBlock(int x, int y)
+        {
+            if (Blocks[x, y] is SegmentControllerBlock) return false;
+            Blocks[x, y] = null;
             UpdateOutputs();
             return true;
         }
@@ -170,7 +178,7 @@ namespace TicTacZap.Segment
             }
         }
 
-        private static IBlock NewBlock(BlockType blockType)
+        public static IBlock NewBlock(BlockType blockType)
         {
             IBlock block;
 
@@ -192,17 +200,17 @@ namespace TicTacZap.Segment
         public string TextRender()
         {
             var stringBuilder = new StringBuilder();
-            for (var y = 0; y < Blocks.GetLength(0); y++)
+            for (var y = Blocks.GetLength(0)-1; y >= 0; y--)
             {
                 for (var x = 0; x < Blocks.GetLength(1); x++)
                 {
                     switch (Blocks[x,y]?.Type)
                     {
                         case BlockType.Controller:
-                            stringBuilder.Append(" C");
+                            stringBuilder.Append(" C ");
                             break;
                         case BlockType.Basic:
-                            stringBuilder.Append(" B");
+                            stringBuilder.Append(" B ");
                             break;
                         default:
                             stringBuilder.Append(" ~ ");
