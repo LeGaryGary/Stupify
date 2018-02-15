@@ -6,6 +6,7 @@ using Discord.Commands;
 using Microsoft.EntityFrameworkCore;
 using StupifyConsoleApp.DataModels;
 using StupifyConsoleApp.TicTacZap;
+using TicTacZap.Segment.Blocks;
 
 namespace StupifyConsoleApp.Commands
 {
@@ -72,6 +73,13 @@ namespace StupifyConsoleApp.Commands
             await ReplyAsync("Its gone...");
         }
 
+        [Command("addblock")]
+        public async Task AddBlockCommand(int segmentId, int x, int y, string type)
+        {
+            await TicTacZapController.AddBlock(segmentId, x, y, (BlockType)Enum.Parse(typeof(BlockType), type));
+            await UpdateDbSegmentOutput(segmentId);
+        }
+
         private async Task DeleteSegment(int segmentId)
         {
             var dbSegment = Db.Segments.First(s => s.SegmentId == segmentId);
@@ -124,13 +132,20 @@ namespace StupifyConsoleApp.Commands
         {
             var segment = new Segment
             {
-                OutputPerTick = 1,
+                OutputPerTick = 0,
                 UserId = user.UserId
             };
             await Db.Segments.AddAsync(segment);
             await Db.SaveChangesAsync();
             await TicTacZapController.AddSegment(segment.SegmentId);
-            
+            await UpdateDbSegmentOutput(segment.SegmentId);
+        }
+
+        private async Task UpdateDbSegmentOutput(int segmentId)
+        {
+            var segment = await Db.Segments.FirstAsync(s => s.SegmentId == segmentId);
+            segment.OutputPerTick = TicTacZapController.GetSegmentOutput(segmentId);
+            await Db.SaveChangesAsync();
         }
 
         private static decimal SegmentPrice(int segmentCount)

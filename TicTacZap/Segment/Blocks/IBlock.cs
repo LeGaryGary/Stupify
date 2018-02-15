@@ -7,6 +7,6 @@ namespace TicTacZap.Segment.Blocks
         BlockType Type { get; }
         decimal OutputPerTick { get; }
 
-        decimal UpdateOutput();
+        decimal UpdateOutput(int sumOfDistancesInDirections, int connectedDiagonals, int layer);
     }
 }

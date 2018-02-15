@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace TicTacZap.Segment.Blocks
 {
@@ -6,15 +7,11 @@ namespace TicTacZap.Segment.Blocks
     {
         public BlockType Type { get; protected set; }
         public decimal OutputPerTick { get; protected set; } = 1;
-        public decimal UpdateOutput()
+        public decimal UpdateOutput(int sumOfDistancesInDirections, int connectedDiagonals, int layer)
         {
-            OutputPerTick = 1;
-            //foreach (var inputBlock in InputBlocks)
-            //{
-            //    OutputPerTick += inputBlock.OutputPerTick * inputBlock.OutputDistance;
-            //}
-
-            return OutputPerTick;
+            var output = layer * layer * Math.Log(sumOfDistancesInDirections,2) * connectedDiagonals;
+            OutputPerTick = Convert.ToDecimal(output);
+            return Convert.ToDecimal(output);
         }
     }
 }

@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using StupifyConsoleApp.Client;
 using StupifyConsoleApp.DataModels;
+using TicTacZap.Segment.Blocks;
 using Segment = TicTacZap.Segment.Segment;
 
 namespace StupifyConsoleApp.TicTacZap
@@ -36,7 +37,9 @@ namespace StupifyConsoleApp.TicTacZap
                 var segmentId = int.Parse(substring);
                 var fileText = File.ReadAllText(filePath);
 
-                Segments.Add(segmentId, JsonConvert.DeserializeObject<Segment>(fileText));
+                var deserializedSegment = DeserializeSegment(fileText);
+
+                Segments.Add(segmentId, deserializedSegment);
             }
         }
 
@@ -64,6 +67,40 @@ namespace StupifyConsoleApp.TicTacZap
         {
             var segment = Segments[segmentId];
             return segment.TextRender();
+        }
+
+        public static async Task AddSegment(int segmentId)
+        {
+            var segment = new Segment();
+            Segments.Add(segmentId, segment);
+            await SaveSegment(segmentId, segment);
+        }
+
+        private static async Task SaveSegment(int segmentId, Segment segment)
+        {
+            var streamWriter = File.CreateText(Path + $@"\{segmentId + Extension}");
+            var indented = Formatting.Indented;
+            var settings = new JsonSerializerSettings()
+            {
+                TypeNameHandling = TypeNameHandling.All
+            };
+            await streamWriter.WriteAsync(JsonConvert.SerializeObject(segment, indented, settings));
+            streamWriter.Close();
+        }
+
+        public static void DeleteSegment(int segmentId)
+        {
+            Segments.Remove(segmentId);
+
+            File.Delete(Path+"\\"+segmentId+Extension);
+        }
+
+        public static async Task<bool> AddBlock(int segmentId, int x, int y, BlockType blockType)
+        {
+            var segment = Segments[segmentId];
+            var addBlockResult = segment.AddBlock(x, y, blockType);
+            await SaveSegment(segmentId, segment);
+            return addBlockResult;
         }
 
         private static async Task UpdateBalances()
@@ -103,21 +140,20 @@ namespace StupifyConsoleApp.TicTacZap
             }
         }
 
-        public static async Task AddSegment(int segmentId)
+        public static decimal GetSegmentOutput(int segmentId)
         {
-            var segment = new Segment();
-            Segments.Add(segmentId, segment);
-
-            var streamWriter = File.CreateText(Path + $@"\{segmentId+Extension}");
-            await streamWriter.WriteAsync(JsonConvert.SerializeObject(segment));
-            streamWriter.Close();
+            return Segments[segmentId].OutputPerTick;
         }
 
-        public static void DeleteSegment(int segmentId)
+        private static Segment DeserializeSegment(string fileText)
         {
-            Segments.Remove(segmentId);
-
-            File.Delete(Path+"\\"+segmentId+Extension);
+            var indented = Formatting.Indented;
+            var settings = new JsonSerializerSettings()
+            {
+                TypeNameHandling = TypeNameHandling.All
+            };
+            var deserialized = JsonConvert.DeserializeObject<Segment>(fileText, settings);
+            return deserialized;
         }
     }
 }

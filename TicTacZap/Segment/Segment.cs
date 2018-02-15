@@ -42,8 +42,14 @@ namespace TicTacZap.Segment
             {
                 for (var x = 0; x < Blocks.GetLength(0); x++)
                 {
+                    if (Blocks[x,y] == null) continue;
+
                     var block = Blocks[x, y];
-                    block.UpdateOutput();
+
+                    block.UpdateOutput(
+                        DistanceSumInDirections(x, y),
+                        ConnectedDiagonals(x, y),
+                        Layer(x, y));
                     output += block.OutputPerTick;
                 }
             }
@@ -51,34 +57,69 @@ namespace TicTacZap.Segment
             OutputPerTick = output;
         }
 
-        private static IBlock NewBlock(BlockType blockType)
+        private int Layer(int x, int y)
         {
-            IBlock block;
-
-            switch (blockType)
-            {
-                case BlockType.Controller:
-                    block = new SegmentControllerBlock();
-                    break;
-                case BlockType.Basic:
-                    block = new BasicSegmentBlock();
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(blockType), blockType, null);
-            }
-
-            return block;
+            return Math.Max(Math.Abs(x - 4), Math.Abs(y - 4));
         }
 
-        private int BlockOutputDistance(int x, int y)
+        private int ConnectedDiagonals(int x, int y)
         {
-            return Math.Abs(x - _lastX) + Math.Abs(y - _lastY);
+            var diagonals = 0;
+            try
+            {
+                diagonals = Blocks[x - 1, y - 1] == null ? diagonals:diagonals+1;
+            }
+            catch (Exception e)
+            {
+                if (!(e is IndexOutOfRangeException)) throw;
+            }
+            try
+            {
+                diagonals = Blocks[x + 1, y - 1] == null ? diagonals:diagonals+1;
+            }
+            catch (Exception e)
+            {
+                if (!(e is IndexOutOfRangeException)) throw;
+            }
+            try
+            {
+                diagonals = Blocks[x + 1, y + 1] == null ? diagonals:diagonals+1;
+            }
+            catch (Exception e)
+            {
+                if (!(e is IndexOutOfRangeException)) throw;
+            }
+            try
+            {
+                diagonals = Blocks[x - 1, y + 1] == null ? diagonals:diagonals+1;
+            }
+            catch (Exception e)
+            {
+                if (!(e is IndexOutOfRangeException)) throw;
+            }
+
+            return diagonals;
+        }
+
+        private int DistanceSumInDirections(int x, int y)
+        {
+            var sum = 0;
+            sum += DistanceToBlock(x, y, Direction.Up);
+            sum += DistanceToBlock(x, y, Direction.Down);
+            sum += DistanceToBlock(x, y, Direction.Left);
+            sum += DistanceToBlock(x, y, Direction.Right);
+            return sum;
         }
 
         private int DistanceToBlock(int x, int y, Direction direction)
         {
             GetBlockInDirection(x, y, direction);
             return BlockOutputDistance(x, y);
+        }
+
+        private int BlockOutputDistance(int x, int y)
+        {
+            return Math.Abs(x - _lastX) + Math.Abs(y - _lastY);
         }
 
         private IBlock GetBlockInDirection(int x, int y, Direction direction)
@@ -127,6 +168,25 @@ namespace TicTacZap.Segment
                 }
                 throw;
             }
+        }
+
+        private static IBlock NewBlock(BlockType blockType)
+        {
+            IBlock block;
+
+            switch (blockType)
+            {
+                case BlockType.Controller:
+                    block = new SegmentControllerBlock();
+                    break;
+                case BlockType.Basic:
+                    block = new BasicSegmentBlock();
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(blockType), blockType, null);
+            }
+
+            return block;
         }
 
         public string TextRender()
