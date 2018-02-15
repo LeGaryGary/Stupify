@@ -13,7 +13,7 @@ namespace TicTacZap.Segment
 
         public IBlock[,] Blocks { get; } = new IBlock[9,9];
 
-        public decimal OutputPerTick { get; private set; }
+        public decimal OutputPerTick { get; set; }
 
         public Segment()
         {
@@ -170,7 +170,7 @@ namespace TicTacZap.Segment
             }
         }
 
-        private static IBlock NewBlock(BlockType blockType)
+        public static IBlock NewBlock(BlockType blockType)
         {
             IBlock block;
 

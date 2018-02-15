@@ -66,7 +66,7 @@ namespace StupifyConsoleApp.TicTacZap
         public static string RenderSegment(int segmentId)
         {
             var segment = Segments[segmentId];
-            return segment.TextRender();
+            return segment.TextRender() + Environment.NewLine + $"Output per tick: {segment.OutputPerTick}";
         }
 
         public static async Task AddSegment(int segmentId)
@@ -78,13 +78,10 @@ namespace StupifyConsoleApp.TicTacZap
 
         private static async Task SaveSegment(int segmentId, Segment segment)
         {
+            var fileText = SerializeSegment(segment);
+
             var streamWriter = File.CreateText(Path + $@"\{segmentId + Extension}");
-            var indented = Formatting.Indented;
-            var settings = new JsonSerializerSettings()
-            {
-                TypeNameHandling = TypeNameHandling.All
-            };
-            await streamWriter.WriteAsync(JsonConvert.SerializeObject(segment, indented, settings));
+            await streamWriter.WriteAsync(fileText);
             streamWriter.Close();
         }
 
@@ -145,15 +142,40 @@ namespace StupifyConsoleApp.TicTacZap
             return Segments[segmentId].OutputPerTick;
         }
 
+        private static string SerializeSegment(Segment segment)
+        {
+            var serSeg = new SerializableSegment();
+
+            var blocks = segment.Blocks;
+            for (var y = 0; y < blocks.GetLength(1); y++)
+            {
+                for (var x = 0; x < blocks.GetLength(0); x++)
+                {
+                    var block = blocks[x,y];
+                    if(block == null) continue;
+
+                    serSeg.BlocksList.Add(new Tuple<int, int, BlockType>(x, y, block.Type));
+
+                }
+            }
+
+            serSeg.OutputPerTick = segment.OutputPerTick;
+            return JsonConvert.SerializeObject(serSeg);
+        }
+
         private static Segment DeserializeSegment(string fileText)
         {
-            var indented = Formatting.Indented;
-            var settings = new JsonSerializerSettings()
+            var deserialized = JsonConvert.DeserializeObject<SerializableSegment>(fileText);
+            var segment = new Segment();
+            var blocks = segment.Blocks;
+            foreach (var tuple in deserialized.BlocksList)
             {
-                TypeNameHandling = TypeNameHandling.All
-            };
-            var deserialized = JsonConvert.DeserializeObject<Segment>(fileText, settings);
-            return deserialized;
+                blocks[tuple.Item1, tuple.Item2] = Segment.NewBlock(tuple.Item3);
+            }
+
+            blocks[4, 4] = segment.Controller;
+            segment.OutputPerTick = deserialized.OutputPerTick;
+            return segment;
         }
     }
 }
