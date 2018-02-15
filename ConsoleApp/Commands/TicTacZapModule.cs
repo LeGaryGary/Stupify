@@ -125,7 +125,7 @@ namespace StupifyConsoleApp.Commands
             var blockType = Enum.Parse<BlockType>(type);
             if (await TicTacZapController.RemoveFromInventory(blockType, 1, (await GetUserAsync()).UserId))
             {
-                await TicTacZapController.AddBlock(segmentId, x, y, blockType);
+                await TicTacZapController.AddBlock(segmentId, x-1, y-1, blockType);
                 await UpdateDbSegmentOutput(segmentId);
                 await ShowSegment(segmentId);
                 return;
@@ -152,7 +152,7 @@ namespace StupifyConsoleApp.Commands
         {
             if (await UserHasSegmentAsync(segmentId))
             {
-                var blockType = await TicTacZapController.DeleteBlockAsync(segmentId, x, y);
+                var blockType = await TicTacZapController.DeleteBlockAsync(segmentId, x-1, y-1);
                 if (blockType != null) await TicTacZapController.AddToInventoryAsync(blockType.Value, 1, (await GetUserAsync()).UserId);
                 await ShowSegment(segmentId);
                 return;
