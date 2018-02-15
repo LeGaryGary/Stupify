@@ -120,7 +120,7 @@ namespace StupifyConsoleApp.Commands
         {
             if (await UserHasSegmentAsync(segmentId))
             {
-                await TicTacZapController.DeleteBlock(segmentId, x, y);
+                await TicTacZapController.DeleteBlock(segmentId, x - 1, y - 1);
                 await ShowSegment(segmentId);
                 return;
             }
