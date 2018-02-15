@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
@@ -100,6 +101,14 @@ namespace StupifyConsoleApp.TicTacZap
             var addBlockResult = segment.AddBlock(x, y, blockType);
             await SaveSegment(segmentId, segment);
             return addBlockResult;
+        }
+
+        public static async Task<bool> DeleteBlock(int segmentId, int x, int y)
+        {
+            var segment = Segments[segmentId];
+            var deleteBlockResult = segment.DeleteBlock(x, y);
+            await SaveSegment(segmentId, segment);
+            return deleteBlockResult;
         }
 
         private static async Task UpdateBalances()
