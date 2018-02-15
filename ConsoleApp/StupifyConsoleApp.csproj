@@ -26,12 +26,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Neo4j.Driver">
-      <HintPath>..\..\..\Users\Jordan\.nuget\packages\neo4j.driver\1.5.2\lib\netstandard1.3\Neo4j.Driver.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
-  <ItemGroup>
     <None Update="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

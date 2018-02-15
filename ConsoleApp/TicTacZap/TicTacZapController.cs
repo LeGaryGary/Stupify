@@ -19,6 +19,8 @@ namespace StupifyConsoleApp.TicTacZap
 
         private static Dictionary<int, Segment> Segments { get; } = new Dictionary<int, Segment>();
 
+        private static Dictionary<int, int?> UserSelection { get; } = new Dictionary<int, int?>();
+
         static TicTacZapController()
         {
             Path = Directory.GetCurrentDirectory() + @"\Segments";
@@ -176,6 +178,22 @@ namespace StupifyConsoleApp.TicTacZap
             blocks[4, 4] = segment.Controller;
             segment.OutputPerTick = deserialized.OutputPerTick;
             return segment;
+        }
+
+        public static bool SetUserSegmentSelection(int userId, int segmentId)
+        {
+            if (!UserSelection.ContainsKey(userId)) UserSelection.Add(userId, null);
+            if (!Segments.ContainsKey(segmentId)) return false;
+            UserSelection[userId] = segmentId;
+            return true;
+
+        }
+
+        public static int? GetUserSelection(int userId)
+        {
+            if (UserSelection.ContainsKey(userId)) return UserSelection[userId];
+            UserSelection.Add(userId, null);
+            return null;
         }
     }
 }

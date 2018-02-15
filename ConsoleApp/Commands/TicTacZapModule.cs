@@ -24,7 +24,13 @@ namespace StupifyConsoleApp.Commands
         [Command("segment")]
         public async Task ShowSegment(int segmentId)
         {
-            await ReplyAsync(TicTacZapController.RenderSegment(segmentId));
+            if (await UserHasSegmentAsync(segmentId))
+            {
+                TicTacZapController.SetUserSegmentSelection((await GetUserAsync()).UserId, segmentId);
+                await ReplyAsync("```"+TicTacZapController.RenderSegment(segmentId)+"```");
+                return;
+            }
+            await ReplyAsync("You don't own a segment with this Id!");
         }
 
         [Command("segments")]
@@ -67,6 +73,7 @@ namespace StupifyConsoleApp.Commands
             if (!await UserHasSegmentAsync(segmentId))
             {
                 await ReplyAsync("You don't own a segment with this Id!");
+                return;
             }
 
             await DeleteSegment(segmentId);
@@ -78,6 +85,16 @@ namespace StupifyConsoleApp.Commands
         {
             await TicTacZapController.AddBlock(segmentId, x, y, (BlockType)Enum.Parse(typeof(BlockType), type));
             await UpdateDbSegmentOutput(segmentId);
+        }
+
+        [Command("addblock")]
+        public async Task AddBlockCommand(int x, int y, string type)
+        {
+            var selectionSegmentId = TicTacZapController.GetUserSelection((await GetUserAsync()).UserId);
+            if (selectionSegmentId != null)
+            {
+                await AddBlockCommand((int)selectionSegmentId, x, y, type);
+            }
         }
 
         private async Task DeleteSegment(int segmentId)

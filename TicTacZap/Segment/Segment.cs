@@ -199,10 +199,10 @@ namespace TicTacZap.Segment
                     switch (Blocks[x,y]?.Type)
                     {
                         case BlockType.Controller:
-                            stringBuilder.Append(" C");
+                            stringBuilder.Append(" C ");
                             break;
                         case BlockType.Basic:
-                            stringBuilder.Append(" B");
+                            stringBuilder.Append(" B ");
                             break;
                         default:
                             stringBuilder.Append(" ~ ");
