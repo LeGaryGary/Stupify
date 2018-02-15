@@ -12,8 +12,10 @@ namespace StupifyConsoleApp.Commands
 {
     public class TicTacZapModule : ModuleBase<SocketCommandContext>
     {
-        private string SegmentOwnershipProblemString = "You don't own a segment with this Id!";
-        private string selectSegmentMessage = $"Please select a segment with {Config.CommandPrefix} segment [segmentId]";
+        private const string SegmentOwnershipProblemString = "You don't own a segment with this Id!";
+        private readonly string _selectSegmentMessage = $"Please select a segment with {Config.CommandPrefix}segment [segmentId]";
+        private readonly string _buyItemAdvisory = $"Please buy the item you are trying to use! `{Config.CommandPrefix}shop` and `{Config.CommandPrefix}buy [type] [quantity]`";
+
         private BotContext Db { get; } = new BotContext();
 
         [Command("balance")]
@@ -23,6 +25,7 @@ namespace StupifyConsoleApp.Commands
             await ReplyAsync($"Your balance is: {balance}");
         }
 
+<<<<<<< HEAD
         // debug
         [Command("motherlode")]
         public async Task DebugMotherlode()
@@ -58,6 +61,41 @@ namespace StupifyConsoleApp.Commands
             {
                 await ReplyAsync(selectSegmentMessage);
             }
+=======
+        [Command("inventory")]
+        public async Task ShowInventory()
+        {
+            var userId = (await GetUserAsync()).UserId;
+            var message = await TicTacZapController.RenderInventory(userId);
+            if (message == string.Empty)
+            {
+                await ReplyAsync("Your inventory is empty");
+                return;
+            }
+            await ReplyAsync(message);
+        }
+
+        [Command("shop")]
+        public async Task ShowShopInventory()
+        {
+            var message = TicTacZapController.Shop.TextRender();
+            await ReplyAsync(message);
+        }
+
+        [Command("buy")]
+        public async Task BuyFromShop(string blockString, int quantity)
+        {
+            var block = Enum.Parse<BlockType>(blockString);
+            var total = TicTacZapController.Shop.GetTotal(block, quantity);
+            if (await RemoveBalanceAsync(total))
+            {
+                await TicTacZapController.AddToInventoryAsync(block, quantity, (await GetUserAsync()).UserId);
+                await ShowInventory();
+                return;
+            }
+
+            await NotEnoughUnitsReplyAsync(total);
+>>>>>>> origin/dev
         }
 
         [Command("segment")]
@@ -95,7 +133,7 @@ namespace StupifyConsoleApp.Commands
             var price = SegmentPrice(await SegmentCountAsync());
             if (price > user.Balance)
             {
-                await ReplyAsync($"Come back when you have more money (you need {price} units to buy this)");
+                await NotEnoughUnitsReplyAsync(price);
                 return;
             }
 
@@ -122,22 +160,35 @@ namespace StupifyConsoleApp.Commands
         [Command("addblock")]
         public async Task AddBlockCommand(int segmentId, int x, int y, string type)
         {
+<<<<<<< HEAD
             await TicTacZapController.AddBlock(segmentId, x - 1, y - 1, (BlockType)Enum.Parse(typeof(BlockType), type));
             await UpdateDbSegmentOutput(segmentId);
             await ShowSegment(segmentId);
+=======
+            var blockType = Enum.Parse<BlockType>(type);
+            if (await TicTacZapController.RemoveFromInventory(blockType, 1, (await GetUserAsync()).UserId))
+            {
+                await TicTacZapController.AddBlock(segmentId, x, y, blockType);
+                await UpdateDbSegmentOutput(segmentId);
+                await ShowSegment(segmentId);
+                return;
+            }
+
+            await ReplyAsync(_buyItemAdvisory);
+>>>>>>> origin/dev
         }
 
         [Command("addblock")]
         public async Task AddBlockCommand(int x, int y, string type)
         {
-            var selectionSegmentId = TicTacZapController.GetUserSelection((await GetUserAsync()).UserId);
-            if (selectionSegmentId != null)
+            var segmentSelectionId = TicTacZapController.GetUserSelection((await GetUserAsync()).UserId);
+            if (segmentSelectionId != null )
             {
-                await AddBlockCommand((int)selectionSegmentId, x, y, type);
+                await AddBlockCommand((int)segmentSelectionId, x, y, type);
                 return;
             }
 
-            await ReplyAsync(selectSegmentMessage);
+            await ReplyAsync(_selectSegmentMessage);
         }
 
         [Command("removeblock")]
@@ -145,12 +196,44 @@ namespace StupifyConsoleApp.Commands
         {
             if (await UserHasSegmentAsync(segmentId))
             {
+<<<<<<< HEAD
                 await TicTacZapController.DeleteBlock(segmentId, x - 1, y - 1);
+=======
+                var blockType = await TicTacZapController.DeleteBlockAsync(segmentId, x, y);
+                if (blockType != null) await TicTacZapController.AddToInventoryAsync(blockType.Value, 1, (await GetUserAsync()).UserId);
+>>>>>>> origin/dev
                 await ShowSegment(segmentId);
                 return;
             }
 
             await ReplyAsync(SegmentOwnershipProblemString);
+        }
+
+        [Command("removeblock")]
+        public async Task RemoveBlockCommand(int x, int y)
+        {
+            var segmentSelectionId = TicTacZapController.GetUserSelection((await GetUserAsync()).UserId);
+            if (segmentSelectionId != null )
+            {
+                await RemoveBlockCommand((int)segmentSelectionId, x, y);
+                return;
+            }
+
+            await ReplyAsync(_selectSegmentMessage);
+        }
+
+        private async Task NotEnoughUnitsReplyAsync(decimal price)
+        {
+            await ReplyAsync($"Come back when you have more money (you need {price} units to buy this)");
+        }
+
+        private async Task<bool> RemoveBalanceAsync(decimal units)
+        {
+            var user = await GetUserAsync();
+            if (units > user.Balance) return false;
+            user.Balance -= units;
+            await Db.SaveChangesAsync();
+            return true;
         }
 
         private async Task DeleteSegment(int segmentId)
@@ -159,7 +242,7 @@ namespace StupifyConsoleApp.Commands
             Db.Segments.Remove(dbSegment);
             await Db.SaveChangesAsync();
 
-            TicTacZapController.DeleteSegment(segmentId);
+            await TicTacZapController.DeleteSegmentAsync(segmentId);
         }
 
         private async Task<bool> UserHasSegmentAsync(int segmentId)

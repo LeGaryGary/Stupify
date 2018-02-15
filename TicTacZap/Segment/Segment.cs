@@ -35,12 +35,13 @@ namespace TicTacZap.Segment
             return true;
         }
 
-        public bool DeleteBlock(int x, int y)
+        public BlockType? DeleteBlock(int x, int y)
         {
-            if (Blocks[x, y] is SegmentControllerBlock) return false;
+            if (Blocks[x, y] is SegmentControllerBlock) return null;
+            var blockType = Blocks[x, y]?.Type;
             Blocks[x, y] = null;
             UpdateOutputs();
-            return true;
+            return blockType;
         }
 
         private void UpdateOutputs()
@@ -121,6 +122,8 @@ namespace TicTacZap.Segment
 
         private int DistanceToBlock(int x, int y, Direction direction)
         {
+            _lastX = x;
+            _lastY = y;
             GetBlockInDirection(x, y, direction);
             return BlockOutputDistance(x, y);
         }
