@@ -15,7 +15,7 @@ namespace StupifyConsoleApp.AI
         private Segment _segment;
         private BotContext _db;
 
-        AIController(BotContext db, Segment segment, User user)
+        public AIController(BotContext db, Segment segment, User user)
         {
             _user = user;
             _segment = segment;
