@@ -16,21 +16,9 @@ namespace StupifyConsoleApp.AI
             _controller = new AIController(db, segment, user);
         }
 
-        public async Task runAsync()
-        {
-            Task ai = Task.Run(() => run());
-            int i = 1;
-            while(!ai.IsCompleted)
-            {
-                await _controller.updateMsg();
-                Console.WriteLine($"debug: {i++}");
-                await Task.Delay(1000);
-            }
-        }
-
         public async Task run()
         {
-            await Task.Delay(10000);
+            await Task.Delay(3000);
         }
 
     }
