@@ -7,7 +7,7 @@ using StupifyConsoleApp.DataModels;
 
 namespace StupifyConsoleApp.AI
 {
-    class AI
+    public class AI
     {
         private AIController _controller;
 
@@ -18,12 +18,19 @@ namespace StupifyConsoleApp.AI
 
         public async Task runAsync()
         {
-            await Task.Run(() => run());
+            Task ai = Task.Run(() => run());
+            int i = 1;
+            while(!ai.IsCompleted)
+            {
+                await _controller.updateMsg();
+                Console.WriteLine($"debug: {i++}");
+                await Task.Delay(1000);
+            }
         }
 
-        public void run()
+        public async Task run()
         {
-
+            await Task.Delay(10000);
         }
 
     }

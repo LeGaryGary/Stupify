@@ -37,13 +37,6 @@ namespace StupifyConsoleApp.Commands
             await Db.SaveChangesAsync();
             await ReplyAsync($"You filthy cheater! Fine. I updated the balance. (balance: {user.Balance})");
         }
-
-        [Command("test")]
-        public async Task test()
-        {
-            Discord.IUserMessage message = await ReplyAsync("test");
-            await message.ModifyAsync(msg => msg.Content = "test2");
-        }
         //========
 
         [Command("inventory")]

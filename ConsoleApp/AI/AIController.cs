@@ -11,7 +11,7 @@ using TicTacZap.Segment.Blocks;
 
 namespace StupifyConsoleApp.AI
 {
-    class AIController
+    class AIController : ModuleBase<SocketCommandContext>
     {
         private User _user;
         private Segment _segment;
@@ -23,11 +23,20 @@ namespace StupifyConsoleApp.AI
             _user = user;
             _segment = segment;
             _db = db;
+            _msg = null;
         }
 
         public async Task updateMsg()
         {
-
+            if (_msg == null)
+            {
+                //_msg = await ReplyAsync($"```{TicTacZapController.RenderSegment(_segment.SegmentId)}```");
+                Console.WriteLine("update");
+            }
+            else
+            {
+                await _msg.ModifyAsync(msg => msg.Content = $"```{TicTacZapController.RenderSegment(_segment.SegmentId)}```");
+            }
         }
 
         public async Task updateDB()

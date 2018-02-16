@@ -7,6 +7,7 @@ using System.Linq;
 
 using StupifyConsoleApp.DataModels;
 using StupifyConsoleApp.TicTacZap;
+using StupifyConsoleApp.AI;
 
 namespace StupifyConsoleApp.Commands
 {
@@ -27,9 +28,7 @@ namespace StupifyConsoleApp.Commands
                 return;
             }
 
-            await ReplyAsync("WIP");
-            // TODO: run AI
-
+            await new AI.AI(Db, segment, user).runAsync();
         }
 
         [Command("solve")]
