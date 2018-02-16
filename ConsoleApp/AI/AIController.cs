@@ -22,10 +22,26 @@ namespace StupifyConsoleApp.AI
             _db = db;
         }
 
+        private void updateOutput()
+        {
+            _segment.OutputPerTick = TicTacZapController.GetSegmentOutput(_segment.SegmentId);
+        }
+
+        public async Task updateDB()
+        {
+            await _db.SaveChangesAsync();
+        }
+
         public async Task addBlock(int x, int y)
         {
             await TicTacZapController.AddBlock(_segment.SegmentId, x, y, BlockType.Basic);
-            _segment.OutputPerTick = TicTacZapController.GetSegmentOutput(_segment.SegmentId);
+            updateOutput();
+        }
+
+        public async Task removeBlock(int x, int y)
+        {
+            await TicTacZapController.DeleteBlockAsync(_segment.SegmentId, x, y);
+            updateOutput();
         }
     }
 }

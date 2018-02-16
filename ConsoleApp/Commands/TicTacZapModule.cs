@@ -25,7 +25,7 @@ namespace StupifyConsoleApp.Commands
             await ReplyAsync($"Your balance is: {balance}");
         }
 
-<<<<<<< HEAD
+
         // debug
         [Command("motherlode")]
         public async Task DebugMotherlode()
@@ -43,7 +43,12 @@ namespace StupifyConsoleApp.Commands
         public async Task DebugSolve(int segmentId)
         {
             var user = await GetUserAsync();
-            var dbSegment = Db.Segments.First(s => s.SegmentId == segmentId);
+            var segment = Db.Segments.First(s => s.SegmentId == segmentId);
+            if(segment == null)
+            {
+                await ReplyAsync("invalid segment ID");
+                return;
+            }
 
         }
 
@@ -59,9 +64,10 @@ namespace StupifyConsoleApp.Commands
             }
             else
             {
-                await ReplyAsync(selectSegmentMessage);
+                await ReplyAsync(_selectSegmentMessage);
             }
-=======
+        }
+
         [Command("inventory")]
         public async Task ShowInventory()
         {
@@ -95,7 +101,6 @@ namespace StupifyConsoleApp.Commands
             }
 
             await NotEnoughUnitsReplyAsync(total);
->>>>>>> origin/dev
         }
 
         [Command("segment")]
@@ -160,11 +165,11 @@ namespace StupifyConsoleApp.Commands
         [Command("addblock")]
         public async Task AddBlockCommand(int segmentId, int x, int y, string type)
         {
-<<<<<<< HEAD
+
             await TicTacZapController.AddBlock(segmentId, x - 1, y - 1, (BlockType)Enum.Parse(typeof(BlockType), type));
             await UpdateDbSegmentOutput(segmentId);
             await ShowSegment(segmentId);
-=======
+
             var blockType = Enum.Parse<BlockType>(type);
             if (await TicTacZapController.RemoveFromInventory(blockType, 1, (await GetUserAsync()).UserId))
             {
@@ -175,7 +180,7 @@ namespace StupifyConsoleApp.Commands
             }
 
             await ReplyAsync(_buyItemAdvisory);
->>>>>>> origin/dev
+
         }
 
         [Command("addblock")]
@@ -196,16 +201,9 @@ namespace StupifyConsoleApp.Commands
         {
             if (await UserHasSegmentAsync(segmentId))
             {
-<<<<<<< HEAD
-<<<<<<< HEAD
-                await TicTacZapController.DeleteBlock(segmentId, x - 1, y - 1);
-=======
-                var blockType = await TicTacZapController.DeleteBlockAsync(segmentId, x, y);
-=======
                 var blockType = await TicTacZapController.DeleteBlockAsync(segmentId, x-1, y-1);
->>>>>>> origin/master
+
                 if (blockType != null) await TicTacZapController.AddToInventoryAsync(blockType.Value, 1, (await GetUserAsync()).UserId);
->>>>>>> origin/dev
                 await ShowSegment(segmentId);
                 return;
             }
