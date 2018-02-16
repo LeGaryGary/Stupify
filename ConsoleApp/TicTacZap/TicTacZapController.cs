@@ -88,7 +88,7 @@ namespace StupifyConsoleApp.TicTacZap
                 return JsonConvert.DeserializeObject<Inventory>(fileText);
             }
 
-            var inventory = new Inventory();
+            var inventory = new Inventory(5);
             await SaveInventory(userId, inventory);
             return inventory;
         }
