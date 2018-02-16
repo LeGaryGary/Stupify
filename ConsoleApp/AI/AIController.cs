@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using Discord.Commands;
+using Discord;
 
 using StupifyConsoleApp.DataModels;
 using StupifyConsoleApp.TicTacZap;
@@ -14,6 +16,7 @@ namespace StupifyConsoleApp.AI
         private User _user;
         private Segment _segment;
         private BotContext _db;
+        private IUserMessage _msg;
 
         public AIController(BotContext db, Segment segment, User user)
         {
@@ -22,9 +25,9 @@ namespace StupifyConsoleApp.AI
             _db = db;
         }
 
-        private void updateOutput()
+        public async Task updateMsg()
         {
-            _segment.OutputPerTick = TicTacZapController.GetSegmentOutput(_segment.SegmentId);
+
         }
 
         public async Task updateDB()
@@ -35,13 +38,11 @@ namespace StupifyConsoleApp.AI
         public async Task addBlock(int x, int y)
         {
             await TicTacZapController.AddBlock(_segment.SegmentId, x, y, BlockType.Basic);
-            updateOutput();
         }
 
         public async Task removeBlock(int x, int y)
         {
             await TicTacZapController.DeleteBlockAsync(_segment.SegmentId, x, y);
-            updateOutput();
         }
     }
 }

@@ -25,7 +25,6 @@ namespace StupifyConsoleApp.Commands
             await ReplyAsync($"Your balance is: {balance}");
         }
 
-
         // debug
         [Command("motherlode")]
         public async Task DebugMotherlode()
@@ -38,35 +37,14 @@ namespace StupifyConsoleApp.Commands
             await Db.SaveChangesAsync();
             await ReplyAsync($"You filthy cheater! Fine. I updated the balance. (balance: {user.Balance})");
         }
-        // AI
-        [Command("solve")]
-        public async Task DebugSolve(int segmentId)
+
+        [Command("test")]
+        public async Task test()
         {
-            var user = await GetUserAsync();
-            var segment = Db.Segments.First(s => s.SegmentId == segmentId);
-            if(segment == null)
-            {
-                await ReplyAsync("invalid segment ID");
-                return;
-            }
-
+            Discord.IUserMessage message = await ReplyAsync("test");
+            await message.ModifyAsync(msg => msg.Content = "test2");
         }
-
-        [Command("solve")]
-        public async Task DebugSolve()
-        {
-            User user = await GetUserAsync();
-            var id = TicTacZapController.GetUserSelection(user.UserId);
-
-            if (id != null)
-            {
-                await DebugSolve((int)id);
-            }
-            else
-            {
-                await ReplyAsync(_selectSegmentMessage);
-            }
-        }
+        //========
 
         [Command("inventory")]
         public async Task ShowInventory()

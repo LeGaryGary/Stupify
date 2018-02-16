@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 using StupifyConsoleApp.DataModels;
 
@@ -15,7 +16,15 @@ namespace StupifyConsoleApp.AI
             _controller = new AIController(db, segment, user);
         }
 
-        
+        public async Task runAsync()
+        {
+            await Task.Run(() => run());
+        }
+
+        public void run()
+        {
+
+        }
 
     }
 }
