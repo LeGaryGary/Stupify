@@ -10,7 +10,7 @@ using StupifyConsoleApp.TicTacZap;
 
 namespace StupifyConsoleApp.Commands
 {
-    class AIModule : ModuleBase<SocketCommandContext>
+    public class AIModule : ModuleBase<SocketCommandContext>
     {
         private readonly string _selectSegmentMessage = $"Please select a segment with {Config.CommandPrefix}segment [segmentId]";
 
