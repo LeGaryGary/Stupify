@@ -19,7 +19,7 @@ namespace StupifyConsoleApp.Commands
 
         private BotContext Db { get; } = new BotContext();
 
-        [Command("solve")]
+        [Command("solve", RunMode = RunMode.Async)]
         public async Task DebugSolve(int segmentId)
         {
             var user = await CommonFunctions.GetUserAsync(Db, Context);
@@ -58,22 +58,16 @@ namespace StupifyConsoleApp.Commands
             while (!ai.IsCompleted)
             {
                 await updateMsg(msg, segment);
-                await ClientManager.LogAsync($"debug: {i++}");
                 await Task.Delay(1000);
             }
+
+            await updateMsg(msg, segment);
+            await ReplyAsync("done.");
         }
 
         private async Task updateMsg(IUserMessage msg, Segment segment)
         {
-            if (msg == null)
-            {
-                //_msg = await ReplyAsync($"```{TicTacZapController.RenderSegment(_segment.SegmentId)}```");
-                await ClientManager.LogAsync("update");
-            }
-            else
-            {
                 await msg.ModifyAsync(message => message.Content = $"```{TicTacZapController.RenderSegment(segment.SegmentId)}```");
-            }
         }
 
     }
