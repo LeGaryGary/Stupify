@@ -6,31 +6,23 @@ using StupifyConsoleApp.DataModels;
 
 namespace StupifyConsoleApp.Commands.Moderation
 {
+    [RequireUserPermission(ChannelPermission.ManageMessages)]
     public class MuteModule : ModuleBase<SocketCommandContext>
     {
         [Command("mute"), RequireUserPermission(ChannelPermission.ManageMessages)]
-        public async Task MuteAsync([Remainder] string cmdStr)
+        public async Task MuteAsync(string userTag)
         {
-            var cmdArray = cmdStr.Split(" ");
-            if (cmdArray.Length != 2)
-            {
-                await ReplyAsync("Too many bits and bobs, please use that spell like this: " +
-                                 "" + Config.CommandPrefix + "mute TagAMuggle 00:10:00");
-                return;
-            }
-
             using (var db = new BotContext())
             {
-                var serverUser = await db.GetServerUserAsync(ulong.Parse(Regex.Replace(cmdArray[0], "[^0-9]", "")), Context.Guild.Id);
+                var serverUser = await db.GetServerUserAsync(ulong.Parse(Regex.Replace(userTag, "[^0-9]", "")), Context.Guild.Id);
                 if (serverUser == null)
                 {
                     await ReplyAsync("Thats not right!");
                     return;
                 }
                 serverUser.Muted = true;
-                var saveTask = db.SaveChangesAsync();
+                await db.SaveChangesAsync();
                 await ReplyAsync("This muggle has been silenced!");
-                await saveTask;
             }
         }
 
