@@ -30,29 +30,29 @@ namespace StupifyConsoleApp.AI
             _user = user;
             _dbSeg = segment;
             _db = db;
-            _seg = TicTacZapController.GetSegment(segment.SegmentId);
+            _seg = Segments.GetAsync(segment.SegmentId).GetAwaiter().GetResult();
         }
 
-        public async Task updateDB()
+        public async Task UpdateDb()
         {
             await _db.SaveChangesAsync();
             _dbSeg.UnitsPerTick = TicTacZapExtensions.ResourcePerTick(_seg).GetValueOrDefault(Resource.Unit);
             _dbSeg.EnergyPerTick = TicTacZapExtensions.ResourcePerTick(_seg).GetValueOrDefault(Resource.Energy);
         }
 
-        public async Task addBlock(int x, int y)
+        public async Task AddBlock(int x, int y)
         {
-            await TicTacZapController.AddBlock(_dbSeg.SegmentId, x, y, BlockType.BasicEnergy);
+            await Segments.AddBlockAsync(_dbSeg.SegmentId, x, y, BlockType.BasicEnergy);
         }
 
-        public async Task removeBlock(int x, int y)
+        public async Task RemoveBlock(int x, int y)
         {
-            await TicTacZapController.DeleteBlockAsync(_dbSeg.SegmentId, x, y);
+            await Segments.DeleteBlockAsync(_dbSeg.SegmentId, x, y);
         }
 
-        public decimal output()
+        public decimal Output()
         {
-            return TicTacZapExtensions.ResourcePerTick(_seg).GetValueOrDefault(Resource.Energy);
+            return _seg.ResourcePerTick(Resource.Energy);
         }
     }
 }

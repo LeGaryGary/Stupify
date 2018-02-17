@@ -39,7 +39,7 @@ namespace StupifyConsoleApp.AI
             while (it++ < 200)
             {
                 // iterate through the list, choosing the best block to expand
-                var output = _controller.output();
+                var output = _controller.Output();
                 Tuple<int, int> best = null;
                 foreach(Tuple<int, int> block in placedBlocks)
                 {
@@ -51,24 +51,24 @@ namespace StupifyConsoleApp.AI
                             if(x+i >= 0 && y+j >=0 && x+i < 9 && y+j < 9 
                                 && blocks[x+i, y+j] == null)
                             {
-                                await _controller.addBlock(x + i, y + j);
-                                decimal tmp = _controller.output();
+                                await _controller.AddBlock(x + i, y + j);
+                                decimal tmp = _controller.Output();
                                 if(tmp - output > 50 || (output == 0 && tmp == output))
                                 {
                                     output = tmp;
                                     best = new Tuple<int, int>(x + i, y + j);
                                 }
-                                await _controller.removeBlock(x + i, y + j);
+                                await _controller.RemoveBlock(x + i, y + j);
                             }
                         }
                 }
 
                 if (best == null) break;
                 // add the block to list
-                await _controller.addBlock(best.Item1, best.Item2);
+                await _controller.AddBlock(best.Item1, best.Item2);
                 placedBlocks.AddLast(best);
                 blocks = _controller.Blocks;
-                await _controller.updateDB();
+                await _controller.UpdateDb();
             }
             
         }

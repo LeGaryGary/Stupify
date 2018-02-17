@@ -65,7 +65,7 @@ namespace StupifyConsoleApp.Commands
 
         private async Task updateMsg(IUserMessage msg, Segment segment, bool done = false)
         {
-            string str = TicTacZapController.RenderSegment(segment.SegmentId, Db) + "\n";
+            string str = TicTacZapController.RenderSegmentAsync(segment.SegmentId, Db) + "\n";
             str += (done) ? "done." : "working...";
 
             await msg.ModifyAsync(message => message.Content = $"```{str}```");

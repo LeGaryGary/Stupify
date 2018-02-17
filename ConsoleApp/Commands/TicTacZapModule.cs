@@ -67,7 +67,7 @@ namespace StupifyConsoleApp.Commands
             var total = TicTacZapController.Shop.GetTotal(block, quantity);
             if (await RemoveBalanceAsync(total))
             {
-                await TicTacZapController.AddToInventoryAsync(block, quantity, (await GetUserAsync()).UserId);
+                await Inventories.AddToInventoryAsync(block, quantity, (await GetUserAsync()).UserId);
                 await ShowInventory();
                 return;
             }
@@ -80,8 +80,8 @@ namespace StupifyConsoleApp.Commands
         {
             if (await UserHasSegmentAsync(segmentId))
             {
-                TicTacZapController.SetUserSegmentSelection((await GetUserAsync()).UserId, segmentId);
-                await ReplyAsync($"```{TicTacZapController.RenderSegment(segmentId, Db)}```");
+                await TicTacZapController.SetUserSegmentSelection((await GetUserAsync()).UserId, segmentId, Db);
+                await ReplyAsync($"```{await TicTacZapController.RenderSegmentAsync(segmentId, Db)}```");
                 return;
             }
             await ReplyAsync(SegmentOwnershipProblemString);
@@ -137,22 +137,16 @@ namespace StupifyConsoleApp.Commands
         [Command("addblock")]
         public async Task AddBlockCommand(int segmentId, int x, int y, string type)
         {
-
-            await TicTacZapController.AddBlock(segmentId, x - 1, y - 1, (BlockType)Enum.Parse(typeof(BlockType), type));
-            await UpdateDbSegmentOutput(segmentId);
-            await ShowSegment(segmentId);
-
             var blockType = Enum.Parse<BlockType>(type);
-            if (await TicTacZapController.RemoveFromInventory(blockType, 1, (await GetUserAsync()).UserId))
+            if (await Inventories.RemoveFromInventoryAsync(blockType, 1, (await GetUserAsync()).UserId))
             {
-                await TicTacZapController.AddBlock(segmentId, x-1, y-1, blockType);
+                await Segments.AddBlockAsync(segmentId, x-1, y-1, blockType);
                 await UpdateDbSegmentOutput(segmentId);
                 await ShowSegment(segmentId);
                 return;
             }
 
             await ReplyAsync(_buyItemAdvisory);
-
         }
 
         [Command("addblock")]
@@ -173,9 +167,9 @@ namespace StupifyConsoleApp.Commands
         {
             if (await UserHasSegmentAsync(segmentId))
             {
-                var blockType = await TicTacZapController.DeleteBlockAsync(segmentId, x-1, y-1);
+                var blockType = await Segments.DeleteBlockAsync(segmentId, x-1, y-1);
 
-                if (blockType != null) await TicTacZapController.AddToInventoryAsync(blockType.Value, 1, (await GetUserAsync()).UserId);
+                if (blockType != null) await Inventories.AddToInventoryAsync(blockType.Value, 1, (await GetUserAsync()).UserId);
                 await ShowSegment(segmentId);
                 return;
             }
@@ -216,7 +210,7 @@ namespace StupifyConsoleApp.Commands
             Db.Segments.Remove(dbSegment);
             await Db.SaveChangesAsync();
 
-            await TicTacZapController.DeleteSegmentAsync(segmentId);
+            await Segments.DeleteSegmentAsync(segmentId);
         }
 
         private async Task<bool> UserHasSegmentAsync(int segmentId)
@@ -269,7 +263,7 @@ namespace StupifyConsoleApp.Commands
             };
             await Db.Segments.AddAsync(segment);
             await Db.SaveChangesAsync();
-            await TicTacZapController.AddSegment(segment.SegmentId);
+            await Segments.NewSegmentAsync(segment.SegmentId);
             await UpdateDbSegmentOutput(segment.SegmentId);
 
             return segment.SegmentId;
@@ -278,10 +272,10 @@ namespace StupifyConsoleApp.Commands
         private async Task UpdateDbSegmentOutput(int segmentId)
         {
             var dbSegment = await Db.Segments.FirstAsync(s => s.SegmentId == segmentId);
-            var segment = TicTacZapController.GetSegmentOutput(segmentId);
+            var segmentOutput = await Segments.GetOutput(segmentId);
 
-            dbSegment.UnitsPerTick = segment[Resource.Unit];
-            dbSegment.EnergyPerTick = segment[Resource.Energy];
+            dbSegment.UnitsPerTick = segmentOutput[Resource.Unit];
+            dbSegment.EnergyPerTick = segmentOutput[Resource.Energy];
 
             await Db.SaveChangesAsync();
         }

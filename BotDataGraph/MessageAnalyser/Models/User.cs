@@ -12,13 +12,13 @@ namespace BotDataGraph.MessageAnalyser.Models
 
         public ulong UserId
         {
-            get => ulong.Parse(this.userId);
-            set => this.userId = value.ToString();
+            get => ulong.Parse(userId);
+            set => userId = value.ToString();
         }
 
         public object Parameters()
         {
-            return new { this.userId };
+            return new { userId };
         }
     }
 }

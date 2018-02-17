@@ -10,8 +10,8 @@ namespace BotDataGraph.MessageAnalyser.Models
 
         public ulong ServerId
         {
-            get => ulong.Parse(this.serverId);
-            set => this.serverId = value.ToString();
+            get => ulong.Parse(serverId);
+            set => serverId = value.ToString();
         }
     }
 }
