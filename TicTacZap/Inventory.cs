@@ -9,6 +9,11 @@ namespace TicTacZap
     {
         public Dictionary<BlockType, int> Blocks { get; set; } = new Dictionary<BlockType, int>();
 
+        public Inventory(int startingBlocks)
+        {
+            AddBlocks(BlockType.Basic, 5);
+        }
+
         public string TextRender()
         {
             var str = "Inventory:" + Environment.NewLine;
