@@ -136,6 +136,19 @@ namespace StupifyConsoleApp.TicTacZap
             streamWriter.Close();
         }
 
+        public static async Task ResetSegment(int segmentId, int userId)
+        {
+            var segment = Segments[segmentId];
+            for (var x = 0; x < 9; x++)
+                for (var y = 0; y < 9; y++)
+                {
+                    var blockType = segment.DeleteBlock(x, y);
+                    if (blockType != null) await AddToInventoryAsync(blockType.Value, 1, userId);
+                }
+
+            await SaveSegment(segmentId, segment);
+        }
+
         public static async Task DeleteSegmentAsync(int segmentId)
         {
             await Task.Run(() => DeleteSegment(segmentId));

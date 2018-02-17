@@ -121,6 +121,22 @@ namespace StupifyConsoleApp.Commands
             await ReplyAsync($"You have purchased a segment! (id: {id})");
         }
 
+        [Command("resetsegment")]
+        public async Task ResetSegment(int segmentId)
+        {
+            if (!await UserHasSegmentAsync(segmentId))
+            {
+                await ReplyAsync(SegmentOwnershipProblemString);
+                return;
+            }
+
+            var user = await GetUserAsync();
+            await TicTacZapController.ResetSegment(segmentId, user.UserId);
+            await Db.SaveChangesAsync();
+            await UpdateDbSegmentOutput(segmentId);
+            await ReplyAsync($"segment {segmentId} was reset!");
+        }
+
         [Command("deletesegment")]
         public async Task DeleteSegmentCommand(int segmentId)
         {
