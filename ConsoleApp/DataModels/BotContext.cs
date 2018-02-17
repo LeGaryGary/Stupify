@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Collections;
+using Microsoft.EntityFrameworkCore;
 
 namespace StupifyConsoleApp.DataModels
 {

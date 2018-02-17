@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
@@ -99,15 +100,25 @@ namespace StupifyConsoleApp.TicTacZap
             await File.WriteAllTextAsync(InventoriesPath + $@"\{userId+InventoryExtension}", fileText);
         }
 
-        public static Segment GetSegment(int segmentId)
+        public static string RenderSegment(int segmentId, BotContext db)
         {
-            return Segments[segmentId];
-        }
-
-        public static string RenderSegment(int segmentId)
-        {
+            var resourcesPerTick = db.GetSegmentResourcePerTick(segmentId);
+            var resources = db.GetSegmentResources(segmentId);
             var segment = Segments[segmentId];
-            return segment.TextRender() + Environment.NewLine + $"Output per tick: {segment.OutputPerTick}";
+            var text = segment.TextRender();
+
+            foreach (var resource in resourcesPerTick)
+            {
+                text += Environment.NewLine;
+                text += $"{resource.Key.ToString()} per tick: {resource.Value}";
+            }
+
+            foreach (var resource in resources)
+            {
+                text += Environment.NewLine;
+                text += $"{resource.Key.ToString()} in segment: {resource.Value}";
+            }
+            return text;
         }
 
         public static async Task AddSegment(int segmentId)
@@ -164,7 +175,10 @@ namespace StupifyConsoleApp.TicTacZap
                     {
                         var dbSegment = await db.Segments.FirstAsync(s => s.SegmentId == segment.Key);
                         var user = await db.Users.FirstAsync(u => u.UserId == dbSegment.UserId);
-                        user.Balance += segment.Value.OutputPerTick;
+
+                        user.Balance += segment.Value.ResourcePerTick(Resource.Unit);
+                        dbSegment.Energy += dbSegment.EnergyPerTick;
+
                         await db.SaveChangesAsync();
                     }
                     catch (Exception e)
@@ -191,9 +205,9 @@ namespace StupifyConsoleApp.TicTacZap
             }
         }
 
-        public static decimal GetSegmentOutput(int segmentId)
+        public static Dictionary<Resource, decimal> GetSegmentOutput(int segmentId)
         {
-            return Segments[segmentId].OutputPerTick;
+            return Segments[segmentId].ResourcePerTick();
         }
 
         private static string SerializeSegment(Segment segment)
@@ -208,12 +222,13 @@ namespace StupifyConsoleApp.TicTacZap
                     var block = blocks[x,y];
                     if(block == null) continue;
 
-                    serSeg.BlocksList.Add(new Tuple<int, int, BlockType>(x, y, block.Type));
+                    serSeg.BlocksList.Add(new Tuple<int, int, BlockType>(x, y, block.BlockType));
 
                 }
             }
 
-            serSeg.OutputPerTick = segment.OutputPerTick;
+            serSeg.Resources = segment.ResourcePerTick();
+
             return JsonConvert.SerializeObject(serSeg);
         }
 
@@ -226,9 +241,8 @@ namespace StupifyConsoleApp.TicTacZap
             {
                 blocks[tuple.Item1, tuple.Item2] = Segment.NewBlock(tuple.Item3);
             }
-
-            blocks[4, 4] = segment.Controller;
-            segment.OutputPerTick = deserialized.OutputPerTick;
+            
+            segment.SetResources(deserialized.Resources);
             return segment;
         }
 

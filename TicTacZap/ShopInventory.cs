@@ -10,7 +10,7 @@ namespace TicTacZap
 
         public ShopInventory()
         {
-            BlocksPrices.Add(BlockType.Basic, 100);
+            BlocksPrices.Add(BlockType.BasicEnergy, 100);
         }
 
         public string TextRender()
