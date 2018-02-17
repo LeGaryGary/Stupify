@@ -1,12 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
 
-namespace TicTacZap.Segment.Blocks
+namespace TicTacZap.Segment.Blocks.Production.Energy
 {
-    internal abstract class BaseSegmentBlock : IBlock
+    internal abstract class BaseEnergyBlock : IProduceBlock
     {
-        public BlockType Type { get; protected set; }
-        public decimal OutputPerTick { get; protected set; } = 1;
+        public BlockType BlockType { get; protected set; }
+        public Resource OutputType { get; protected set; } = Resource.Energy;
+        public decimal OutputPerTick { get; private set; }
+        public decimal Upkeep { get; protected set; }
+
         public decimal UpdateOutput(int sumOfDistancesInDirections, int connectedDiagonals, int layer)
         {
             var output = layer * layer * Math.Log(sumOfDistancesInDirections,2) * connectedDiagonals;

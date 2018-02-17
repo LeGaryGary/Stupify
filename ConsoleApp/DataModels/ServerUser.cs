@@ -13,9 +13,5 @@ namespace StupifyConsoleApp.DataModels
         public virtual Server Server { get; set; }
 
         public virtual ICollection<Quote> Quotes { get; set; }
-
-        public ServerUser()
-        {
-        }
     }
 }

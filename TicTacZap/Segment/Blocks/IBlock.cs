@@ -1,12 +1,8 @@
-﻿using System.Collections.Generic;
-
-namespace TicTacZap.Segment.Blocks
+﻿namespace TicTacZap.Segment.Blocks
 {
     public interface IBlock
     {
-        BlockType Type { get; }
-        decimal OutputPerTick { get; }
-
-        decimal UpdateOutput(int sumOfDistancesInDirections, int connectedDiagonals, int layer);
+        BlockType BlockType { get; }
+        decimal Upkeep { get; }
     }
 }

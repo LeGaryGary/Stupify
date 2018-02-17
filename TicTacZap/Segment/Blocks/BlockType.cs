@@ -3,6 +3,6 @@
     public enum BlockType
     {
         Controller = 0,
-        Basic = 1
+        BasicEnergy = 1
     }
 }

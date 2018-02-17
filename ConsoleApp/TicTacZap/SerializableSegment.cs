@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using TicTacZap;
 using TicTacZap.Segment.Blocks;
 
 namespace StupifyConsoleApp.TicTacZap
 {
-    class SerializableSegment
+    internal class SerializableSegment
     {
         public List<Tuple<int, int, BlockType>> BlocksList { get; set; }
-        public decimal OutputPerTick { get; set; }
+        public Dictionary<Resource, decimal> Resources { get; set; }
 
         public SerializableSegment()
         {

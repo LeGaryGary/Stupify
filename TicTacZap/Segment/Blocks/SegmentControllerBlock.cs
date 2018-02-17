@@ -1,11 +1,14 @@
 ﻿
 namespace TicTacZap.Segment.Blocks
 {
-    internal class SegmentControllerBlock : BaseSegmentBlock
+    internal class SegmentControllerBlock : IBlock
     {
+        public BlockType BlockType { get; }
+        public decimal Upkeep { get; } = 0;
+
         public SegmentControllerBlock()
         {
-            Type = BlockType.Controller;
+            BlockType = BlockType.Controller;
         }
     }
 }

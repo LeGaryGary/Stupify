@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading.Tasks;
 using StupifyConsoleApp.Client;
 using StupifyConsoleApp.TicTacZap;
 
@@ -10,7 +9,7 @@ namespace StupifyConsoleApp
         private static void Main(string[] args)
         {
             var startTask = ClientManager.Start();
-            var TickTacZapTask = TicTacZapController.Run();
+            var tickTacZapTask = TicTacZapController.Run();
             while (!startTask.IsCompleted)
             {
                 switch (Console.ReadLine()?.ToLower())

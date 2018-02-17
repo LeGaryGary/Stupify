@@ -34,7 +34,7 @@ namespace StupifyConsoleApp.Client
         {
             await Client.LoginAsync(TokenType.Bot, Config.DiscordBotUserToken);
             await Client.StartAsync();
-            await Task.Delay(-1);
+            await SetStatus();
         }
 
         public static async Task LogAsync(string message, bool requireDebug = false)
@@ -45,6 +45,15 @@ namespace StupifyConsoleApp.Client
         private static async Task LogAsync(LogMessage message)
         {
             await Logger.Log(message.ToString(), false);
+        }
+
+        private static async Task SetStatus()
+        {
+            while (true)
+            {
+                await Client.SetGameAsync($"{Config.CommandPrefix}help | Servers: {Client.Guilds.Count}");
+                await Task.Delay(60000);
+            }
         }
     }
 }
