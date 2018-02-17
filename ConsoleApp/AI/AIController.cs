@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using StupifyConsoleApp.DataModels;
@@ -16,14 +14,11 @@ namespace StupifyConsoleApp.AI
     class AIController
     {
         private User _user;
-        private DBSegment _dbSeg;
-        private Segment _seg;
-        private BotContext _db;
+        private readonly DBSegment _dbSeg;
+        private readonly Segment _seg;
+        private readonly BotContext _db;
 
-        public IBlock[,] Blocks
-        {
-            get { return (IBlock[,]) _seg.Blocks.Clone(); }
-        }
+        public IBlock[,] Blocks => (IBlock[,]) _seg.Blocks.Clone();
 
         public AIController(BotContext db, DBSegment segment, User user)
         {
@@ -33,26 +28,26 @@ namespace StupifyConsoleApp.AI
             _seg = TicTacZapController.GetSegment(segment.SegmentId);
         }
 
-        public async Task updateDB()
+        public async Task UpdateDB()
         {
             await _db.SaveChangesAsync();
-            _dbSeg.UnitsPerTick = TicTacZapExtensions.ResourcePerTick(_seg).GetValueOrDefault(Resource.Unit);
-            _dbSeg.EnergyPerTick = TicTacZapExtensions.ResourcePerTick(_seg).GetValueOrDefault(Resource.Energy);
+            _dbSeg.UnitsPerTick = _seg.ResourcePerTick().GetValueOrDefault(Resource.Unit);
+            _dbSeg.EnergyPerTick = _seg.ResourcePerTick().GetValueOrDefault(Resource.Energy);
         }
 
-        public async Task addBlock(int x, int y)
+        public async Task AddBlock(int x, int y)
         {
             await TicTacZapController.AddBlock(_dbSeg.SegmentId, x, y, BlockType.BasicEnergy);
         }
 
-        public async Task removeBlock(int x, int y)
+        public async Task RemoveBlock(int x, int y)
         {
             await TicTacZapController.DeleteBlockAsync(_dbSeg.SegmentId, x, y);
         }
 
-        public decimal output()
+        public decimal Output()
         {
-            return TicTacZapExtensions.ResourcePerTick(_seg).GetValueOrDefault(Resource.Energy);
+            return _seg.ResourcePerTick().GetValueOrDefault(Resource.Energy);
         }
     }
 }
