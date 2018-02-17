@@ -54,20 +54,21 @@ namespace StupifyConsoleApp.Commands
             AI.AI aiInstance = new AI.AI(Db, segment, user);
             Task ai = Task.Run(() => aiInstance.run());
             IUserMessage msg = await ReplyAsync("hang on...");
-            int i = 1;
             while (!ai.IsCompleted)
             {
                 await updateMsg(msg, segment);
                 await Task.Delay(1000);
             }
 
-            await updateMsg(msg, segment);
-            await ReplyAsync("done.");
+            await updateMsg(msg, segment, true);
         }
 
-        private async Task updateMsg(IUserMessage msg, Segment segment)
+        private async Task updateMsg(IUserMessage msg, Segment segment, bool done = false)
         {
-                await msg.ModifyAsync(message => message.Content = $"```{TicTacZapController.RenderSegment(segment.SegmentId)}```");
+            string str = TicTacZapController.RenderSegment(segment.SegmentId);
+            str += (done) ? " done." : " working...";
+
+            await msg.ModifyAsync(message => message.Content = $"```{str}```");
         }
 
     }

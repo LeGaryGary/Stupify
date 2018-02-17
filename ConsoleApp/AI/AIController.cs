@@ -7,19 +7,29 @@ using StupifyConsoleApp.DataModels;
 using StupifyConsoleApp.TicTacZap;
 using TicTacZap.Segment.Blocks;
 
+using DBSegment = StupifyConsoleApp.DataModels.Segment;
+using Segment = TicTacZap.Segment.Segment;
+
 namespace StupifyConsoleApp.AI
 {
     class AIController
     {
         private User _user;
-        private Segment _segment;
+        private DBSegment _dbSeg;
+        private Segment _seg;
         private BotContext _db;
 
-        public AIController(BotContext db, Segment segment, User user)
+        public IBlock[,] Blocks
+        {
+            get { return (IBlock[,]) _seg.Blocks.Clone(); }
+        }
+
+        public AIController(BotContext db, DBSegment segment, User user)
         {
             _user = user;
-            _segment = segment;
+            _dbSeg = segment;
             _db = db;
+            _seg = TicTacZapController.GetSegment(_dbSeg.SegmentId);
         }
 
         public async Task updateDB()
@@ -29,12 +39,17 @@ namespace StupifyConsoleApp.AI
 
         public async Task addBlock(int x, int y)
         {
-            await TicTacZapController.AddBlock(_segment.SegmentId, x, y, BlockType.Basic);
+            await TicTacZapController.AddBlock(_dbSeg.SegmentId, x, y, BlockType.Basic);
         }
 
         public async Task removeBlock(int x, int y)
         {
-            await TicTacZapController.DeleteBlockAsync(_segment.SegmentId, x, y);
+            await TicTacZapController.DeleteBlockAsync(_dbSeg.SegmentId, x, y);
+        }
+
+        public decimal output()
+        {
+            return _seg.OutputPerTick;
         }
     }
 }

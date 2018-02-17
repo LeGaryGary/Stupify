@@ -99,6 +99,11 @@ namespace StupifyConsoleApp.TicTacZap
             await File.WriteAllTextAsync(InventoriesPath + $@"\{userId+InventoryExtension}", fileText);
         }
 
+        public static Segment GetSegment(int segmentId)
+        {
+            return Segments[segmentId];
+        }
+
         public static string RenderSegment(int segmentId)
         {
             var segment = Segments[segmentId];
