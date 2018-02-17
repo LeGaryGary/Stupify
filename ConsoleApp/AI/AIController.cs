@@ -49,5 +49,6 @@ namespace StupifyConsoleApp.AI
         {
             return _seg.ResourcePerTick().GetValueOrDefault(Resource.Energy);
         }
+
     }
 }

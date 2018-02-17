@@ -31,12 +31,30 @@ namespace StupifyConsoleApp.Commands
         public async Task DebugMotherlode()
         {
             var user = await GetUserAsync();
-            var balance = user.Balance;
 
             user.Balance += 1000000;
 
             await Db.SaveChangesAsync();
             await ReplyAsync($"You filthy cheater! Fine. I updated the balance. (balance: {user.Balance})");
+        }
+
+        [Command("invreset")]
+        public async Task DebugInvReset()
+        {
+            var user = GetUserAsync();
+            await TicTacZapController.ResetInventory(user.Id);
+            await ReplyAsync("inventory reset!");
+        }
+
+        [Command("balreset")]
+        public async Task DebugBalReset()
+        {
+            var user = await GetUserAsync();
+
+            user.Balance = 500;
+
+            await Db.SaveChangesAsync();
+            await ReplyAsync($"balance reset! (balance: {user.Balance})");
         }
         //========
 

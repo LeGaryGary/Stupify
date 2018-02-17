@@ -13,8 +13,15 @@ namespace TicTacZap
             AddBlocks(BlockType.BasicEnergy, startingBlocks);
         }
 
+        public void Reset()
+        {
+            Blocks = new Dictionary<BlockType, int>();
+        }
+
         public string TextRender()
         {
+            if (Blocks.Count == 0) return "";
+
             var str = "Inventory:" + Environment.NewLine;
 
             foreach (var block in Blocks)
