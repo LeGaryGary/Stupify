@@ -24,7 +24,7 @@ namespace StupifyConsoleApp.AI
             IBlock[,] blocks = _controller.Blocks;
 
             // make a list of placed blocks
-            LinkedList<Tuple<int, int>> placedBlocks = new LinkedList<Tuple<int, int>>();
+            var placedBlocks = new LinkedList<Tuple<int, int>>();
 
             for(int x = 0; x < 9; x++)
                 for(int y = 0; y < 9; y++)
@@ -35,11 +35,11 @@ namespace StupifyConsoleApp.AI
                     }
                 }
 
-            int it = 0;
+            var it = 0;
             while (it++ < 200)
             {
                 // iterate through the list, choosing the best block to expand
-                decimal output = _controller.output();
+                var output = _controller.output();
                 Tuple<int, int> best = null;
                 foreach(Tuple<int, int> block in placedBlocks)
                 {
