@@ -204,6 +204,11 @@ namespace StupifyConsoleApp.TicTacZap
             }
         }
 
+        public static Segment GetSegment(int segmentId)
+        {
+            return Segments[segmentId];
+        }
+
         public static Dictionary<Resource, decimal> GetSegmentOutput(int segmentId)
         {
             return Segments[segmentId].ResourcePerTick();
