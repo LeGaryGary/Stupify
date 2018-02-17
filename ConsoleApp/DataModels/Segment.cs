@@ -5,6 +5,10 @@ namespace StupifyConsoleApp.DataModels
     {
         public int SegmentId { get; set; }
         public int UserId { get; set; }
-        public decimal OutputPerTick { get; set; }
+        public decimal UnitsPerTick { get; set; }
+
+        public decimal EnergyPerTick { get; set; }
+
+        public decimal Energy { get; set; }
     }
 }

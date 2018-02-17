@@ -11,7 +11,7 @@ namespace TicTacZap
 
         public Inventory(int startingBlocks)
         {
-            AddBlocks(BlockType.Basic, 5);
+            AddBlocks(BlockType.BasicEnergy, 5);
         }
 
         public string TextRender()

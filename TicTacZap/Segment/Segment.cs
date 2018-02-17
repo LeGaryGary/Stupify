@@ -1,23 +1,28 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text;
 using TicTacZap.Segment.Blocks;
+using TicTacZap.Segment.Blocks.Production;
+using TicTacZap.Segment.Blocks.Production.Energy;
 
 namespace TicTacZap.Segment
 {
-    public class Segment : ISegment
+    public class Segment
     {
-        private int _lastY;
-        private int _lastX;
-
         public IBlock Controller { get; } = new SegmentControllerBlock();
-
         public IBlock[,] Blocks { get; } = new IBlock[9,9];
 
-        public decimal OutputPerTick { get; set; }
+        internal Dictionary<Resource, decimal> ResourceOutput { get; set; }
 
         public Segment()
         {
             Blocks[4, 4] = Controller;
+
+            ResourceOutput = new Dictionary<Resource, decimal>();
+            foreach (Resource resource in Enum.GetValues(typeof(Resource)))
+            {
+                ResourceOutput.Add(resource, 0);
+            }
         }
 
         public bool AddBlock(int x, int y, BlockType blockType)
@@ -31,22 +36,23 @@ namespace TicTacZap.Segment
             if (Blocks[x, y] != null) return false;
 
             Blocks[x, y] = block;
-            UpdateOutputs();
+            UpdateSegmentOutput();
             return true;
         }
 
         public BlockType? DeleteBlock(int x, int y)
         {
             if (Blocks[x, y] is SegmentControllerBlock) return null;
-            var blockType = Blocks[x, y]?.Type;
+            var blockType = Blocks[x, y]?.BlockType;
             Blocks[x, y] = null;
-            UpdateOutputs();
+            UpdateSegmentOutput();
             return blockType;
         }
 
-        private void UpdateOutputs()
+        private void UpdateSegmentOutput()
         {
-            var output = 0m;
+            ResourceOutput = new Dictionary<Resource, decimal>();
+
             for (var y = 0; y < Blocks.GetLength(1); y++)
             {
                 for (var x = 0; x < Blocks.GetLength(0); x++)
@@ -55,15 +61,18 @@ namespace TicTacZap.Segment
 
                     var block = Blocks[x, y];
 
-                    block.UpdateOutput(
-                        DistanceSumInDirections(x, y),
-                        ConnectedDiagonals(x, y),
-                        Layer(x, y));
-                    output += block.OutputPerTick;
+                    if (block is IProduceBlock produceBlock)
+                    {
+                        produceBlock.UpdateOutput(
+                            DistanceSumInDirections(x, y),
+                            ConnectedDiagonals(x, y),
+                            Layer(x, y));
+
+                        UpdateResourceOutput(produceBlock.OutputType, produceBlock.OutputPerTick);
+                    }
+
                 }
             }
-
-            OutputPerTick = output;
         }
 
         private int Layer(int x, int y)
@@ -119,6 +128,10 @@ namespace TicTacZap.Segment
             sum += DistanceToBlock(x, y, Direction.Right);
             return sum;
         }
+
+        private int _lastY;
+
+        private int _lastX;
 
         private int DistanceToBlock(int x, int y, Direction direction)
         {
@@ -181,6 +194,16 @@ namespace TicTacZap.Segment
             }
         }
 
+        private void UpdateResourceOutput(Resource produceBlockOutputType, decimal produceBlockOutputPerTick)
+        {
+            if (ResourceOutput.ContainsKey(produceBlockOutputType))
+            {
+                ResourceOutput[produceBlockOutputType] += produceBlockOutputPerTick;
+                return;
+            }
+            ResourceOutput.Add(produceBlockOutputType, produceBlockOutputPerTick);
+        }
+
         public static IBlock NewBlock(BlockType blockType)
         {
             IBlock block;
@@ -190,8 +213,8 @@ namespace TicTacZap.Segment
                 case BlockType.Controller:
                     block = new SegmentControllerBlock();
                     break;
-                case BlockType.Basic:
-                    block = new BasicSegmentBlock();
+                case BlockType.BasicEnergy:
+                    block = new BasicEnergyBlock();
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(blockType), blockType, null);
@@ -207,12 +230,12 @@ namespace TicTacZap.Segment
             {
                 for (var x = 0; x < Blocks.GetLength(1); x++)
                 {
-                    switch (Blocks[x,y]?.Type)
+                    switch (Blocks[x,y]?.BlockType)
                     {
                         case BlockType.Controller:
                             stringBuilder.Append(" C ");
                             break;
-                        case BlockType.Basic:
+                        case BlockType.BasicEnergy:
                             stringBuilder.Append(" B ");
                             break;
                         default:
@@ -226,15 +249,5 @@ namespace TicTacZap.Segment
 
             return stringBuilder.ToString();
         }
-    }
-
-    public interface ISegment
-    {
-        IBlock Controller { get; }
-        IBlock[,] Blocks { get; }
-        
-        decimal OutputPerTick { get; }
-
-        bool AddBlock(int x, int y, BlockType blockType);
     }
 }

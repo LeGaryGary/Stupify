@@ -6,6 +6,7 @@ using Discord.Commands;
 using Microsoft.EntityFrameworkCore;
 using StupifyConsoleApp.DataModels;
 using StupifyConsoleApp.TicTacZap;
+using TicTacZap;
 using TicTacZap.Segment.Blocks;
 
 namespace StupifyConsoleApp.Commands
@@ -66,7 +67,7 @@ namespace StupifyConsoleApp.Commands
             if (await UserHasSegmentAsync(segmentId))
             {
                 TicTacZapController.SetUserSegmentSelection((await GetUserAsync()).UserId, segmentId);
-                await ReplyAsync("```"+TicTacZapController.RenderSegment(segmentId)+"```");
+                await ReplyAsync($"```{TicTacZapController.RenderSegment(segmentId, Db)}```");
                 return;
             }
             await ReplyAsync(SegmentOwnershipProblemString);
@@ -207,7 +208,7 @@ namespace StupifyConsoleApp.Commands
             var str = string.Empty;
             foreach (var segment in segments)
             {
-                str += $"Segment Id: {segment.SegmentId} Output: {segment.OutputPerTick}" + Environment.NewLine;
+                str += $"Segment Id: {segment.SegmentId} Output: {segment.UnitsPerTick}" + Environment.NewLine;
             }
 
             return str;
@@ -240,7 +241,9 @@ namespace StupifyConsoleApp.Commands
         {
             var segment = new Segment
             {
-                OutputPerTick = 0,
+                UnitsPerTick = 0,
+                EnergyPerTick = 0,
+                Energy = 0,
                 UserId = user.UserId
             };
             await Db.Segments.AddAsync(segment);
@@ -251,8 +254,12 @@ namespace StupifyConsoleApp.Commands
 
         private async Task UpdateDbSegmentOutput(int segmentId)
         {
-            var segment = await Db.Segments.FirstAsync(s => s.SegmentId == segmentId);
-            segment.OutputPerTick = TicTacZapController.GetSegmentOutput(segmentId);
+            var dbSegment = await Db.Segments.FirstAsync(s => s.SegmentId == segmentId);
+            var segment = TicTacZapController.GetSegmentOutput(segmentId);
+
+            dbSegment.UnitsPerTick = segment[Resource.Unit];
+            dbSegment.EnergyPerTick = segment[Resource.Energy];
+
             await Db.SaveChangesAsync();
         }
 
