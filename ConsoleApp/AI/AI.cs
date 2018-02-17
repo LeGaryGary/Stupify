@@ -68,6 +68,7 @@ namespace StupifyConsoleApp.AI
                 await _controller.addBlock(best.Item1, best.Item2);
                 placedBlocks.AddLast(best);
                 blocks = _controller.Blocks;
+                await _controller.updateDB();
             }
             
         }

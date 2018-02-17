@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 
 using StupifyConsoleApp.DataModels;
 using StupifyConsoleApp.TicTacZap;
+using TicTacZap;
 using TicTacZap.Segment.Blocks;
 
 using DBSegment = StupifyConsoleApp.DataModels.Segment;
@@ -29,17 +30,19 @@ namespace StupifyConsoleApp.AI
             _user = user;
             _dbSeg = segment;
             _db = db;
-            _seg = TicTacZapController.GetSegment(_dbSeg.SegmentId);
+            _seg = TicTacZapController.GetSegment(segment.SegmentId);
         }
 
         public async Task updateDB()
         {
             await _db.SaveChangesAsync();
+            _dbSeg.UnitsPerTick = TicTacZapExtensions.ResourcePerTick(_seg).GetValueOrDefault(Resource.Unit);
+            _dbSeg.EnergyPerTick = TicTacZapExtensions.ResourcePerTick(_seg).GetValueOrDefault(Resource.Energy);
         }
 
         public async Task addBlock(int x, int y)
         {
-            await TicTacZapController.AddBlock(_dbSeg.SegmentId, x, y, BlockType.Basic);
+            await TicTacZapController.AddBlock(_dbSeg.SegmentId, x, y, BlockType.BasicEnergy);
         }
 
         public async Task removeBlock(int x, int y)
@@ -49,7 +52,7 @@ namespace StupifyConsoleApp.AI
 
         public decimal output()
         {
-            return _seg.OutputPerTick;
+            return TicTacZapExtensions.ResourcePerTick(_seg).GetValueOrDefault(Resource.Energy);
         }
     }
 }
