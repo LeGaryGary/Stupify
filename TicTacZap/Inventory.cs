@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using TicTacZap.Segment.Blocks;
 
 namespace TicTacZap
@@ -11,7 +10,7 @@ namespace TicTacZap
 
         public Inventory(int startingBlocks)
         {
-            AddBlocks(BlockType.BasicEnergy, 5);
+            AddBlocks(BlockType.BasicEnergy, startingBlocks);
         }
 
         public string TextRender()
