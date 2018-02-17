@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace TicTacZap.Segment.Blocks
+﻿namespace TicTacZap.Segment.Blocks
 {
     public interface IBlock
     {

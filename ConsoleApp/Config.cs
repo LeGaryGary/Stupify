@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using Discord;
 using Microsoft.Extensions.Configuration;
 using Neo4j.Driver.V1;
 
