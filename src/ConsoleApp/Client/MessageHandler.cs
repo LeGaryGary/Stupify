@@ -67,6 +67,9 @@ namespace StupifyConsoleApp.Client
                     case CommandError.BadArgCount:
                         await context.Channel.SendMessageAsync("That's not right!");
                         break;
+                    case CommandError.UnmetPrecondition:
+                        await context.Channel.SendMessageAsync(result.ErrorReason);
+                        break;
                     default:
                         await ClientManager.LogAsync($"\r\nThe message: {context.Message} \r\nHas caused the following error: {result.ErrorReason}\r\nIn the server: {context.Guild.Name}");
                         await context.Channel.SendMessageAsync("Internal error! You may shout at the the developers here: https://discord.gg/nb5rUhd");

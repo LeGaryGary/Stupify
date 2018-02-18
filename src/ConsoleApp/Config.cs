@@ -16,14 +16,7 @@ namespace StupifyConsoleApp
         public static bool Debug => bool.Parse(Configuration["Debug"]);
         public static string LoggingDirectory => Configuration["LoggingDirectory"];
         public static string CommandPrefix => Configuration["CommandPrefix"]+" ";
-        public static IEnumerable<long> Developers
-        {
-            get
-            {
-                var str = Configuration["Developers"];
-                return str.Split(',').ToList().Select(s => s.Trim()).Where(s => s.Length > 0).Select(long.Parse);
-            }
-        }
+        public static ulong DeveloperRole => ulong.Parse(Configuration["DeveloperRole"]);
         public static string DataDirectory => Configuration["DataDirectory"];
 
         public static bool Neo4JMessageHandlerEnabled => bool.Parse(Configuration["MessageAnalysis:Enabled"]);

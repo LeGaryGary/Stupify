@@ -17,7 +17,7 @@ namespace StupifyConsoleApp.Commands
                 var server = db.Servers.First(s => (ulong) s.DiscordGuildId == Context.Guild.Id);
                 if (server.StoryInProgress)
                 {
-                    await ReplyAsync("Theres already a story in progress!!");
+                    await ReplyAsync("There's already a story in progress!!");
                     return;
                 }
 
@@ -40,7 +40,7 @@ namespace StupifyConsoleApp.Commands
                 await db.SaveChangesAsync();
                 await ReplyAsync(
                     $"The story begins here, who knows where it will go! Use the command {Config.CommandPrefix} andthen {{Your part of the story!}}" + Environment.NewLine +
-                    $"To end the story use {Config.CommandPrefix} theend, goodluck!");
+                    $"To end the story use {Config.CommandPrefix} theend, good luck!");
 
             }
         }

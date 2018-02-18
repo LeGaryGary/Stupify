@@ -1,11 +1,13 @@
 ﻿using Discord.Commands;
 using System.Threading.Tasks;
-
+using StupifyConsoleApp.Commands.Conditions;
 using StupifyConsoleApp.DataModels;
 using StupifyConsoleApp.TicTacZap;
 
 namespace StupifyConsoleApp.Commands
 {
+    [Debug]
+    [DevOnly]
     public class DebugModule : ModuleBase<SocketCommandContext>
     {
         private BotContext Db { get; } = new BotContext();
