@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Discord.Commands;
 using Microsoft.EntityFrameworkCore;
+
+using StupifyConsoleApp.Client;
 using StupifyConsoleApp.DataModels;
 using StupifyConsoleApp.TicTacZap;
 using TicTacZap;
@@ -117,7 +119,16 @@ namespace StupifyConsoleApp.Commands
             }
 
             var user = await CommonFunctions.GetUserAsync(Db, Context);
-            await Segments.ResetSegment(segmentId);
+            var blocks = await Segments.ResetSegmentAsync(segmentId);
+
+            foreach (var type in blocks)
+            {
+                if (type.Value > 0)
+                {
+                    await Inventories.AddToInventoryAsync(type.Key, type.Value, user.UserId);
+                }
+            }
+
             await Db.SaveChangesAsync();
             await UpdateDbSegmentOutput(segmentId);
             await ReplyAsync($"segment {segmentId} was reset!");

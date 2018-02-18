@@ -85,10 +85,28 @@ namespace StupifyConsoleApp.TicTacZap
             File.Delete(SegmentsPath + "\\" + segmentId + SegmentExtension);
         }
 
-        public static async Task ResetSegmentAsync(int segmentId)
+        public static async Task<Dictionary<BlockType, int>> ResetSegmentAsync(int segmentId)
         {
+            var blocks = new Dictionary<BlockType, int>();
             var segment = await GetAsync(segmentId);
-            
+
+            for (var x = 0; x < 9; x++)
+            for (var y = 0; y < 9; y++)
+            {
+                var blockType = segment.DeleteBlock(x, y);
+                if (blockType == null) continue;
+                if (blocks.ContainsKey(blockType.Value))
+                {
+                    blocks[blockType.Value]++;
+                }
+                else
+                {
+                    blocks.Add(blockType.Value, 1);
+                }
+            }
+
+            await SaveSegmentFileAsync(segmentId, segment);
+            return blocks;
         }
 
         public static async Task<bool> AddBlockAsync(int segmentId, int x, int y, BlockType blockType)
