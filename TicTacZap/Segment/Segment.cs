@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Text;
 using TicTacZap.Segment.Blocks;
 using TicTacZap.Segment.Blocks.Production;
-using TicTacZap.Segment.Blocks.Production.Energy;
 
 namespace TicTacZap.Segment
 {
