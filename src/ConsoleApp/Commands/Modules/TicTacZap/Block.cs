@@ -5,31 +5,30 @@ using StupifyConsoleApp.DataModels;
 using StupifyConsoleApp.TicTacZap;
 using TicTacZap.Segment.Blocks;
 
-namespace StupifyConsoleApp.Commands.TicTacZap
+namespace StupifyConsoleApp.Commands.Modules.TicTacZap
 {
-    public class BlockModule:SegmentModule
+    public class Block : StupifyModuleBase
     {
-        private BotContext Db { get; } = new BotContext();
 
-        [Command("addblock")]
+        [Command("AddBlock")]
         public async Task AddBlockCommand(int segmentId, int x, int y, string type)
         {
             var blockType = Enum.Parse<BlockType>(type);
-            if (await Inventories.RemoveFromInventoryAsync(blockType, 1, (await CommonFunctions.GetUserAsync(Db, Context)).UserId))
+            if (await Inventories.RemoveFromInventoryAsync(blockType, 1, (await this.GetUserAsync()).UserId))
             {
-                await Segments.AddBlockAsync(segmentId, x-1, y-1, blockType);
-                await UpdateDbSegmentOutput(segmentId);
-                await ShowSegment(segmentId);
+                await StupifyConsoleApp.TicTacZap.Segments.AddBlockAsync(segmentId, x-1, y-1, blockType);
+                await this.UpdateDbSegmentOutput(segmentId);
+                await this.ShowSegmentAsync(segmentId);
                 return;
             }
 
             await ReplyAsync(Responses.ShopAdvisoryMessage);
         }
 
-        [Command("addblock")]
+        [Command("AddBlock")]
         public async Task AddBlockCommand(int x, int y, string type)
         {
-            var segmentSelectionId = TicTacZapController.GetUserSelection((await CommonFunctions.GetUserAsync(Db, Context)).UserId);
+            var segmentSelectionId = TicTacZapController.GetUserSelection((await this.GetUserAsync()).UserId);
             if (segmentSelectionId != null )
             {
                 await AddBlockCommand((int)segmentSelectionId, x, y, type);
@@ -39,25 +38,25 @@ namespace StupifyConsoleApp.Commands.TicTacZap
             await ReplyAsync(Responses.SelectSegmentMessage);
         }
 
-        [Command("removeblock")]
+        [Command("RemoveBlock")]
         public async Task RemoveBlockCommand(int segmentId, int x, int y)
         {
-            if (await CommonFunctions.UserHasSegmentAsync(Db, Context, segmentId))
+            if (await this.UserHasSegmentAsync(segmentId))
             {
-                var blockType = await Segments.DeleteBlockAsync(segmentId, x-1, y-1);
+                var blockType = await StupifyConsoleApp.TicTacZap.Segments.DeleteBlockAsync(segmentId, x-1, y-1);
 
-                if (blockType != null) await Inventories.AddToInventoryAsync(blockType.Value, 1, (await CommonFunctions.GetUserAsync(Db, Context)).UserId);
-                await ShowSegment(segmentId);
+                if (blockType != null) await Inventories.AddToInventoryAsync(blockType.Value, 1, (await this.GetUserAsync()).UserId);
+                await this.ShowSegmentAsync(segmentId);
                 return;
             }
 
             await ReplyAsync(Responses.SegmentOwnershipProblem);
         }
 
-        [Command("removeblock")]
+        [Command("RemoveBlock")]
         public async Task RemoveBlockCommand(int x, int y)
         {
-            var segmentSelectionId = TicTacZapController.GetUserSelection((await CommonFunctions.GetUserAsync(Db, Context)).UserId);
+            var segmentSelectionId = TicTacZapController.GetUserSelection((await this.GetUserAsync()).UserId);
             if (segmentSelectionId != null )
             {
                 await RemoveBlockCommand((int)segmentSelectionId, x, y);

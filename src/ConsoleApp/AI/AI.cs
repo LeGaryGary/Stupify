@@ -49,7 +49,7 @@ namespace StupifyConsoleApp.AI
                                 && blocks[x+i, y+j] == null)
                             {
                                 await _controller.AddBlock(x + i, y + j);
-                                decimal tmp = _controller.Output();
+                                var tmp = _controller.Output();
                                 if(tmp - output > 50 || (output == 0 && tmp == output))
                                 {
                                     output = tmp;

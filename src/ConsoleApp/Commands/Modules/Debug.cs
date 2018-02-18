@@ -1,21 +1,19 @@
-﻿using Discord.Commands;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using Discord.Commands;
 using StupifyConsoleApp.Commands.Conditions;
 using StupifyConsoleApp.DataModels;
 using StupifyConsoleApp.TicTacZap;
 
-namespace StupifyConsoleApp.Commands
+namespace StupifyConsoleApp.Commands.Modules
 {
     [Debug]
     [DevOnly]
-    public class DebugModule : ModuleBase<SocketCommandContext>
+    public class Debug : StupifyModuleBase
     {
-        private BotContext Db { get; } = new BotContext();
-
-        [Command("motherlode")]
+        [Command("Motherlode")]
         public async Task DebugMotherlode()
         {
-            var user = await CommonFunctions.GetUserAsync(Db, Context);
+            var user = await this.GetUserAsync();
 
             user.Balance += 1000000;
 
@@ -23,18 +21,18 @@ namespace StupifyConsoleApp.Commands
             await ReplyAsync($"You filthy cheater! Fine. I updated the balance. (balance: {user.Balance})");
         }
 
-        [Command("invreset")]
+        [Command("InvReset")]
         public async Task DebugInvReset()
         {
-            var user = CommonFunctions.GetUserAsync(Db, Context);
+            var user = this.GetUserAsync();
             await Inventories.ResetInventory(user.Id);
             await ReplyAsync("inventory reset!");
         }
 
-        [Command("balreset")]
+        [Command("BalReset")]
         public async Task DebugBalReset()
         {
-            var user = await CommonFunctions.GetUserAsync(Db, Context);
+            var user = await this.GetUserAsync();
 
             user.Balance = 500;
 

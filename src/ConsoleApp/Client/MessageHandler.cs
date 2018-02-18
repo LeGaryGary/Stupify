@@ -47,7 +47,7 @@ namespace StupifyConsoleApp.Client
                 }
             }
 
-            if (!(message.HasStringPrefix(Config.CommandPrefix, ref argPos)
+            if (!(message.HasStringPrefix(Config.CommandPrefix+" ", ref argPos)
                   || message.HasMentionPrefix(ClientManager.Client.CurrentUser, ref argPos)))
             {
                 await addMessageNodeTask;

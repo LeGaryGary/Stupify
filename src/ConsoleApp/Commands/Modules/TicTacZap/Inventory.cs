@@ -5,13 +5,11 @@ using StupifyConsoleApp.DataModels;
 using StupifyConsoleApp.TicTacZap;
 using TicTacZap.Segment.Blocks;
 
-namespace StupifyConsoleApp.Commands.TicTacZap
+namespace StupifyConsoleApp.Commands.Modules.TicTacZap
 {
-    public class InventoryModule:ModuleBase<SocketCommandContext>
+    public class Inventory:StupifyModuleBase
     {
-        private BotContext Db { get; } = new BotContext();
-
-        [Command("balance")]
+        [Command("Balance")]
         public async Task ShowBalance()
         {
             var balance = await Balance();
@@ -20,14 +18,14 @@ namespace StupifyConsoleApp.Commands.TicTacZap
 
         private async Task<decimal> Balance()
         {
-            var user = await CommonFunctions.GetUserAsync(Db, Context);
+            var user = await this.GetUserAsync();
             return user.Balance;
         }
 
-        [Command("inventory")]
+        [Command("Inventory")]
         public async Task ShowInventory()
         {
-            var userId = (await CommonFunctions.GetUserAsync(Db, Context)).UserId;
+            var userId = (await this.GetUserAsync()).UserId;
             var message = await TicTacZapController.RenderInventory(userId);
             if (message == string.Empty)
             {
@@ -37,21 +35,21 @@ namespace StupifyConsoleApp.Commands.TicTacZap
             await ReplyAsync(message);
         }
 
-        [Command("shop")]
+        [Command("Shop")]
         public async Task ShowShopInventory()
         {
             var message = TicTacZapController.Shop.TextRender();
             await ReplyAsync(message);
         }
 
-        [Command("buy")]
+        [Command("Buy")]
         public async Task BuyFromShop(string blockString, int quantity)
         {
             var block = Enum.Parse<BlockType>(blockString);
             var total = TicTacZapController.Shop.GetTotal(block, quantity);
             if (await RemoveBalanceAsync(total))
             {
-                await Inventories.AddToInventoryAsync(block, quantity, (await CommonFunctions.GetUserAsync(Db, Context)).UserId);
+                await Inventories.AddToInventoryAsync(block, quantity, (await this.GetUserAsync()).UserId);
                 await ShowInventory();
                 return;
             }
@@ -61,7 +59,7 @@ namespace StupifyConsoleApp.Commands.TicTacZap
 
         private async Task<bool> RemoveBalanceAsync(decimal units)
         {
-            var user = await CommonFunctions.GetUserAsync(Db, Context);
+            var user = await this.GetUserAsync();
             if (units > user.Balance) return false;
             user.Balance -= units;
             await Db.SaveChangesAsync();

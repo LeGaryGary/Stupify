@@ -7,7 +7,7 @@ using StupifyConsoleApp.DataModels;
 namespace StupifyConsoleApp.Commands.Moderation
 {
     [RequireUserPermission(ChannelPermission.ManageMessages)]
-    public class MuteModule : ModuleBase<SocketCommandContext>
+    public class Mute : ModuleBase<SocketCommandContext>
     {
         [Command("mute"), RequireUserPermission(ChannelPermission.ManageMessages)]
         public async Task MuteAsync(string userTag)
