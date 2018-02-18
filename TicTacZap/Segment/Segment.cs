@@ -27,7 +27,7 @@ namespace TicTacZap.Segment
 
         public bool AddBlock(int x, int y, BlockType blockType)
         {
-            var block = NewBlock(blockType);
+            var block = TicTacZapExtensions.NewBlock(blockType);
             return AddBlock(x, y, block);
         }
 
@@ -45,7 +45,7 @@ namespace TicTacZap.Segment
             if (Blocks[x, y] is SegmentControllerBlock) return null;
             var blockType = Blocks[x, y]?.BlockType;
             Blocks[x, y] = null;
-            UpdateSegmentOutput();
+            if (blockType != null) UpdateSegmentOutput();
             return blockType;
         }
 
@@ -202,25 +202,6 @@ namespace TicTacZap.Segment
                 return;
             }
             ResourceOutput.Add(produceBlockOutputType, produceBlockOutputPerTick);
-        }
-
-        public static IBlock NewBlock(BlockType blockType)
-        {
-            IBlock block;
-
-            switch (blockType)
-            {
-                case BlockType.Controller:
-                    block = new SegmentControllerBlock();
-                    break;
-                case BlockType.BasicEnergy:
-                    block = new BasicEnergyBlock();
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(blockType), blockType, null);
-            }
-
-            return block;
         }
 
         public string TextRender()

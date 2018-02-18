@@ -29,7 +29,7 @@ namespace StupifyConsoleApp.Commands
         [Command("inventory")]
         public async Task ShowInventory()
         {
-            var userId = (await GetUserAsync()).UserId;
+            var userId = (await CommonFunctions.GetUserAsync(Db, Context)).UserId;
             var message = await TicTacZapController.RenderInventory(userId);
             if (message == string.Empty)
             {
@@ -53,7 +53,7 @@ namespace StupifyConsoleApp.Commands
             var total = TicTacZapController.Shop.GetTotal(block, quantity);
             if (await RemoveBalanceAsync(total))
             {
-                await TicTacZapController.AddToInventoryAsync(block, quantity, (await GetUserAsync()).UserId);
+                await Inventories.AddToInventoryAsync(block, quantity, (await CommonFunctions.GetUserAsync(Db, Context)).UserId);
                 await ShowInventory();
                 return;
             }
@@ -66,8 +66,8 @@ namespace StupifyConsoleApp.Commands
         {
             if (await UserHasSegmentAsync(segmentId))
             {
-                TicTacZapController.SetUserSegmentSelection((await GetUserAsync()).UserId, segmentId);
-                await ReplyAsync($"```{TicTacZapController.RenderSegment(segmentId, Db)}```");
+                await TicTacZapController.SetUserSegmentSelection((await CommonFunctions.GetUserAsync(Db, Context)).UserId, segmentId, Db);
+                await ReplyAsync($"```{await TicTacZapController.RenderSegmentAsync(segmentId, Db)}```");
                 return;
             }
             await ReplyAsync(SegmentOwnershipProblemString);
@@ -91,7 +91,7 @@ namespace StupifyConsoleApp.Commands
         [Command("buysegment")]
         public async Task BuySegment()
         {
-            var user = await GetUserAsync();
+            var user = await CommonFunctions.GetUserAsync(Db, Context);
 
             var price = SegmentPrice(await SegmentCountAsync());
             if (price > user.Balance)
@@ -116,8 +116,8 @@ namespace StupifyConsoleApp.Commands
                 return;
             }
 
-            var user = await GetUserAsync();
-            await TicTacZapController.ResetSegment(segmentId, user.UserId);
+            var user = await CommonFunctions.GetUserAsync(Db, Context);
+            await Segments.ResetSegment(segmentId);
             await Db.SaveChangesAsync();
             await UpdateDbSegmentOutput(segmentId);
             await ReplyAsync($"segment {segmentId} was reset!");
@@ -139,28 +139,22 @@ namespace StupifyConsoleApp.Commands
         [Command("addblock")]
         public async Task AddBlockCommand(int segmentId, int x, int y, string type)
         {
-
-            await TicTacZapController.AddBlock(segmentId, x - 1, y - 1, (BlockType)Enum.Parse(typeof(BlockType), type));
-            await UpdateDbSegmentOutput(segmentId);
-            await ShowSegment(segmentId);
-
             var blockType = Enum.Parse<BlockType>(type);
-            if (await TicTacZapController.RemoveFromInventory(blockType, 1, (await GetUserAsync()).UserId))
+            if (await Inventories.RemoveFromInventoryAsync(blockType, 1, (await CommonFunctions.GetUserAsync(Db, Context)).UserId))
             {
-                await TicTacZapController.AddBlock(segmentId, x-1, y-1, blockType);
+                await Segments.AddBlockAsync(segmentId, x-1, y-1, blockType);
                 await UpdateDbSegmentOutput(segmentId);
                 await ShowSegment(segmentId);
                 return;
             }
 
             await ReplyAsync(_buyItemAdvisory);
-
         }
 
         [Command("addblock")]
         public async Task AddBlockCommand(int x, int y, string type)
         {
-            var segmentSelectionId = TicTacZapController.GetUserSelection((await GetUserAsync()).UserId);
+            var segmentSelectionId = TicTacZapController.GetUserSelection((await CommonFunctions.GetUserAsync(Db, Context)).UserId);
             if (segmentSelectionId != null )
             {
                 await AddBlockCommand((int)segmentSelectionId, x, y, type);
@@ -175,9 +169,9 @@ namespace StupifyConsoleApp.Commands
         {
             if (await UserHasSegmentAsync(segmentId))
             {
-                var blockType = await TicTacZapController.DeleteBlockAsync(segmentId, x-1, y-1);
+                var blockType = await Segments.DeleteBlockAsync(segmentId, x-1, y-1);
 
-                if (blockType != null) await TicTacZapController.AddToInventoryAsync(blockType.Value, 1, (await GetUserAsync()).UserId);
+                if (blockType != null) await Inventories.AddToInventoryAsync(blockType.Value, 1, (await CommonFunctions.GetUserAsync(Db, Context)).UserId);
                 await ShowSegment(segmentId);
                 return;
             }
@@ -188,7 +182,7 @@ namespace StupifyConsoleApp.Commands
         [Command("removeblock")]
         public async Task RemoveBlockCommand(int x, int y)
         {
-            var segmentSelectionId = TicTacZapController.GetUserSelection((await GetUserAsync()).UserId);
+            var segmentSelectionId = TicTacZapController.GetUserSelection((await CommonFunctions.GetUserAsync(Db, Context)).UserId);
             if (segmentSelectionId != null )
             {
                 await RemoveBlockCommand((int)segmentSelectionId, x, y);
@@ -205,7 +199,7 @@ namespace StupifyConsoleApp.Commands
 
         private async Task<bool> RemoveBalanceAsync(decimal units)
         {
-            var user = await GetUserAsync();
+            var user = await CommonFunctions.GetUserAsync(Db, Context);
             if (units > user.Balance) return false;
             user.Balance -= units;
             await Db.SaveChangesAsync();
@@ -218,7 +212,7 @@ namespace StupifyConsoleApp.Commands
             Db.Segments.Remove(dbSegment);
             await Db.SaveChangesAsync();
 
-            await TicTacZapController.DeleteSegmentAsync(segmentId);
+            await Segments.DeleteSegmentAsync(segmentId);
         }
 
         private async Task<bool> UserHasSegmentAsync(int segmentId)
@@ -239,25 +233,20 @@ namespace StupifyConsoleApp.Commands
 
         private async Task<IEnumerable<Segment>> GetSegments()
         {
-            var user = await GetUserAsync();
+            var user = await CommonFunctions.GetUserAsync(Db, Context);
             return Db.Segments.Where(s => s.UserId == user.UserId);
         }
 
         private async Task<int> SegmentCountAsync()
         {
-            var user = await GetUserAsync();
+            var user = await CommonFunctions.GetUserAsync(Db, Context);
             return await Db.Segments.Where(s => s.UserId == user.UserId).CountAsync();
         }
 
         private async Task<decimal> Balance()
         {
-            var user = await GetUserAsync();
+            var user = await CommonFunctions.GetUserAsync(Db, Context);
             return user.Balance;
-        }
-
-        private async Task<User> GetUserAsync()
-        {
-            return await Db.Users.FirstAsync(u => u.DiscordUserId == (long) Context.User.Id);
         }
 
         private async Task<int> NewSegment(User user)
@@ -271,7 +260,7 @@ namespace StupifyConsoleApp.Commands
             };
             await Db.Segments.AddAsync(segment);
             await Db.SaveChangesAsync();
-            await TicTacZapController.AddSegment(segment.SegmentId);
+            await Segments.NewSegmentAsync(segment.SegmentId);
             await UpdateDbSegmentOutput(segment.SegmentId);
 
             return segment.SegmentId;
@@ -280,10 +269,10 @@ namespace StupifyConsoleApp.Commands
         private async Task UpdateDbSegmentOutput(int segmentId)
         {
             var dbSegment = await Db.Segments.FirstAsync(s => s.SegmentId == segmentId);
-            var segment = TicTacZapController.GetSegmentOutput(segmentId);
+            var segmentOutput = await Segments.GetOutput(segmentId);
 
-            dbSegment.UnitsPerTick = segment[Resource.Unit];
-            dbSegment.EnergyPerTick = segment[Resource.Energy];
+            dbSegment.UnitsPerTick = segmentOutput[Resource.Unit];
+            dbSegment.EnergyPerTick = segmentOutput[Resource.Energy];
 
             await Db.SaveChangesAsync();
         }

@@ -17,12 +17,12 @@ namespace BotDataGraph.MessageAnalyser
         
         public Neo4JMessageHandler(Uri uri, IAuthToken authToken)
         {
-            this.driver = GraphDatabase.Driver(uri, authToken);
-            using (var session = this.driver.Session())
+            driver = GraphDatabase.Driver(uri, authToken);
+            using (var session = driver.Session())
             {
                 var time = DateTime.Now.ToString("s");
 
-                this.startupTime = session.WriteTransaction(tx =>
+                startupTime = session.WriteTransaction(tx =>
                     {
                         var result = tx.Run(
                             "CREATE (a:Startup) SET a.time = $time RETURN a.time",
@@ -35,7 +35,7 @@ namespace BotDataGraph.MessageAnalyser
         
         public async Task Handle(Message message)
         {
-            using (var session = this.driver.Session())
+            using (var session = driver.Session())
             {
                 var messageNodeId = await AddMessageNodeAsync(message, session);
 
@@ -98,7 +98,7 @@ namespace BotDataGraph.MessageAnalyser
                         + "return id(message) "
                         + "ORDER BY message.time DESC "
                         + "LIMIT 1",
-                        message.Parameters(this.startupTime));
+                        message.Parameters(startupTime));
                     try
                     {
                         return reader.First()[0].As<int>();
@@ -132,7 +132,7 @@ namespace BotDataGraph.MessageAnalyser
                         "MERGE (s)-[sc:SERVER_CHANNEL]->(channel)" +
                         query2 +
                         "return id(m)",
-                        message.Parameters(this.startupTime, lastMessageNodeId));
+                        message.Parameters(startupTime, lastMessageNodeId));
 
                     return reader.Single()[0].As<int>();
                 });

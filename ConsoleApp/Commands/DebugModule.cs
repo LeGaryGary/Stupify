@@ -25,7 +25,7 @@ namespace StupifyConsoleApp.Commands
         public async Task DebugInvReset()
         {
             var user = CommonFunctions.GetUserAsync(Db, Context);
-            await TicTacZapController.ResetInventory(user.Id);
+            await Inventories.ResetInventory(user.Id);
             await ReplyAsync("inventory reset!");
         }
 

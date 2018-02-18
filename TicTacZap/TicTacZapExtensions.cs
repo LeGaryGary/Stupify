@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using TicTacZap.Segment.Blocks;
+using TicTacZap.Segment.Blocks.Production.Energy;
 
 namespace TicTacZap
 {
@@ -30,6 +32,25 @@ namespace TicTacZap
             }
 
             return resources;
+        }
+
+        public static IBlock NewBlock(BlockType blockType)
+        {
+            IBlock block;
+
+            switch (blockType)
+            {
+                case BlockType.Controller:
+                    block = new SegmentControllerBlock();
+                    break;
+                case BlockType.BasicEnergy:
+                    block = new BasicEnergyBlock();
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(blockType), blockType, null);
+            }
+
+            return block;
         }
     }
 }

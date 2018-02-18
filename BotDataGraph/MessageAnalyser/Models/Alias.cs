@@ -12,8 +12,8 @@ namespace BotDataGraph.MessageAnalyser.Models
         
         public DateTime Time 
         {
-            get => DateTime.Parse(this.time);
-            set => this.time = value.ToString("s");
+            get => DateTime.Parse(time);
+            set => time = value.ToString("s");
         }
     }
 }

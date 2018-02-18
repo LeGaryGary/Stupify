@@ -14,6 +14,8 @@ namespace StupifyConsoleApp.Commands
             var message = string.Empty;
             foreach (var command in commands)
             {
+                if(command.Module.Name == "DebugModule") continue;
+
                 message += $"{command.Name}: `{Config.CommandPrefix}{command.Name} ";
                 var parameters = command.Parameters;
                 foreach (var parameter in parameters)

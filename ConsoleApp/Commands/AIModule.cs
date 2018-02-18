@@ -1,10 +1,15 @@
-﻿using Discord.Commands;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using Discord.Commands;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Discord;
 
 using StupifyConsoleApp.DataModels;
 using StupifyConsoleApp.TicTacZap;
+using StupifyConsoleApp.AI;
+using StupifyConsoleApp.Client;
 
 namespace StupifyConsoleApp.Commands
 {
@@ -25,7 +30,7 @@ namespace StupifyConsoleApp.Commands
                 return;
             }
 
-            await RunAI(Db, segment, user);
+            await runAI(Db, segment, user);
         }
 
         [Command("solve")]
@@ -44,23 +49,23 @@ namespace StupifyConsoleApp.Commands
             }
         }
 
-        private async Task RunAI(BotContext db, Segment segment, User user)
+        private async Task runAI(BotContext db, Segment segment, User user)
         {
-            var aiInstance = new AI.AI(Db, segment, user);
-            var ai = Task.Run(() => aiInstance.Run());
-            var msg = await ReplyAsync("hang on...");
+            AI.AI aiInstance = new AI.AI(Db, segment, user);
+            Task ai = Task.Run(() => aiInstance.run());
+            IUserMessage msg = await ReplyAsync("hang on...");
             while (!ai.IsCompleted)
             {
-                await UpdateMsg(msg, segment);
-                await Task.Delay(2000);
+                await updateMsg(msg, segment);
+                await Task.Delay(1000);
             }
 
-            await UpdateMsg(msg, segment, true);
+            await updateMsg(msg, segment, true);
         }
 
-        private async Task UpdateMsg(IUserMessage msg, Segment segment, bool done = false)
+        private async Task updateMsg(IUserMessage msg, Segment segment, bool done = false)
         {
-            var str = TicTacZapController.RenderSegment(segment.SegmentId, Db) + "\n";
+            string str = TicTacZapController.RenderSegmentAsync(segment.SegmentId, Db) + "\n";
             str += (done) ? "done." : "working...";
 
             await msg.ModifyAsync(message => message.Content = $"```{str}```");

@@ -1,24 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Threading.Tasks;
 
 using StupifyConsoleApp.DataModels;
+using TicTacZap.Segment.Blocks;
+using StupifyConsoleApp.Client;
 
 namespace StupifyConsoleApp.AI
 {
     public class AI
     {
-        private readonly AIController _controller;
+        private AIController _controller;
 
         public AI(BotContext db, Segment segment, User user)
         {
             _controller = new AIController(db, segment, user);
         }
 
-        public async Task Run()
+        public async Task run()
         {
-            var rnd = new Random();
-            var blocks = _controller.Blocks;
+            Random rnd = new Random();
+            IBlock[,] blocks = _controller.Blocks;
 
             // make a list of placed blocks
             var placedBlocks = new LinkedList<Tuple<int, int>>();
@@ -38,18 +41,18 @@ namespace StupifyConsoleApp.AI
                 // iterate through the list, choosing the best block to expand
                 var output = _controller.Output();
                 Tuple<int, int> best = null;
-                foreach(var block in placedBlocks)
+                foreach(Tuple<int, int> block in placedBlocks)
                 {
-                    var x = block.Item1;
-                    var y = block.Item2;
-                    for(var i = -1; i <= 1; i++)
-                        for(var j = -1; j <= 1; j++)
+                    int x = block.Item1;
+                    int y = block.Item2;
+                    for(int i = -1; i <= 1; i++)
+                        for(int j = -1; j <= 1; j++)
                         { 
                             if(x+i >= 0 && y+j >=0 && x+i < 9 && y+j < 9 
                                 && blocks[x+i, y+j] == null)
                             {
                                 await _controller.AddBlock(x + i, y + j);
-                                var tmp = _controller.Output();
+                                decimal tmp = _controller.Output();
                                 if(tmp - output > 50 || (output == 0 && tmp == output))
                                 {
                                     output = tmp;
@@ -65,7 +68,7 @@ namespace StupifyConsoleApp.AI
                 await _controller.AddBlock(best.Item1, best.Item2);
                 placedBlocks.AddLast(best);
                 blocks = _controller.Blocks;
-                await _controller.UpdateDB();
+                await _controller.UpdateDb();
             }
             
         }
