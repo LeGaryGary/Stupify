@@ -29,6 +29,7 @@ namespace StupifyConsoleApp.Commands.TicTacZap
             }
 
             await RunAI(Db, segment, user);
+            await Db.SaveChangesAsync();
         }
 
         [Command("solve")]

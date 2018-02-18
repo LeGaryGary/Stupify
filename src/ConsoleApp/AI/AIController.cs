@@ -30,9 +30,10 @@ namespace StupifyConsoleApp.AI
 
         public async Task UpdateDb()
         {
+            var outputs = await Segments.GetOutput(_dbSeg.SegmentId);
+            _dbSeg.UnitsPerTick = outputs[Resource.Unit];
+            _dbSeg.EnergyPerTick = outputs[Resource.Energy];
             await _db.SaveChangesAsync();
-            _dbSeg.UnitsPerTick = _seg.ResourcePerTick().GetValueOrDefault(Resource.Unit);
-            _dbSeg.EnergyPerTick = _seg.ResourcePerTick().GetValueOrDefault(Resource.Energy);
         }
 
         public async Task AddBlock(int x, int y)
