@@ -18,10 +18,7 @@ namespace StupifyConsoleApp.AI
         private readonly Segment _seg;
         private readonly BotContext _db;
 
-        public IBlock[,] Blocks
-        {
-            get { return (IBlock[,]) _seg.Blocks.Clone(); }
-        }
+        public IBlock[,] Blocks => (IBlock[,]) _seg.Blocks.Clone();
 
         public AIController(BotContext db, DBSegment segment, User user)
         {

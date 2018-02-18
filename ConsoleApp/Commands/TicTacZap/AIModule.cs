@@ -1,17 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Discord.Commands;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+﻿using System.Threading.Tasks;
 using Discord;
-
+using Discord.Commands;
+using Microsoft.EntityFrameworkCore
+    ;
 using StupifyConsoleApp.DataModels;
 using StupifyConsoleApp.TicTacZap;
-using StupifyConsoleApp.AI;
-using StupifyConsoleApp.Client;
 
-namespace StupifyConsoleApp.Commands
+namespace StupifyConsoleApp.Commands.TicTacZap
 {
     public class AIModule : ModuleBase<SocketCommandContext>
     {
