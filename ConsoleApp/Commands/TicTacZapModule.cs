@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Discord.Commands;
 using Microsoft.EntityFrameworkCore;
 
-using StupifyConsoleApp.Client;
 using StupifyConsoleApp.DataModels;
 using StupifyConsoleApp.TicTacZap;
 using TicTacZap;
@@ -15,10 +14,6 @@ namespace StupifyConsoleApp.Commands
 {
     public class TicTacZapModule : ModuleBase<SocketCommandContext>
     {
-        private const string SegmentOwnershipProblemString = "You don't own a segment with this Id!";
-        private readonly string _selectSegmentMessage = $"Please select a segment with {Config.CommandPrefix}segment [segmentId]";
-        private readonly string _buyItemAdvisory = $"Please buy the item you are trying to use! `{Config.CommandPrefix}shop` and `{Config.CommandPrefix}buy [type] [quantity]`";
-
         private BotContext Db { get; } = new BotContext();
 
         [Command("balance")]
@@ -66,19 +61,19 @@ namespace StupifyConsoleApp.Commands
         [Command("segment")]
         public async Task ShowSegment(int segmentId)
         {
-            if (await UserHasSegmentAsync(segmentId))
+            if (await CommonFunctions.UserHasSegmentAsync(Db, Context, segmentId))
             {
                 await TicTacZapController.SetUserSegmentSelection((await CommonFunctions.GetUserAsync(Db, Context)).UserId, segmentId, Db);
                 await ReplyAsync($"```{await TicTacZapController.RenderSegmentAsync(segmentId, Db)}```");
                 return;
             }
-            await ReplyAsync(SegmentOwnershipProblemString);
+            await ReplyAsync(Responses.SegmentOwnershipProblem);
         }
 
         [Command("segments")]
         public async Task ListSegments()
         {
-            var segments = await GetSegments();
+            var segments = await CommonFunctions.GetSegments(Db, Context);
             var renderSegmentList = RenderSegmentList(segments);
             if (renderSegmentList == string.Empty)
             {
@@ -112,9 +107,9 @@ namespace StupifyConsoleApp.Commands
         [Command("resetsegment")]
         public async Task ResetSegment(int segmentId)
         {
-            if (!await UserHasSegmentAsync(segmentId))
+            if (!await CommonFunctions.UserHasSegmentAsync(Db, Context, segmentId))
             {
-                await ReplyAsync(SegmentOwnershipProblemString);
+                await ReplyAsync(Responses.SegmentOwnershipProblem);
                 return;
             }
 
@@ -137,9 +132,9 @@ namespace StupifyConsoleApp.Commands
         [Command("deletesegment")]
         public async Task DeleteSegmentCommand(int segmentId)
         {
-            if (!await UserHasSegmentAsync(segmentId))
+            if (!await CommonFunctions.UserHasSegmentAsync(Db, Context, segmentId))
             {
-                await ReplyAsync(SegmentOwnershipProblemString);
+                await ReplyAsync(Responses.SegmentOwnershipProblem);
                 return;
             }
 
@@ -159,7 +154,7 @@ namespace StupifyConsoleApp.Commands
                 return;
             }
 
-            await ReplyAsync(_buyItemAdvisory);
+            await ReplyAsync(Responses.ShopAdvisoryMessage);
         }
 
         [Command("addblock")]
@@ -172,13 +167,13 @@ namespace StupifyConsoleApp.Commands
                 return;
             }
 
-            await ReplyAsync(_selectSegmentMessage);
+            await ReplyAsync(Responses.SelectSegmentMessage);
         }
 
         [Command("removeblock")]
         public async Task RemoveBlockCommand(int segmentId, int x, int y)
         {
-            if (await UserHasSegmentAsync(segmentId))
+            if (await CommonFunctions.UserHasSegmentAsync(Db, Context, segmentId))
             {
                 var blockType = await Segments.DeleteBlockAsync(segmentId, x-1, y-1);
 
@@ -187,7 +182,7 @@ namespace StupifyConsoleApp.Commands
                 return;
             }
 
-            await ReplyAsync(SegmentOwnershipProblemString);
+            await ReplyAsync(Responses.SegmentOwnershipProblem);
         }
 
         [Command("removeblock")]
@@ -200,7 +195,7 @@ namespace StupifyConsoleApp.Commands
                 return;
             }
 
-            await ReplyAsync(_selectSegmentMessage);
+            await ReplyAsync(Responses.SelectSegmentMessage);
         }
 
         private async Task NotEnoughUnitsReplyAsync(decimal price)
@@ -226,11 +221,6 @@ namespace StupifyConsoleApp.Commands
             await Segments.DeleteSegmentAsync(segmentId);
         }
 
-        private async Task<bool> UserHasSegmentAsync(int segmentId)
-        {
-            return (await GetSegments()).Select(s => s.SegmentId).Contains(segmentId);
-        }
-
         private static string RenderSegmentList(IEnumerable<Segment> segments)
         {
             var str = string.Empty;
@@ -240,12 +230,6 @@ namespace StupifyConsoleApp.Commands
             }
 
             return str;
-        }
-
-        private async Task<IEnumerable<Segment>> GetSegments()
-        {
-            var user = await CommonFunctions.GetUserAsync(Db, Context);
-            return Db.Segments.Where(s => s.UserId == user.UserId);
         }
 
         private async Task<int> SegmentCountAsync()

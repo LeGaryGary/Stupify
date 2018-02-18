@@ -124,5 +124,6 @@ namespace StupifyConsoleApp.TicTacZap
             UserSegmentSelection.Add(userId, null);
             return null;
         }
+
     }
 }
