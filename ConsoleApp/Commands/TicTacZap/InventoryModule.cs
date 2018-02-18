@@ -56,7 +56,7 @@ namespace StupifyConsoleApp.Commands.TicTacZap
                 return;
             }
 
-            await ReplyAsync(CommonFunctions.NotEnoughUnits(total));
+            await ReplyAsync(Responses.NotEnoughUnits(total));
         }
 
         private async Task<bool> RemoveBalanceAsync(decimal units)

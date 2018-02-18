@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Discord.Commands;
 using Microsoft.EntityFrameworkCore;
@@ -50,7 +49,7 @@ namespace StupifyConsoleApp.Commands.TicTacZap
             var price = SegmentPrice(await SegmentCountAsync());
             if (price > user.Balance)
             {
-                await ReplyAsync(CommonFunctions.NotEnoughUnits(price));
+                await ReplyAsync(Responses.NotEnoughUnits(price));
                 return;
             }
 

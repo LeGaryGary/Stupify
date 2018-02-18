@@ -26,10 +26,5 @@ namespace StupifyConsoleApp.Commands
         {
             return (await GetSegments(db, context)).Select(s => s.SegmentId).Contains(segmentId);
         }
-
-        public static string NotEnoughUnits(decimal price)
-        {
-            return $"Come back when you have more money (you need {price} {Resource.Unit} to buy this)";
-        }
     }
 }

@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Discord.Commands;
+﻿using Discord.Commands;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Discord;
 
 using StupifyConsoleApp.DataModels;
 using StupifyConsoleApp.TicTacZap;
-using StupifyConsoleApp.AI;
-using StupifyConsoleApp.Client;
 
 namespace StupifyConsoleApp.Commands
 {
