@@ -5,6 +5,6 @@
         Resource OutputType { get; }
         decimal OutputPerTick { get; }
 
-        decimal UpdateOutput(int sumOfDistancesInDirections, int connectedDiagonals, int layer);
+        decimal UpdateOutput(int sumOfDistancesInDirections, int neighbours);
     }
 }

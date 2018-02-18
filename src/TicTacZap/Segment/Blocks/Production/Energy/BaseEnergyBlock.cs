@@ -9,9 +9,9 @@ namespace TicTacZap.Segment.Blocks.Production.Energy
         public decimal OutputPerTick { get; private set; }
         public decimal Upkeep { get; protected set; }
 
-        public decimal UpdateOutput(int sumOfDistancesInDirections, int connectedDiagonals, int layer)
+        public decimal UpdateOutput(int sumOfDistancesInDirections, int neighbours)
         {
-            var output = layer * layer * Math.Log(sumOfDistancesInDirections,2) * connectedDiagonals;
+            var output =  sumOfDistancesInDirections / (neighbours + 1);
             if (double.IsNaN(output) || double.IsInfinity(output))
             {
                 OutputPerTick = 0;
