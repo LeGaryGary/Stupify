@@ -7,23 +7,44 @@ namespace TicTacZap
 {
     public class Universe
     {
-        private int?[,] _segments;
+        public readonly int?[,] Segments;
+        public readonly int Size;
+        public readonly (int x, int y) Center;
 
-        public Universe()
+        public Universe(int size)
         {
-            _segments = new int?[1000,1000];
+            Size = size;
+            Segments = new int?[size,size];
+            Center = (Size / 2, Size / 2);
+        }
+
+        public string RenderTheEntiretyOfCreationAsWeKnowIt()
+        {
+            var str = string.Empty;
+            for (var y = Size-1; y >= 0; y--)
+            {
+                for (var x = 0; x < Size; x++)
+                {
+                    if (Segments[x, y] != null) str += " S ";
+                    else str += " ~ ";
+                }
+
+                str += Environment.NewLine;
+            }
+
+            return str;
         }
 
         public (int,int) NewSegment(int segmentId)
         {
             (var x, var y) = GetFirstEmptySegment();
-            _segments[x, y] = segmentId;
+            Segments[x, y] = segmentId;
             return (x,y);
         }
 
-        public void DeleteSegment(int x, int y)
+        public void DeleteSegment((int x, int y) coords)
         {
-            _segments[x, y] = null;
+            Segments[coords.x, coords.y] = null;
         }
 
         private (int, int) GetFirstEmptySegment()
@@ -33,48 +54,48 @@ namespace TicTacZap
 
         public (int, int) FindSegment(int? segmentId)
         {
-            var x = 500;
-            var y = 500;
-            var layer = 1;
+            var x = Center.x;
+            var y = Center.y;
+            var layer = 0;
             var direction = Direction.Up;
             while (true)
             {
-                if (_segments[x, y] == segmentId) break;
-
-                if (Math.Max(Math.Abs(x - 500), Math.Abs(y - 500)) == layer)
-                {
-                    switch (direction)
-                    {
-                        case Direction.Up:
-                            direction = Direction.Right;
-                            break;
-                        case Direction.Down:
-                            direction = Direction.Left;
-                            break;
-                        case Direction.Left:
-                            direction = Direction.Up;
-                            break;
-                        case Direction.Right:
-                            direction = Direction.Down;
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException();
-                    }
-                }
+                if (Segments[x, y] == segmentId) break;
 
                 switch (direction)
                 {
                     case Direction.Up:
-                        y++;
+                        if (Math.Abs(y - Center.y) == layer)
+                        {
+                            y++;
+                            layer++;
+                            direction = Direction.Right;
+                        }
+                        else y++;
                         break;
                     case Direction.Down:
-                        y--;
+                        if (Math.Abs(y - Center.y) == layer)
+                        {
+                            direction = Direction.Left;
+                            x--;
+                        }
+                        else y--;
                         break;
                     case Direction.Left:
-                        x--;
+                        if (Math.Abs(x - Center.x) == layer)
+                        {
+                            direction = Direction.Up;
+                            y++;
+                        }
+                        else x--;
                         break;
                     case Direction.Right:
-                        x++;
+                        if (Math.Abs(x - Center.x) == layer)
+                        {
+                            direction = Direction.Down;
+                            y--;
+                        }
+                        else x++;
                         break;
                 }
             }

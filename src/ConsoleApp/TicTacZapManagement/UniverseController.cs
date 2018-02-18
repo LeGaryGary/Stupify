@@ -16,19 +16,35 @@ namespace StupifyConsoleApp.TicTacZapManagement
         {
             UniversePath = Config.DataDirectory + @"\Universes";
             Directory.CreateDirectory(UniversePath);
-
-            _universe = LoadUniverseFile();
+            if (File.Exists(UniversePath + Config.UniverseName + UniverseExtension))
+            {
+                _universe = LoadUniverseFile();
+            }
+            else
+            {
+                _universe = new Universe(10);
+                SaveUniverseFileAsync().GetAwaiter().GetResult();
+            }
         }
 
-        public static (int, int) NewSegment(int segmentId)
+        public static string RenderTheEntiretyOfCreationAsWeKnowIt()
         {
-            return _universe.NewSegment(segmentId);
+            return "```"+_universe.RenderTheEntiretyOfCreationAsWeKnowIt()+"```";
         }
 
-        public static void DeleteSegment(int segmentId)
+        public static async Task<(int, int)> NewSegment(int segmentId)
         {
-            (var x, var y) = _universe.FindSegment(segmentId);
-            _universe.DeleteSegment(x, y);
+            var newSegmentCoords = _universe.NewSegment(segmentId);
+            await SaveUniverseFileAsync();
+            return newSegmentCoords;
+        }
+
+        public static async Task<(int, int)> DeleteSegment(int segmentId)
+        {
+            var coords = _universe.FindSegment(segmentId);
+            _universe.DeleteSegment(coords);
+            await SaveUniverseFileAsync();
+            return coords;
         }
 
         private static Universe LoadUniverseFile()
@@ -37,10 +53,10 @@ namespace StupifyConsoleApp.TicTacZapManagement
             return JsonConvert.DeserializeObject<Universe>(fileText);
         }
 
-        private static async Task SaveUniverseFileAsync(Universe universe)
+        private static async Task SaveUniverseFileAsync()
         {
-            var fileText = JsonConvert.SerializeObject(universe);
-            await File.WriteAllTextAsync(UniversePath + Config.UniverseName + UniverseExtension, fileText);
+            var fileText = JsonConvert.SerializeObject(_universe);
+            await File.WriteAllTextAsync(UniversePath + @"\" + Config.UniverseName + UniverseExtension, fileText);
         }
     }
 }

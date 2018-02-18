@@ -55,11 +55,11 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
                     return;
                 }
 
-                var id = await NewSegment(user);
+                var tuple = await NewSegment(user);
                 user.Balance -= price;
 
                 await Db.SaveChangesAsync();
-                await ReplyAsync($"You have purchased a segment! (id: {id})");
+                await ReplyAsync($"You have purchased a segment!\r\nId: {tuple.segmentId}\r\nCoordinates: {tuple.coords.x}, {tuple.coords.y}");
             }
 
             [Command("Reset")]
@@ -96,11 +96,11 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
                     return;
                 }
 
-                await DeleteSegment(segmentId);
-                await ReplyAsync("It's gone...");
+                var tuple = await DeleteSegment(segmentId);
+                await ReplyAsync($"It's gone...\r\nId: {segmentId}\r\nCoordinates: {tuple.x+1}, {tuple.y+1}");
             }
 
-            private async Task<int> NewSegment(User user)
+            private async Task<(int segmentId,(int x,int y) coords)> NewSegment(User user)
             {
                 var segment = new Segment
                 {
@@ -113,17 +113,17 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
                 await Db.SaveChangesAsync();
                 await TicTacZapManagement.Segments.NewSegmentAsync(segment.SegmentId);
                 await this.UpdateDbSegmentOutput(segment.SegmentId);
-
-                return segment.SegmentId;
+                var coords = await UniverseController.NewSegment(segment.SegmentId);
+                return (segment.SegmentId, coords);
             }
 
-            private async Task DeleteSegment(int segmentId)
+            private async Task<(int x, int y)> DeleteSegment(int segmentId)
             {
                 var dbSegment = Db.Segments.First(s => s.SegmentId == segmentId);
                 Db.Segments.Remove(dbSegment);
                 await Db.SaveChangesAsync();
-
                 await TicTacZapManagement.Segments.DeleteSegmentAsync(segmentId);
+                return await UniverseController.DeleteSegment(segmentId);
             }
         }
         
