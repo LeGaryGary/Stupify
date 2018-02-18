@@ -10,8 +10,8 @@ namespace StupifyConsoleApp.AI
     public class AI
     {
         private const double ExpansionChance = 0.1;
-        private const decimal ConsiderationThreshold = 5;
-        private const double BreakChance = 0.05;
+        private const decimal ConsiderationThreshold = 30;
+        private const double BreakChance = 0.2;
 
         private readonly AIController _controller;
 
@@ -83,13 +83,13 @@ namespace StupifyConsoleApp.AI
                                 }
                                 await _controller.RemoveBlock(x + i, y + j);
                             }
-                        }
-                        await ClientManager.LogAsync($"{possibleExpansions.Count}");
-                        possibleExpansions.Sort((a, b) => b.Item2.CompareTo(a.Item2));
-                        var bound = (possibleExpansions.Count > 3) ? (int)Math.Ceiling(possibleExpansions.Count / 3d) : possibleExpansions.Count;
-                        choice = possibleExpansions[rnd.Next(0, bound)].Item1;
+                        }                        
                     }
-                }
+
+                    possibleExpansions.Sort((a, b) => b.Item2.CompareTo(a.Item2));
+                    var bound = (possibleExpansions.Count > 3) ? (int)Math.Ceiling(possibleExpansions.Count / 3d) : possibleExpansions.Count;
+                    choice = possibleExpansions[rnd.Next(0, bound)].Item1;
+                }                
 
                 if (choice == null)
                     if (rnd.NextDouble() < BreakChance)
