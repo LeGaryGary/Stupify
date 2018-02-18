@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
 using StupifyConsoleApp.Client;
 using StupifyConsoleApp.DataModels;
 using TicTacZap;
-using TicTacZap.Segment.Blocks;
 
 namespace StupifyConsoleApp.TicTacZap
 {
@@ -124,5 +121,6 @@ namespace StupifyConsoleApp.TicTacZap
             UserSegmentSelection.Add(userId, null);
             return null;
         }
+
     }
 }

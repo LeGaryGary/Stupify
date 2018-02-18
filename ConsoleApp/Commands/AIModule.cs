@@ -1,28 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Discord.Commands;
+﻿using Discord.Commands;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Discord;
 
 using StupifyConsoleApp.DataModels;
 using StupifyConsoleApp.TicTacZap;
-using StupifyConsoleApp.AI;
-using StupifyConsoleApp.Client;
 
 namespace StupifyConsoleApp.Commands
 {
     public class AIModule : ModuleBase<SocketCommandContext>
     {
-        private readonly string _selectSegmentMessage = $"Please select a segment with {Config.CommandPrefix}segment [segmentId]";
-
         private BotContext Db { get; } = new BotContext();
 
         [Command("solve", RunMode = RunMode.Async)]
-        public async Task DebugSolve(int segmentId)
+        public async Task Solve(int segmentId)
         {
             var user = await CommonFunctions.GetUserAsync(Db, Context);
+            if (!await CommonFunctions.UserHasSegmentAsync(Db, Context, segmentId))
+            {
+                await ReplyAsync(Responses.SegmentOwnershipProblem);
+                return;
+            }
             var segment = await Db.Segments.FirstOrDefaultAsync(s => s.SegmentId == segmentId);
             if (segment == null)
             {
@@ -34,18 +32,18 @@ namespace StupifyConsoleApp.Commands
         }
 
         [Command("solve")]
-        public async Task DebugSolve()
+        public async Task Solve()
         {
             var user = await CommonFunctions.GetUserAsync(Db, Context);
             var id = TicTacZapController.GetUserSelection(user.UserId);
 
             if (id != null)
             {
-                await DebugSolve((int)id);
+                await Solve((int)id);
             }
             else
             {
-                await ReplyAsync(_selectSegmentMessage);
+                await ReplyAsync(Responses.SelectSegmentMessage);
             }
         }
 

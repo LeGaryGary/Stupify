@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using TicTacZap;
@@ -130,7 +129,7 @@ namespace StupifyConsoleApp.TicTacZap
             return (await GetAsync(segmentId)).ResourcePerTick();
         }
 
-        private static string SerializeSegment(Segment segment)
+        public static string SerializeSegment(Segment segment)
         {
             var serSeg = new SerializableSegment();
 
@@ -152,7 +151,7 @@ namespace StupifyConsoleApp.TicTacZap
             return JsonConvert.SerializeObject(serSeg);
         }
 
-        private static Segment DeserializeSegment(string fileText)
+        public static Segment DeserializeSegment(string fileText)
         {
             var deserialized = JsonConvert.DeserializeObject<SerializableSegment>(fileText);
             var segment = new Segment();

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Text;
 using TicTacZap.Segment.Blocks;
 using TicTacZap.Segment.Blocks.Production;
-using TicTacZap.Segment.Blocks.Production.Energy;
 
 namespace TicTacZap.Segment
 {
@@ -60,16 +59,16 @@ namespace TicTacZap.Segment
                     if (Blocks[x,y] == null) continue;
 
                     var block = Blocks[x, y];
+                    UpdateResourceOutput(Resource.Unit, -block.Upkeep);
 
-                    if (block is IProduceBlock produceBlock)
-                    {
-                        produceBlock.UpdateOutput(
-                            DistanceSumInDirections(x, y),
-                            ConnectedDiagonals(x, y),
-                            Layer(x, y));
+                    if (!(block is IProduceBlock produceBlock)) continue;
 
-                        UpdateResourceOutput(produceBlock.OutputType, produceBlock.OutputPerTick);
-                    }
+                    produceBlock.UpdateOutput(
+                        DistanceSumInDirections(x, y),
+                        ConnectedDiagonals(x, y),
+                        Layer(x, y));
+
+                    UpdateResourceOutput(produceBlock.OutputType, produceBlock.OutputPerTick);
 
                 }
             }

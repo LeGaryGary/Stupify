@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace BotDataGraph.MessageAnalyser.Models
+﻿namespace BotDataGraph.MessageAnalyser.Models
 {
-    using System.Runtime.CompilerServices;
-
     public class User
     {
         private string userId;
