@@ -1,6 +1,6 @@
 language: csharp
 solution: Stupify.sln
 mono: none
-dotnet: 1.1.5
+dotnet: 2.1.4
 script:
  - dotnet publish
