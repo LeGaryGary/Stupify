@@ -4,7 +4,7 @@ using Discord;
 using Discord.Commands;
 using StupifyConsoleApp.DataModels;
 
-namespace StupifyConsoleApp.Commands.Moderation
+namespace StupifyConsoleApp.Commands.Modules.Moderation
 {
     [RequireUserPermission(ChannelPermission.ManageMessages)]
     public class Mute : ModuleBase<SocketCommandContext>

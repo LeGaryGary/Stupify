@@ -18,6 +18,7 @@ namespace StupifyConsoleApp
         public static string CommandPrefix => Configuration["CommandPrefix"];
         public static ulong DeveloperRole => ulong.Parse(Configuration["DeveloperRole"]);
         public static string DataDirectory => Configuration["DataDirectory"];
+        public static string UniverseName => Configuration["UniverseName"];
 
         public static bool Neo4JMessageHandlerEnabled => bool.Parse(Configuration["MessageAnalysis:Enabled"]);
         public static Uri Neo4JUri => new Uri(Configuration["MessageAnalysis:Neo4JUri"]);

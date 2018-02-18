@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Discord.Commands;
 
 using StupifyConsoleApp.DataModels;
-using StupifyConsoleApp.TicTacZap;
+using StupifyConsoleApp.TicTacZapManagement;
 using TicTacZap;
 
 namespace StupifyConsoleApp.Commands

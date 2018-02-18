@@ -7,7 +7,7 @@ using StupifyConsoleApp.Client;
 using StupifyConsoleApp.DataModels;
 using TicTacZap;
 
-namespace StupifyConsoleApp.TicTacZap
+namespace StupifyConsoleApp.TicTacZapManagement
 {
     internal static class TicTacZapController
     {

@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Discord.Commands;
 using StupifyConsoleApp.DataModels;
-using StupifyConsoleApp.TicTacZap;
+using StupifyConsoleApp.TicTacZapManagement;
 using TicTacZap.Segment.Blocks;
 
 namespace StupifyConsoleApp.Commands.Modules.TicTacZap

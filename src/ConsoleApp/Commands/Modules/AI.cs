@@ -3,7 +3,7 @@ using Discord;
 using Discord.Commands;
 using Microsoft.EntityFrameworkCore;
 using StupifyConsoleApp.DataModels;
-using StupifyConsoleApp.TicTacZap;
+using StupifyConsoleApp.TicTacZapManagement;
 
 namespace StupifyConsoleApp.Commands.Modules
 {

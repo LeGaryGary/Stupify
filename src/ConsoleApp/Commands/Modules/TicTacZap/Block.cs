@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Discord.Commands;
 using StupifyConsoleApp.DataModels;
-using StupifyConsoleApp.TicTacZap;
+using StupifyConsoleApp.TicTacZapManagement;
 using TicTacZap.Segment.Blocks;
 
 namespace StupifyConsoleApp.Commands.Modules.TicTacZap
@@ -16,7 +16,7 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
             var blockType = Enum.Parse<BlockType>(type);
             if (await Inventories.RemoveFromInventoryAsync(blockType, 1, (await this.GetUserAsync()).UserId))
             {
-                await StupifyConsoleApp.TicTacZap.Segments.AddBlockAsync(segmentId, x-1, y-1, blockType);
+                await TicTacZapManagement.Segments.AddBlockAsync(segmentId, x-1, y-1, blockType);
                 await this.UpdateDbSegmentOutput(segmentId);
                 await this.ShowSegmentAsync(segmentId);
                 return;
@@ -43,7 +43,7 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
         {
             if (await this.UserHasSegmentAsync(segmentId))
             {
-                var blockType = await StupifyConsoleApp.TicTacZap.Segments.DeleteBlockAsync(segmentId, x-1, y-1);
+                var blockType = await TicTacZapManagement.Segments.DeleteBlockAsync(segmentId, x-1, y-1);
 
                 if (blockType != null) await Inventories.AddToInventoryAsync(blockType.Value, 1, (await this.GetUserAsync()).UserId);
                 await this.ShowSegmentAsync(segmentId);

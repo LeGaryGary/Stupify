@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Discord.Commands;
 using Microsoft.EntityFrameworkCore;
 using StupifyConsoleApp.DataModels;
-using StupifyConsoleApp.TicTacZap;
+using StupifyConsoleApp.TicTacZapManagement;
 using TicTacZap;
 
 namespace StupifyConsoleApp.Commands.Modules.TicTacZap
@@ -72,7 +72,7 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
                 }
 
                 var user = await this.GetUserAsync();
-                var blocks = await StupifyConsoleApp.TicTacZap.Segments.ResetSegmentAsync(segmentId);
+                var blocks = await TicTacZapManagement.Segments.ResetSegmentAsync(segmentId);
 
                 foreach (var type in blocks)
                 {
@@ -111,7 +111,7 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
                 };
                 await Db.Segments.AddAsync(segment);
                 await Db.SaveChangesAsync();
-                await StupifyConsoleApp.TicTacZap.Segments.NewSegmentAsync(segment.SegmentId);
+                await TicTacZapManagement.Segments.NewSegmentAsync(segment.SegmentId);
                 await this.UpdateDbSegmentOutput(segment.SegmentId);
 
                 return segment.SegmentId;
@@ -123,7 +123,7 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
                 Db.Segments.Remove(dbSegment);
                 await Db.SaveChangesAsync();
 
-                await StupifyConsoleApp.TicTacZap.Segments.DeleteSegmentAsync(segmentId);
+                await TicTacZapManagement.Segments.DeleteSegmentAsync(segmentId);
             }
         }
         

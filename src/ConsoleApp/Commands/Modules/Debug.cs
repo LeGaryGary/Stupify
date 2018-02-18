@@ -2,7 +2,7 @@
 using Discord.Commands;
 using StupifyConsoleApp.Commands.Conditions;
 using StupifyConsoleApp.DataModels;
-using StupifyConsoleApp.TicTacZap;
+using StupifyConsoleApp.TicTacZapManagement;
 
 namespace StupifyConsoleApp.Commands.Modules
 {

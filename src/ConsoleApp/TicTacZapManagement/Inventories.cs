@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 using TicTacZap;
 using TicTacZap.Segment.Blocks;
 
-namespace StupifyConsoleApp.TicTacZap
+namespace StupifyConsoleApp.TicTacZapManagement
 {
     internal static class Inventories
     {

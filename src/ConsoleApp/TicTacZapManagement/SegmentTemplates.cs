@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using TicTacZap.Segment;
 
-namespace StupifyConsoleApp.TicTacZap
+namespace StupifyConsoleApp.TicTacZapManagement
 {
     public static class SegmentTemplates
     {
