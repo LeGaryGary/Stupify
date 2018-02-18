@@ -21,7 +21,7 @@ namespace StupifyConsoleApp.TicTacZap
         {
             if (File.Exists(InventoriesPath + $@"\{userId+InventoryExtension}"))
             {
-                var fileText = File.ReadAllText(InventoriesPath + $@"\{userId+InventoryExtension}");
+                var fileText = await File.ReadAllTextAsync(InventoriesPath + $@"\{userId+InventoryExtension}");
                 return JsonConvert.DeserializeObject<Inventory>(fileText);
             }
 

@@ -60,16 +60,16 @@ namespace TicTacZap.Segment
                     if (Blocks[x,y] == null) continue;
 
                     var block = Blocks[x, y];
+                    UpdateResourceOutput(Resource.Unit, -block.Upkeep);
 
-                    if (block is IProduceBlock produceBlock)
-                    {
-                        produceBlock.UpdateOutput(
-                            DistanceSumInDirections(x, y),
-                            ConnectedDiagonals(x, y),
-                            Layer(x, y));
+                    if (!(block is IProduceBlock produceBlock)) continue;
 
-                        UpdateResourceOutput(produceBlock.OutputType, produceBlock.OutputPerTick);
-                    }
+                    produceBlock.UpdateOutput(
+                        DistanceSumInDirections(x, y),
+                        ConnectedDiagonals(x, y),
+                        Layer(x, y));
+
+                    UpdateResourceOutput(produceBlock.OutputType, produceBlock.OutputPerTick);
 
                 }
             }
