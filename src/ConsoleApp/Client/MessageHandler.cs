@@ -59,21 +59,22 @@ namespace StupifyConsoleApp.Client
             var result = await ClientManager.Commands.ExecuteAsync(context, argPos);
             if (!result.IsSuccess)
             {
-                if (result.Error == CommandError.UnknownCommand)
+                switch (result.Error)
                 {
-                    await context.Channel.SendMessageAsync("Command not found!");
-                }
-                else if (result.Error == CommandError.BadArgCount)
-                {
-                    await context.Channel.SendMessageAsync("That's not right!");
-                }
-                else
-                {
-                    await ClientManager.LogAsync(result.ErrorReason);
+                    case CommandError.UnknownCommand when Config.Debug:
+                        await context.Channel.SendMessageAsync("Command not found!");
+                        break;
+                    case CommandError.BadArgCount:
+                        await context.Channel.SendMessageAsync("That's not right!");
+                        break;
+                    default:
+                        await ClientManager.LogAsync($"\r\nThe message: {context.Message} \r\nHas caused the following error: {result.ErrorReason}\r\nIn the server: {context.Guild.Name}");
+                        await context.Channel.SendMessageAsync("Internal error! You may shout at the the developers here: https://discord.gg/nb5rUhd");
+                        break;
                 }
             }
             sw.Stop();
-            await ClientManager.LogAsync("This command took " + sw.ElapsedMilliseconds + "ms", true);
+            await ClientManager.LogAsync($"Command \"{context.Message}\" in \"{context.Guild.Name}\" took " + sw.ElapsedMilliseconds + "ms", true);
             await addMessageNodeTask;
         }
 

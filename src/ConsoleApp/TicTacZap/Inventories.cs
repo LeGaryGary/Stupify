@@ -13,7 +13,7 @@ namespace StupifyConsoleApp.TicTacZap
 
         static Inventories()
         {
-            InventoriesPath = Directory.GetCurrentDirectory() + @"\Inventories";
+            InventoriesPath = Config.DataDirectory + @"\Inventories";
             Directory.CreateDirectory(InventoriesPath);
         }
 
