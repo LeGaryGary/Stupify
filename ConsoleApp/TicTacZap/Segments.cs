@@ -15,36 +15,36 @@ namespace StupifyConsoleApp.TicTacZap
     {
         private static readonly string SegmentsPath;
         private const string SegmentExtension = ".SEG";
-        private static List<Tuple<int, Segment>> _segmentCache;
+        private static readonly List<Tuple<int, Segment>> SegmentCache;
 
-        private static Random _random;
+        private static readonly Random Random;
 
         static Segments()
         {
             SegmentsPath = Directory.GetCurrentDirectory() + @"\Segments";
-            _segmentCache = new List<Tuple<int, Segment>>();
-            _random = new Random();
+            SegmentCache = new List<Tuple<int, Segment>>();
+            Random = new Random();
 
             Directory.CreateDirectory(SegmentsPath);
         }
 
         public static async Task<Segment> GetAsync(int segmentId)
         {
-            var segmentTuple = _segmentCache.FirstOrDefault(s => s.Item1 == segmentId);
+            var segmentTuple = SegmentCache.FirstOrDefault(s => s.Item1 == segmentId);
             if (segmentTuple != null) return segmentTuple.Item2;
             var segment = await LoadSegmentFileAsync(segmentId);
-            if (_segmentCache.Count >= 1000) _segmentCache.RemoveAt(_random.Next(_segmentCache.Count));
-            _segmentCache.Add(new Tuple<int, Segment>(segmentId, segment));
+            if (SegmentCache.Count >= 1000) SegmentCache.RemoveAt(Random.Next(SegmentCache.Count));
+            SegmentCache.Add(new Tuple<int, Segment>(segmentId, segment));
             return segment;
         }
 
         public static async Task SetAsync(int segmentId, Segment segment)
         {
-            var segmentTuple = _segmentCache.FirstOrDefault(s => s.Item1 == segmentId);
+            var segmentTuple = SegmentCache.FirstOrDefault(s => s.Item1 == segmentId);
             if (segmentTuple != null)
             {
-                _segmentCache.Remove(segmentTuple);
-                _segmentCache.Add(new Tuple<int, Segment>(segmentId, segment));
+                SegmentCache.Remove(segmentTuple);
+                SegmentCache.Add(new Tuple<int, Segment>(segmentId, segment));
             }
 
             await SaveSegmentFileAsync(segmentId, segment);
@@ -53,8 +53,8 @@ namespace StupifyConsoleApp.TicTacZap
         public static async Task NewSegmentAsync(int segmentId)
         {
             var segment = new Segment();
-            if (_segmentCache.Count >= 1000) _segmentCache.RemoveAt(_random.Next(_segmentCache.Count));
-            _segmentCache.Add(new Tuple<int, Segment>(segmentId, segment));
+            if (SegmentCache.Count >= 1000) SegmentCache.RemoveAt(Random.Next(SegmentCache.Count));
+            SegmentCache.Add(new Tuple<int, Segment>(segmentId, segment));
             await SaveSegmentFileAsync(segmentId, segment);
         }
 
@@ -80,9 +80,33 @@ namespace StupifyConsoleApp.TicTacZap
 
         private static void DeleteSegment(int segmentId)
         {
-            var segmentTuple = _segmentCache.FirstOrDefault(s => s.Item1 == segmentId);
-            _segmentCache.Remove(segmentTuple);
+            var segmentTuple = SegmentCache.FirstOrDefault(s => s.Item1 == segmentId);
+            SegmentCache.Remove(segmentTuple);
             File.Delete(SegmentsPath + "\\" + segmentId + SegmentExtension);
+        }
+
+        public static async Task<Dictionary<BlockType, int>> ResetSegmentAsync(int segmentId)
+        {
+            var blocks = new Dictionary<BlockType, int>();
+            var segment = await GetAsync(segmentId);
+
+            for (var x = 0; x < 9; x++)
+            for (var y = 0; y < 9; y++)
+            {
+                var blockType = segment.DeleteBlock(x, y);
+                if (blockType == null) continue;
+                if (blocks.ContainsKey(blockType.Value))
+                {
+                    blocks[blockType.Value]++;
+                }
+                else
+                {
+                    blocks.Add(blockType.Value, 1);
+                }
+            }
+
+            await SaveSegmentFileAsync(segmentId, segment);
+            return blocks;
         }
 
         public static async Task<bool> AddBlockAsync(int segmentId, int x, int y, BlockType blockType)

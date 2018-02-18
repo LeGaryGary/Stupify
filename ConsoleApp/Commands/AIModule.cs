@@ -30,13 +30,13 @@ namespace StupifyConsoleApp.Commands
                 return;
             }
 
-            await runAI(Db, segment, user);
+            await RunAI(Db, segment, user);
         }
 
         [Command("solve")]
         public async Task DebugSolve()
         {
-            User user = await CommonFunctions.GetUserAsync(Db, Context);
+            var user = await CommonFunctions.GetUserAsync(Db, Context);
             var id = TicTacZapController.GetUserSelection(user.UserId);
 
             if (id != null)
@@ -49,23 +49,23 @@ namespace StupifyConsoleApp.Commands
             }
         }
 
-        private async Task runAI(BotContext db, Segment segment, User user)
+        private async Task RunAI(BotContext db, Segment segment, User user)
         {
-            AI.AI aiInstance = new AI.AI(Db, segment, user);
-            Task ai = Task.Run(() => aiInstance.run());
-            IUserMessage msg = await ReplyAsync("hang on...");
+            var aiInstance = new AI.AI(Db, segment, user);
+            var ai = Task.Run(() => aiInstance.Run());
+            var msg = await ReplyAsync("hang on...");
             while (!ai.IsCompleted)
             {
-                await updateMsg(msg, segment);
-                await Task.Delay(1000);
+                await UpdateMsg(msg, segment);
+                await Task.Delay(2000);
             }
 
-            await updateMsg(msg, segment, true);
+            await UpdateMsg(msg, segment, true);
         }
 
-        private async Task updateMsg(IUserMessage msg, Segment segment, bool done = false)
+        private async Task UpdateMsg(IUserMessage msg, Segment segment, bool done = false)
         {
-            string str = TicTacZapController.RenderSegmentAsync(segment.SegmentId, Db) + "\n";
+            var str = await TicTacZapController.RenderSegmentAsync(segment.SegmentId, Db) + "\n";
             str += (done) ? "done." : "working...";
 
             await msg.ModifyAsync(message => message.Content = $"```{str}```");

@@ -51,5 +51,12 @@ namespace StupifyConsoleApp.TicTacZap
             return true;
 
         }
+
+        public static async Task ResetInventory(int userId)
+        {
+            var inventory = await GetInventoryAsync(userId);
+            inventory.Reset();
+            await SaveInventoryAsync(userId, inventory);
+        }
     }
 }

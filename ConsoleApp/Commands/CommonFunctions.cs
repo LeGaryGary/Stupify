@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Discord.Commands;
 
@@ -11,9 +8,9 @@ namespace StupifyConsoleApp.Commands
 {
     public static class CommonFunctions
     {
-        public static async Task<User> GetUserAsync(BotContext Db, SocketCommandContext Context)
+        public static async Task<User> GetUserAsync(BotContext db, SocketCommandContext context)
         {
-            return await Db.Users.FirstAsync(u => u.DiscordUserId == (long)Context.User.Id);
+            return await db.Users.FirstAsync(u => u.DiscordUserId == (long)context.User.Id);
         }
     }
 }

@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using StupifyConsoleApp.DataModels;
@@ -16,9 +14,9 @@ namespace StupifyConsoleApp.AI
     class AIController
     {
         private User _user;
-        private DBSegment _dbSeg;
-        private Segment _seg;
-        private BotContext _db;
+        private readonly DBSegment _dbSeg;
+        private readonly Segment _seg;
+        private readonly BotContext _db;
 
         public IBlock[,] Blocks
         {
@@ -36,8 +34,8 @@ namespace StupifyConsoleApp.AI
         public async Task UpdateDb()
         {
             await _db.SaveChangesAsync();
-            _dbSeg.UnitsPerTick = TicTacZapExtensions.ResourcePerTick(_seg).GetValueOrDefault(Resource.Unit);
-            _dbSeg.EnergyPerTick = TicTacZapExtensions.ResourcePerTick(_seg).GetValueOrDefault(Resource.Energy);
+            _dbSeg.UnitsPerTick = _seg.ResourcePerTick().GetValueOrDefault(Resource.Unit);
+            _dbSeg.EnergyPerTick = _seg.ResourcePerTick().GetValueOrDefault(Resource.Energy);
         }
 
         public async Task AddBlock(int x, int y)

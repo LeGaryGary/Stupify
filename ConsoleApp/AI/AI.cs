@@ -1,33 +1,30 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 using StupifyConsoleApp.DataModels;
-using TicTacZap.Segment.Blocks;
-using StupifyConsoleApp.Client;
 
 namespace StupifyConsoleApp.AI
 {
     public class AI
     {
-        private AIController _controller;
+        private readonly AIController _controller;
 
         public AI(BotContext db, Segment segment, User user)
         {
             _controller = new AIController(db, segment, user);
         }
 
-        public async Task run()
+        public async Task Run()
         {
-            Random rnd = new Random();
-            IBlock[,] blocks = _controller.Blocks;
+            var rnd = new Random();
+            var blocks = _controller.Blocks;
 
             // make a list of placed blocks
             var placedBlocks = new LinkedList<Tuple<int, int>>();
 
-            for(int x = 0; x < 9; x++)
-                for(int y = 0; y < 9; y++)
+            for(var x = 0; x < 9; x++)
+                for(var y = 0; y < 9; y++)
                 {
                     if(blocks[x, y] != null)
                     {
@@ -41,12 +38,12 @@ namespace StupifyConsoleApp.AI
                 // iterate through the list, choosing the best block to expand
                 var output = _controller.Output();
                 Tuple<int, int> best = null;
-                foreach(Tuple<int, int> block in placedBlocks)
+                foreach(var block in placedBlocks)
                 {
-                    int x = block.Item1;
-                    int y = block.Item2;
-                    for(int i = -1; i <= 1; i++)
-                        for(int j = -1; j <= 1; j++)
+                    var x = block.Item1;
+                    var y = block.Item2;
+                    for(var i = -1; i <= 1; i++)
+                        for(var j = -1; j <= 1; j++)
                         { 
                             if(x+i >= 0 && y+j >=0 && x+i < 9 && y+j < 9 
                                 && blocks[x+i, y+j] == null)
