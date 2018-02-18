@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace BotDataGraph.MessageAnalyser.Models
+﻿namespace BotDataGraph.MessageAnalyser.Models
 {
     class Link
     {
