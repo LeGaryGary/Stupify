@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Discord.Commands;
 
 using StupifyConsoleApp.DataModels;
+using TicTacZap;
 
 namespace StupifyConsoleApp.Commands
 {
@@ -24,6 +25,11 @@ namespace StupifyConsoleApp.Commands
         public static async Task<bool> UserHasSegmentAsync(BotContext db, SocketCommandContext context, int segmentId)
         {
             return (await GetSegments(db, context)).Select(s => s.SegmentId).Contains(segmentId);
+        }
+
+        public static string NotEnoughUnits(decimal price)
+        {
+            return $"Come back when you have more money (you need {price} {Resource.Unit} to buy this)";
         }
     }
 }
