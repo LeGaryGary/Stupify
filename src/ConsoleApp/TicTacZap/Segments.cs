@@ -20,7 +20,7 @@ namespace StupifyConsoleApp.TicTacZap
 
         static Segments()
         {
-            SegmentsPath = Directory.GetCurrentDirectory() + @"\Segments";
+            SegmentsPath = Config.DataDirectory + @"\Segments";
             SegmentCache = new List<Tuple<int, Segment>>();
             Random = new Random();
 

@@ -11,7 +11,7 @@ namespace StupifyConsoleApp.TicTacZap
 
         static SegmentTemplates()
         {
-            TemplatePath = Directory.GetCurrentDirectory() + @"\Inventories";
+            TemplatePath = Config.DataDirectory + @"\Inventories";
             Directory.CreateDirectory(TemplatePath);
         }
 
