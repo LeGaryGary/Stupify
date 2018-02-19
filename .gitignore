@@ -263,5 +263,5 @@ __pycache__/
 
 /ConsoleApp/Segments
 /ConsoleApp/Inventories
-.INV
-.SEG
+*.INV
+*.SEG

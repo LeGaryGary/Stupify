@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+
 using StupifyConsoleApp.Client;
 using StupifyConsoleApp.DataModels;
 using TicTacZap;

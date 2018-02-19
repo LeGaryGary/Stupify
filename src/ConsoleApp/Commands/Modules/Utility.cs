@@ -10,7 +10,7 @@ namespace StupifyConsoleApp.Commands.Modules
 {
     public class Utility : ModuleBase<SocketCommandContext>
     {
-        private List<string> _seenModules = new List<string>();
+        private readonly List<string> _seenModules = new List<string>();
 
         [Command("HelpAll")]
         public async Task HelpAll()
