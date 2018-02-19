@@ -56,11 +56,14 @@ namespace StupifyConsoleApp.AI
             if (choice == null)
                 if (_rnd.NextDouble() < _breakChance)
                     return;
-            await _controller.AddBlock(choice.Item1, choice.Item2);
-            _placedBlocks.AddLast(choice);
-            _mark[choice.Item1, choice.Item2] = true;
-            _blocks = _controller.Blocks;
-            await _controller.UpdateDb();
+                else
+                {
+                    await _controller.AddBlock(choice.Item1, choice.Item2);
+                    _placedBlocks.AddLast(choice);
+                    _mark[choice.Item1, choice.Item2] = true;
+                    _blocks = _controller.Blocks;
+                    await _controller.UpdateDb();
+                }
         }
 
         private async Task<decimal> Test(int x, int y)
