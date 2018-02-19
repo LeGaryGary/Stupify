@@ -10,9 +10,9 @@ namespace StupifyConsoleApp.AI
 {
     public class AI
     {
-        private const double ExpansionChance = 0.1;
-        private const decimal ConsiderationThreshold = 30;
-        private const double BreakChance = 0.2;
+        private double _expansionChance;
+        private decimal _considerationThreshold;
+        private double _breakChance;
 
         private Random _rnd;
         private IBlock[,] _blocks;
@@ -27,8 +27,12 @@ namespace StupifyConsoleApp.AI
             _controller = new AIController(db, segment, user);
         }
 
-        private void ResetProperties()
+        private void ResetProperties(double exp, decimal thr, double brk)
         {
+            _expansionChance = exp;
+            _considerationThreshold = thr;
+            _breakChance = brk;
+
             _rnd = new Random();
             _blocks = _controller.Blocks;
             _mark = new bool[9, 9];
@@ -50,7 +54,7 @@ namespace StupifyConsoleApp.AI
         private async Task AddBlock(Tuple<int, int> choice)
         {
             if (choice == null)
-                if (_rnd.NextDouble() < BreakChance)
+                if (_rnd.NextDouble() < _breakChance)
                     return;
             await _controller.AddBlock(choice.Item1, choice.Item2);
             _placedBlocks.AddLast(choice);
@@ -76,16 +80,16 @@ namespace StupifyConsoleApp.AI
             return _possibleExpansions[_rnd.Next(0, bound)].Item1;
         }
 
-        public async Task Run()
+        public async Task Run(double exp, decimal thr, double brk)
         {
-            ResetProperties();
+            ResetProperties(exp, thr, brk);
 
             var it = 0;
             while (it++ < 200)
             {
                 _possibleExpansions = new List<Tuple<Tuple<int, int>, decimal>>();
 
-                if (_rnd.NextDouble() < ExpansionChance)
+                if (_rnd.NextDouble() < _expansionChance)
                 {
                     await NewExpansion();
                 }
@@ -135,7 +139,7 @@ namespace StupifyConsoleApp.AI
                         {
                             visited[x + i, y + j] = true;
                             var tmp = await Test(x + i, y + j);
-                            if (tmp - output > ConsiderationThreshold || (output == 0 && tmp == output))
+                            if (tmp - output > _considerationThreshold || (output == 0 && tmp == output))
                             {
                                 _possibleExpansions.Add(
                                     new Tuple<Tuple<int, int>, decimal>(new Tuple<int, int>(x + i, y + j),
