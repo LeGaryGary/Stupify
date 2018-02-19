@@ -1,4 +1,5 @@
-﻿using FluentAssertions;
+﻿using System.Linq;
+using FluentAssertions;
 using TicTacZap;
 using TicTacZap.Segment.Blocks;
 using TicTacZap.Segment.Blocks.Production.Energy;
@@ -102,9 +103,9 @@ namespace TicTacZapTests
             segment.AddBlock(8, 0, BlockType.BasicEnergy).Should().BeTrue();
 
             var actualText = segment.TextRender();
-            const string expectedText =
-                " B  ~  B  ~  ~  ~  ~  ~  B \r\n B  ~  ~  ~  ~  ~  B  ~  ~ \r\n ~  B  ~  ~  B  ~  ~  ~  B \r\n ~  ~  ~  ~  ~  ~  ~  ~  ~ \r\n B  ~  ~  ~  C  ~  ~  B  ~ \r\n ~  ~  ~  ~  ~  ~  ~  ~  ~ \r\n ~  ~  ~  ~  ~  ~  ~  ~  ~ \r\n ~  ~  B  ~  B  ~  B  ~  ~ \r\n B  ~  ~  ~  ~  ~  ~  ~  B \r\n";
-
+            var expectedText = " B  ~  B  ~  ~  ~  ~  ~  B \r\n B  ~  ~  ~  ~  ~  B  ~  ~ \r\n ~  B  ~  ~  B  ~  ~  ~  B \r\n ~  ~  ~  ~  ~  ~  ~  ~  ~ \r\n B  ~  ~  ~  C  ~  ~  B  ~ \r\n ~  ~  ~  ~  ~  ~  ~  ~  ~ \r\n ~  ~  ~  ~  ~  ~  ~  ~  ~ \r\n ~  ~  B  ~  B  ~  B  ~  ~ \r\n B  ~  ~  ~  ~  ~  ~  ~  B \r\n";
+            expectedText = string.Join("",expectedText.Split().Select(t => t.Trim()).Where(t => t.Length > 0));
+            actualText = string.Join("",actualText.Split().Select(t => t.Trim()).Where(t => t.Length > 0));
             actualText.Should().Be(expectedText);
         }
     }
