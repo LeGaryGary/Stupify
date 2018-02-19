@@ -2,21 +2,18 @@
 using Discord;
 using Discord.Commands;
 using Microsoft.EntityFrameworkCore;
-
 using StupifyConsoleApp.DataModels;
-using StupifyConsoleApp.TicTacZap;
+using StupifyConsoleApp.TicTacZapManagement;
 
-namespace StupifyConsoleApp.Commands.TicTacZap
+namespace StupifyConsoleApp.Commands.Modules
 {
-    public class AIModule : ModuleBase<SocketCommandContext>
+    public class AI : StupifyModuleBase
     {
-        private BotContext Db { get; } = new BotContext();
-
-        [Command("solve", RunMode = RunMode.Async)]
+        [Command("Solve", RunMode = RunMode.Async)]
         public async Task Solve(int segmentId)
         {
-            var user = await CommonFunctions.GetUserAsync(Db, Context);
-            if (!await CommonFunctions.UserHasSegmentAsync(Db, Context, segmentId))
+            var user = await this.GetUserAsync();
+            if (!await this.UserHasSegmentAsync(segmentId))
             {
                 await ReplyAsync(Responses.SegmentOwnershipProblem);
                 return;
@@ -29,13 +26,12 @@ namespace StupifyConsoleApp.Commands.TicTacZap
             }
 
             await RunAI(Db, segment, user);
-            await Db.SaveChangesAsync();
         }
 
-        [Command("solve")]
+        [Command("Solve")]
         public async Task Solve()
         {
-            var user = await CommonFunctions.GetUserAsync(Db, Context);
+            var user = await this.GetUserAsync();
             var id = TicTacZapController.GetUserSelection(user.UserId);
 
             if (id != null)
@@ -50,7 +46,7 @@ namespace StupifyConsoleApp.Commands.TicTacZap
 
         private async Task RunAI(BotContext db, Segment segment, User user)
         {
-            var aiInstance = new AI.AI(Db, segment, user);
+            var aiInstance = new StupifyConsoleApp.AI.AI(Db, segment, user);
             var ai = Task.Run(() => aiInstance.Run());
             var msg = await ReplyAsync("hang on...");
             while (!ai.IsCompleted)

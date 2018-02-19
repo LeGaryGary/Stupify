@@ -4,10 +4,10 @@ using Discord;
 using Discord.Commands;
 using StupifyConsoleApp.DataModels;
 
-namespace StupifyConsoleApp.Commands.Moderation
+namespace StupifyConsoleApp.Commands.Modules.Moderation
 {
     [RequireUserPermission(ChannelPermission.ManageMessages)]
-    public class MuteModule : ModuleBase<SocketCommandContext>
+    public class Mute : ModuleBase<SocketCommandContext>
     {
         [Command("mute"), RequireUserPermission(ChannelPermission.ManageMessages)]
         public async Task MuteAsync(string userTag)

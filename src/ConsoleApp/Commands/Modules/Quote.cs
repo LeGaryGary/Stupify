@@ -6,19 +6,19 @@ using Microsoft.EntityFrameworkCore;
 using StupifyConsoleApp.Client;
 using StupifyConsoleApp.DataModels;
 
-namespace StupifyConsoleApp.Commands
+namespace StupifyConsoleApp.Commands.Modules
 {
-    public class QuoteModule : ModuleBase<SocketCommandContext>
+    public class Quote : ModuleBase<SocketCommandContext>
     {
-        [Command("addquote")]
+        [Command("AddQuote")]
         public async Task AddQuoteAsync([Remainder] string quoteBody)
         {
             using (var db = new BotContext())
             {
-                await db.Quotes.AddAsync(new Quote
+                await db.Quotes.AddAsync(new DataModels.Quote
                 {
                     QuoteBody = quoteBody,
-                    ServerUser = await db.GetServerUserAsync((long) Context.User.Id, (long) Context.Guild.Id)
+                    ServerUser = await db.GetServerUserAsync((long)Context.User.Id, (long)Context.Guild.Id)
                 });
                 await db.SaveChangesAsync();
                 var reply = ReplyAsync("Done!");
@@ -27,7 +27,7 @@ namespace StupifyConsoleApp.Commands
             }
         }
 
-        [Command("randomquote")]
+        [Command("RandomQuote")]
         public async Task RandomQuoteAsync([Remainder] string request = null)
         {
             using (var db = new BotContext())

@@ -1,6 +1,6 @@
 ﻿using System;
 using StupifyConsoleApp.Client;
-using StupifyConsoleApp.TicTacZap;
+using StupifyConsoleApp.TicTacZapManagement;
 
 namespace StupifyConsoleApp
 {

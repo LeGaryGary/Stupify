@@ -65,13 +65,33 @@ namespace TicTacZap.Segment
 
                     produceBlock.UpdateOutput(
                         DistanceSumInDirections(x, y),
-                        ConnectedDiagonals(x, y),
-                        Layer(x, y));
-
+                        Neighbours(x, y));
                     UpdateResourceOutput(produceBlock.OutputType, produceBlock.OutputPerTick);
 
                 }
             }
+        }
+
+        private int Neighbours(int x, int y)
+        {
+            var total = 0;
+            for (var i = -1; i <= 1; i++)
+            {
+                for (var j = -1; j <= 1; j++)
+                {
+                    if (i == 0 && j == 0) continue;
+                    try
+                    {
+                        if (Blocks[x + i, y + j] != null) total++;
+                    }
+                    catch (Exception e)
+                    {
+                        if (!(e is IndexOutOfRangeException)) throw;
+                    }
+                }
+            }
+
+            return total;
         }
 
         private int Layer(int x, int y)

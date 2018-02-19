@@ -5,11 +5,11 @@ using Discord.Commands;
 using Microsoft.EntityFrameworkCore;
 using StupifyConsoleApp.DataModels;
 
-namespace StupifyConsoleApp.Commands
+namespace StupifyConsoleApp.Commands.Modules
 {
-    public class StoryModule : ModuleBase<SocketCommandContext>
+    public class Story : ModuleBase<SocketCommandContext>
     {
-        [Command("beginstory")]
+        [Command("BeginStory")]
         public async Task StoryStart()
         {
             using (var db = new BotContext())
