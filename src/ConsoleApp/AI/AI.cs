@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore.Design;
+
 using StupifyConsoleApp.Client;
 using StupifyConsoleApp.DataModels;
+using TicTacZap.Segment.Blocks;
 
 namespace StupifyConsoleApp.AI
 {
@@ -13,6 +14,12 @@ namespace StupifyConsoleApp.AI
         private const decimal ConsiderationThreshold = 30;
         private const double BreakChance = 0.2;
 
+        private Random _rnd;
+        private IBlock[,] _blocks;
+        private bool[,] _mark;
+        private LinkedList<Tuple<int, int>> _placedBlocks;
+        private List<Tuple<Tuple<int, int>, decimal>> _possibleExpansions;
+
         private readonly AIController _controller;
 
         public AI(BotContext db, Segment segment, User user)
@@ -20,95 +27,130 @@ namespace StupifyConsoleApp.AI
             _controller = new AIController(db, segment, user);
         }
 
-        public async Task Run()
+        private void ResetProperties()
         {
-            var rnd = new Random();
-            var blocks = _controller.Blocks;
-            var mark = new bool[9, 9];
+            _rnd = new Random();
+            _blocks = _controller.Blocks;
+            _mark = new bool[9, 9];
 
             // make a list of placed blocks
-            var placedBlocks = new LinkedList<Tuple<int, int>>();
+            _placedBlocks = new LinkedList<Tuple<int, int>>();
 
-            for(var x = 0; x < 9; x++)
-                for(var y = 0; y < 9; y++)
+            for (var x = 0; x < 9; x++)
+            for (var y = 0; y < 9; y++)
+            {
+                if (_blocks[x, y] != null)
                 {
-                    if(blocks[x, y] != null)
-                    {
-                        placedBlocks.AddLast(new Tuple<int, int>(x, y));
-                        mark[x, y] = true;
-                    }
+                    _placedBlocks.AddLast(new Tuple<int, int>(x, y));
+                    _mark[x, y] = true;
                 }
+            }
+        }
+
+        private async Task AddBlock(Tuple<int, int> choice)
+        {
+            if (choice == null)
+                if (_rnd.NextDouble() < BreakChance)
+                    return;
+            await _controller.AddBlock(choice.Item1, choice.Item2);
+            _placedBlocks.AddLast(choice);
+            _mark[choice.Item1, choice.Item2] = true;
+            _blocks = _controller.Blocks;
+            await _controller.UpdateDb();
+        }
+
+        private async Task<decimal> Test(int x, int y)
+        {
+            await _controller.AddBlock(x, y);
+            var output = _controller.Output();
+            await _controller.RemoveBlock(x, y);
+
+            return output;
+        }
+
+        private Tuple<int, int> GetChoice()
+        {
+            if (_possibleExpansions.Count == 0) return null;
+            _possibleExpansions.Sort((a, b) => b.Item2.CompareTo(a.Item2));
+            var bound = (_possibleExpansions.Count > 3) ? (int)Math.Ceiling(_possibleExpansions.Count / 3d) : _possibleExpansions.Count;
+            return _possibleExpansions[_rnd.Next(0, bound)].Item1;
+        }
+
+        public async Task Run()
+        {
+            ResetProperties();
 
             var it = 0;
             while (it++ < 200)
             {
-                // iterate through the list, choosing the best block to expand
-                Tuple<int, int> choice = null;
+                _possibleExpansions = new List<Tuple<Tuple<int, int>, decimal>>();
 
-                if (rnd.NextDouble() < ExpansionChance)
+                if (_rnd.NextDouble() < ExpansionChance)
                 {
-                    var x = -1;
-                    var y = -1;
-                    var i = 0;
-                    do
-                    {
-                        x = rnd.Next(0, 9);
-                        y = rnd.Next(0, 9);
-                    } while (blocks[x, y] != null && i++ < 20);
-                    choice = (blocks[x, y] == null) ? new Tuple<int, int>(x, y) : null;
+                    await NewExpansion();
                 }
                 else
                 {
-                    var possibleExpansions = new List<Tuple<Tuple<int, int>, decimal>>();
-                    var visited = (bool[,])mark.Clone();
-                    var output = _controller.Output();
-                    foreach (var block in placedBlocks)
+                    await ExpandExisting();
+                }
+
+                var choice = GetChoice();
+                await AddBlock(choice);
+            }
+        }
+
+        private async Task NewExpansion()
+        {
+            var x = -1;
+            var y = -1;
+            var i = 0;
+            do
+            {
+                x = _rnd.Next(0, 9);
+                y = _rnd.Next(0, 9);
+            } while (_blocks[x, y] != null && i++ < 20);
+            var choice = (_blocks[x, y] == null) ? new Tuple<int, int>(x, y) : null;
+            if (choice != null)
+            {
+                var output = await Test(x, y);
+                _possibleExpansions.Add(new Tuple<Tuple<int, int>, decimal>(new Tuple<int, int>(x, y),
+                    output));
+            }
+        }
+
+        private async Task ExpandExisting()
+        {
+            var visited = (bool[,])_mark.Clone();
+            var output = _controller.Output();
+            foreach (var block in _placedBlocks)
+            {
+                var x = block.Item1;
+                var y = block.Item2;
+                for (var i = -1; i <= 1; i++)
+                for (var j = -1; j <= 1; j++)
+                {
+                    try
                     {
-                        var x = block.Item1;
-                        var y = block.Item2;
-                        for (var i = -1; i <= 1; i++)
-                        for (var j = -1; j <= 1; j++)
+                        if (!visited[x + i, y + j] && _blocks[x + i, y + j] == null)
                         {
-                            if (x + i >= 0 && y + j >= 0 && x + i < 9 && y + j < 9
-                                && !visited[x + i, y + j] && blocks[x + i, y + j] == null)
+                            visited[x + i, y + j] = true;
+                            var tmp = await Test(x + i, y + j);
+                            if (tmp - output > ConsiderationThreshold || (output == 0 && tmp == output))
                             {
-                                visited[x + i, y + j] = true;
-                                await _controller.AddBlock(x + i, y + j);
-                                var tmp = _controller.Output();
-                                if (tmp - output > ConsiderationThreshold || (output == 0 && tmp == output))
-                                {
-                                    possibleExpansions.Add(
-                                        new Tuple<Tuple<int, int>, decimal>(new Tuple<int, int>(x + i, y + j),
-                                            tmp));
-                                }
-                                await _controller.RemoveBlock(x + i, y + j);
+                                _possibleExpansions.Add(
+                                    new Tuple<Tuple<int, int>, decimal>(new Tuple<int, int>(x + i, y + j),
+                                        tmp));
                             }
-                        }                        
+                        }
                     }
-
-                    possibleExpansions.Sort((a, b) => b.Item2.CompareTo(a.Item2));
-                    var bound = (possibleExpansions.Count > 3) ? (int)Math.Ceiling(possibleExpansions.Count / 3d) : possibleExpansions.Count;
-                    choice = possibleExpansions[rnd.Next(0, bound)].Item1;
-                }                
-
-                if (choice == null)
-                    if (rnd.NextDouble() < BreakChance)
-                    {
-                        break;
-                    }
-                    else
+                    catch (IndexOutOfRangeException)
                     {
                         continue;
                     }
-                // add the block to list
-                await _controller.AddBlock(choice.Item1, choice.Item2);
-                placedBlocks.AddLast(choice);
-                mark[choice.Item1, choice.Item2] = true;
-                blocks = _controller.Blocks;
-                await _controller.UpdateDb();
+                }
             }
-            
         }
+
 
     }
 }
