@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord.Commands;
@@ -8,7 +7,7 @@ using StupifyConsoleApp.Client;
 
 namespace StupifyConsoleApp.Commands.Modules
 {
-    public class Utility : ModuleBase<SocketCommandContext>
+    public class Utility : StupifyModuleBase
     {
         private readonly List<string> _seenModules = new List<string>();
 

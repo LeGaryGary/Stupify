@@ -7,7 +7,7 @@ using StupifyConsoleApp.DataModels;
 
 namespace StupifyConsoleApp.Commands.Modules
 {
-    public class Story : ModuleBase<SocketCommandContext>
+    public class Story : StupifyModuleBase
     {
         [Command("BeginStory")]
         public async Task StoryStart()

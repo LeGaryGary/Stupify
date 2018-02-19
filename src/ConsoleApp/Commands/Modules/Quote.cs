@@ -8,7 +8,7 @@ using StupifyConsoleApp.DataModels;
 
 namespace StupifyConsoleApp.Commands.Modules
 {
-    public class Quote : ModuleBase<SocketCommandContext>
+    public class Quote : StupifyModuleBase
     {
         [Command("AddQuote")]
         public async Task AddQuoteAsync([Remainder] string quoteBody)
