@@ -19,9 +19,9 @@ namespace StupifyConsoleApp.TicTacZapManagement
 
         public static async Task<Inventory> GetInventoryAsync(int userId)
         {
-            if (File.Exists(InventoriesPath + $@"\{userId+InventoryExtension}"))
+            if (File.Exists(InventoriesPath + $@"\{userId + InventoryExtension}"))
             {
-                var fileText = await File.ReadAllTextAsync(InventoriesPath + $@"\{userId+InventoryExtension}");
+                var fileText = await File.ReadAllTextAsync(InventoriesPath + $@"\{userId + InventoryExtension}");
                 return JsonConvert.DeserializeObject<Inventory>(fileText);
             }
 
@@ -33,7 +33,7 @@ namespace StupifyConsoleApp.TicTacZapManagement
         private static async Task SaveInventoryAsync(int userId, Inventory inventory)
         {
             var fileText = JsonConvert.SerializeObject(inventory);
-            await File.WriteAllTextAsync(InventoriesPath + $@"\{userId+InventoryExtension}", fileText);
+            await File.WriteAllTextAsync(InventoriesPath + $@"\{userId + InventoryExtension}", fileText);
         }
 
         public static async Task AddToInventoryAsync(BlockType blockType, int quantity, int userId)
@@ -49,7 +49,6 @@ namespace StupifyConsoleApp.TicTacZapManagement
             if (!inventory.RemoveBlocks(blockType, quantity)) return false;
             await SaveInventoryAsync(userId, inventory);
             return true;
-
         }
 
         public static async Task ResetInventory(int userId)

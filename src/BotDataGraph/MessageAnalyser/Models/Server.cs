@@ -1,8 +1,7 @@
-﻿
-namespace BotDataGraph.MessageAnalyser.Models
+﻿namespace BotDataGraph.MessageAnalyser.Models
 {
     /// <summary>
-    /// Server node for neo4J
+    ///     Server node for neo4J
     /// </summary>
     public class Server
     {

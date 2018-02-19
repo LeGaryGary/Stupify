@@ -7,8 +7,8 @@ namespace StupifyConsoleApp.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<bool>(
-                name: "Muted",
-                table: "ServerUsers",
+                "Muted",
+                "ServerUsers",
                 nullable: false,
                 defaultValue: false);
         }
@@ -16,8 +16,8 @@ namespace StupifyConsoleApp.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "Muted",
-                table: "ServerUsers");
+                "Muted",
+                "ServerUsers");
         }
     }
 }

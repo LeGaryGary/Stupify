@@ -8,37 +8,34 @@ namespace StupifyConsoleApp.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Servers",
-                columns: table => new
+                "Servers",
+                table => new
                 {
                     ServerId = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                        .Annotation("SqlServer:ValueGenerationStrategy",
+                            SqlServerValueGenerationStrategy.IdentityColumn),
                     DiscordGuildId = table.Column<long>(nullable: false)
                 },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Servers", x => x.ServerId);
-                });
+                constraints: table => { table.PrimaryKey("PK_Servers", x => x.ServerId); });
 
             migrationBuilder.CreateTable(
-                name: "Users",
-                columns: table => new
+                "Users",
+                table => new
                 {
                     UserId = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                        .Annotation("SqlServer:ValueGenerationStrategy",
+                            SqlServerValueGenerationStrategy.IdentityColumn),
                     DiscordUserId = table.Column<long>(nullable: false)
                 },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Users", x => x.UserId);
-                });
+                constraints: table => { table.PrimaryKey("PK_Users", x => x.UserId); });
 
             migrationBuilder.CreateTable(
-                name: "ServerUsers",
-                columns: table => new
+                "ServerUsers",
+                table => new
                 {
                     ServerUserId = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                        .Annotation("SqlServer:ValueGenerationStrategy",
+                            SqlServerValueGenerationStrategy.IdentityColumn),
                     ServerId = table.Column<int>(nullable: false),
                     UserId = table.Column<int>(nullable: false)
                 },
@@ -46,25 +43,26 @@ namespace StupifyConsoleApp.Migrations
                 {
                     table.PrimaryKey("PK_ServerUsers", x => x.ServerUserId);
                     table.ForeignKey(
-                        name: "FK_ServerUsers_Servers_ServerId",
-                        column: x => x.ServerId,
-                        principalTable: "Servers",
-                        principalColumn: "ServerId",
+                        "FK_ServerUsers_Servers_ServerId",
+                        x => x.ServerId,
+                        "Servers",
+                        "ServerId",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_ServerUsers_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "UserId",
+                        "FK_ServerUsers_Users_UserId",
+                        x => x.UserId,
+                        "Users",
+                        "UserId",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Quotes",
-                columns: table => new
+                "Quotes",
+                table => new
                 {
                     QuoteId = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                        .Annotation("SqlServer:ValueGenerationStrategy",
+                            SqlServerValueGenerationStrategy.IdentityColumn),
                     QuoteBody = table.Column<string>(nullable: true),
                     ServerUserId = table.Column<int>(nullable: false)
                 },
@@ -72,42 +70,42 @@ namespace StupifyConsoleApp.Migrations
                 {
                     table.PrimaryKey("PK_Quotes", x => x.QuoteId);
                     table.ForeignKey(
-                        name: "FK_Quotes_ServerUsers_ServerUserId",
-                        column: x => x.ServerUserId,
-                        principalTable: "ServerUsers",
-                        principalColumn: "ServerUserId",
+                        "FK_Quotes_ServerUsers_ServerUserId",
+                        x => x.ServerUserId,
+                        "ServerUsers",
+                        "ServerUserId",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Quotes_ServerUserId",
-                table: "Quotes",
-                column: "ServerUserId");
+                "IX_Quotes_ServerUserId",
+                "Quotes",
+                "ServerUserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ServerUsers_ServerId",
-                table: "ServerUsers",
-                column: "ServerId");
+                "IX_ServerUsers_ServerId",
+                "ServerUsers",
+                "ServerId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ServerUsers_UserId",
-                table: "ServerUsers",
-                column: "UserId");
+                "IX_ServerUsers_UserId",
+                "ServerUsers",
+                "UserId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Quotes");
+                "Quotes");
 
             migrationBuilder.DropTable(
-                name: "ServerUsers");
+                "ServerUsers");
 
             migrationBuilder.DropTable(
-                name: "Servers");
+                "Servers");
 
             migrationBuilder.DropTable(
-                name: "Users");
+                "Users");
         }
     }
 }

@@ -8,34 +8,32 @@ namespace StupifyConsoleApp.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<decimal>(
-                name: "Balance",
-                table: "Users",
+                "Balance",
+                "Users",
                 nullable: false,
                 defaultValue: 0m);
 
             migrationBuilder.CreateTable(
-                name: "Segments",
-                columns: table => new
+                "Segments",
+                table => new
                 {
                     SegmentId = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                        .Annotation("SqlServer:ValueGenerationStrategy",
+                            SqlServerValueGenerationStrategy.IdentityColumn),
                     OutputPerTick = table.Column<decimal>(nullable: false),
                     UserId = table.Column<int>(nullable: false)
                 },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Segments", x => x.SegmentId);
-                });
+                constraints: table => { table.PrimaryKey("PK_Segments", x => x.SegmentId); });
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Segments");
+                "Segments");
 
             migrationBuilder.DropColumn(
-                name: "Balance",
-                table: "Users");
+                "Balance",
+                "Users");
         }
     }
 }

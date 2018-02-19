@@ -1,6 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore.Metadata;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
-using System;
 
 namespace StupifyConsoleApp.Migrations
 {
@@ -9,17 +9,18 @@ namespace StupifyConsoleApp.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<bool>(
-                name: "StoryInProgress",
-                table: "Servers",
+                "StoryInProgress",
+                "Servers",
                 nullable: false,
                 defaultValue: false);
 
             migrationBuilder.CreateTable(
-                name: "ServerStories",
-                columns: table => new
+                "ServerStories",
+                table => new
                 {
                     ServerStoryId = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                        .Annotation("SqlServer:ValueGenerationStrategy",
+                            SqlServerValueGenerationStrategy.IdentityColumn),
                     EndTime = table.Column<DateTime>(nullable: false),
                     ServerId = table.Column<int>(nullable: true),
                     StartTime = table.Column<DateTime>(nullable: false),
@@ -29,25 +30,26 @@ namespace StupifyConsoleApp.Migrations
                 {
                     table.PrimaryKey("PK_ServerStories", x => x.ServerStoryId);
                     table.ForeignKey(
-                        name: "FK_ServerStories_Servers_ServerId",
-                        column: x => x.ServerId,
-                        principalTable: "Servers",
-                        principalColumn: "ServerId",
+                        "FK_ServerStories_Servers_ServerId",
+                        x => x.ServerId,
+                        "Servers",
+                        "ServerId",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_ServerStories_ServerUsers_StoryInitiatedByServerUserId",
-                        column: x => x.StoryInitiatedByServerUserId,
-                        principalTable: "ServerUsers",
-                        principalColumn: "ServerUserId",
+                        "FK_ServerStories_ServerUsers_StoryInitiatedByServerUserId",
+                        x => x.StoryInitiatedByServerUserId,
+                        "ServerUsers",
+                        "ServerUserId",
                         onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
-                name: "ServerStoryParts",
-                columns: table => new
+                "ServerStoryParts",
+                table => new
                 {
                     ServerStoryPartId = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                        .Annotation("SqlServer:ValueGenerationStrategy",
+                            SqlServerValueGenerationStrategy.IdentityColumn),
                     Part = table.Column<string>(nullable: true),
                     PartAuthorServerUserId = table.Column<int>(nullable: true),
                     PartNumber = table.Column<int>(nullable: false),
@@ -58,51 +60,51 @@ namespace StupifyConsoleApp.Migrations
                 {
                     table.PrimaryKey("PK_ServerStoryParts", x => x.ServerStoryPartId);
                     table.ForeignKey(
-                        name: "FK_ServerStoryParts_ServerUsers_PartAuthorServerUserId",
-                        column: x => x.PartAuthorServerUserId,
-                        principalTable: "ServerUsers",
-                        principalColumn: "ServerUserId",
+                        "FK_ServerStoryParts_ServerUsers_PartAuthorServerUserId",
+                        x => x.PartAuthorServerUserId,
+                        "ServerUsers",
+                        "ServerUserId",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_ServerStoryParts_ServerStories_ServerStoryId",
-                        column: x => x.ServerStoryId,
-                        principalTable: "ServerStories",
-                        principalColumn: "ServerStoryId",
+                        "FK_ServerStoryParts_ServerStories_ServerStoryId",
+                        x => x.ServerStoryId,
+                        "ServerStories",
+                        "ServerStoryId",
                         onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_ServerStories_ServerId",
-                table: "ServerStories",
-                column: "ServerId");
+                "IX_ServerStories_ServerId",
+                "ServerStories",
+                "ServerId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ServerStories_StoryInitiatedByServerUserId",
-                table: "ServerStories",
-                column: "StoryInitiatedByServerUserId");
+                "IX_ServerStories_StoryInitiatedByServerUserId",
+                "ServerStories",
+                "StoryInitiatedByServerUserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ServerStoryParts_PartAuthorServerUserId",
-                table: "ServerStoryParts",
-                column: "PartAuthorServerUserId");
+                "IX_ServerStoryParts_PartAuthorServerUserId",
+                "ServerStoryParts",
+                "PartAuthorServerUserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ServerStoryParts_ServerStoryId",
-                table: "ServerStoryParts",
-                column: "ServerStoryId");
+                "IX_ServerStoryParts_ServerStoryId",
+                "ServerStoryParts",
+                "ServerStoryId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "ServerStoryParts");
+                "ServerStoryParts");
 
             migrationBuilder.DropTable(
-                name: "ServerStories");
+                "ServerStories");
 
             migrationBuilder.DropColumn(
-                name: "StoryInProgress",
-                table: "Servers");
+                "StoryInProgress",
+                "Servers");
         }
     }
 }

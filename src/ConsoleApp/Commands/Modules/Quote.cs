@@ -8,7 +8,7 @@ using StupifyConsoleApp.DataModels;
 
 namespace StupifyConsoleApp.Commands.Modules
 {
-    public class Quote : ModuleBase<SocketCommandContext>
+    public class Quote : StupifyModuleBase
     {
         [Command("AddQuote")]
         public async Task AddQuoteAsync([Remainder] string quoteBody)
@@ -18,7 +18,7 @@ namespace StupifyConsoleApp.Commands.Modules
                 await db.Quotes.AddAsync(new DataModels.Quote
                 {
                     QuoteBody = quoteBody,
-                    ServerUser = await db.GetServerUserAsync((long)Context.User.Id, (long)Context.Guild.Id)
+                    ServerUser = await db.GetServerUserAsync((long) Context.User.Id, (long) Context.Guild.Id)
                 });
                 await db.SaveChangesAsync();
                 var reply = ReplyAsync("Done!");
@@ -44,6 +44,7 @@ namespace StupifyConsoleApp.Commands.Modules
                     await ReplyAsync("No quotes were found, try !addquote <quote>");
                     return;
                 }
+
                 var message = quote.QuoteBody + " - " + ClientManager.Client.UsernameFromServerUser(quote.ServerUser);
                 await ReplyAsync(message);
             }

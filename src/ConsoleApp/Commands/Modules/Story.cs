@@ -7,7 +7,7 @@ using StupifyConsoleApp.DataModels;
 
 namespace StupifyConsoleApp.Commands.Modules
 {
-    public class Story : ModuleBase<SocketCommandContext>
+    public class Story : StupifyModuleBase
     {
         [Command("BeginStory")]
         public async Task StoryStart()
@@ -26,7 +26,7 @@ namespace StupifyConsoleApp.Commands.Modules
                 {
                     Server = server,
                     StartTime = DateTime.Now,
-                    StoryInitiatedBy = await db.GetServerUserAsync(Context.User.Id, Context.Guild.Id),
+                    StoryInitiatedBy = await db.GetServerUserAsync(Context.User.Id, Context.Guild.Id)
                 };
                 db.ServerStories.Add(serverStory);
                 db.ServerStoryParts.Add(new ServerStoryPart
@@ -39,9 +39,9 @@ namespace StupifyConsoleApp.Commands.Modules
                 });
                 await db.SaveChangesAsync();
                 await ReplyAsync(
-                    $"The story begins here, who knows where it will go! Use the command {Config.CommandPrefix} andthen {{Your part of the story!}}" + Environment.NewLine +
+                    $"The story begins here, who knows where it will go! Use the command {Config.CommandPrefix} andthen {{Your part of the story!}}" +
+                    Environment.NewLine +
                     $"To end the story use {Config.CommandPrefix} theend, good luck!");
-
             }
         }
 
@@ -51,7 +51,7 @@ namespace StupifyConsoleApp.Commands.Modules
             using (var db = new BotContext())
             {
                 var server = await db.Servers.FirstAsync(s => (ulong) s.DiscordGuildId == Context.Guild.Id);
-                
+
                 if (!server.StoryInProgress)
                 {
                     await ReplyAsync($"Theres no story in progress! try {Config.CommandPrefix} beginstory");
@@ -59,7 +59,7 @@ namespace StupifyConsoleApp.Commands.Modules
                 }
 
                 var serverUser = await db.GetServerUserAsync(Context.User.Id, Context.Guild.Id);
-                var story = await db.GetLatestServerStoryAsync((long)Context.Guild.Id);
+                var story = await db.GetLatestServerStoryAsync((long) Context.Guild.Id);
                 var lastPart = await db.GetLastestServerStoryPartAsync(story);
 
                 var timeSpan = DateTime.Now - lastPart.TimeOfAddition;
@@ -67,7 +67,7 @@ namespace StupifyConsoleApp.Commands.Modules
                     timeSpan < TimeSpan.FromMinutes(1))
                 {
                     await ReplyAsync(
-                        $"Please give other people a chance! Or at the very least, wait another {60-timeSpan.Seconds} Seconds!");
+                        $"Please give other people a chance! Or at the very least, wait another {60 - timeSpan.Seconds} Seconds!");
                     return;
                 }
 
@@ -97,7 +97,7 @@ namespace StupifyConsoleApp.Commands.Modules
                     return;
                 }
 
-                var story = await db.GetLatestServerStoryAsync((long)Context.Guild.Id);
+                var story = await db.GetLatestServerStoryAsync((long) Context.Guild.Id);
                 var partsCount = await db.ServerStoryParts
                     .CountAsync(ssp => ssp.ServerStory.ServerStoryId == story.ServerStoryId);
                 if (partsCount < 10)
@@ -117,20 +117,23 @@ namespace StupifyConsoleApp.Commands.Modules
         {
             using (var db = new BotContext())
             {
-                var serverStories = await db.ServerStories.Where(ss => ss.Server.DiscordGuildId == (long) Context.Guild.Id).ToListAsync();
+                var serverStories = await db.ServerStories
+                    .Where(ss => ss.Server.DiscordGuildId == (long) Context.Guild.Id).ToListAsync();
                 var storyId = serverStories.OrderByDescending(r => Guid.NewGuid()).FirstOrDefault()?.ServerStoryId;
 
                 if (storyId != null)
                 {
-                    var parts = await db.ServerStoryParts.Where(ssp => ssp.ServerStory.ServerStoryId == storyId).ToListAsync();
+                    var parts = await db.ServerStoryParts.Where(ssp => ssp.ServerStory.ServerStoryId == storyId)
+                        .ToListAsync();
                     var reply = string.Empty;
-                    parts.ForEach(p => reply+=p.Part+Environment.NewLine);
+                    parts.ForEach(p => reply += p.Part + Environment.NewLine);
                     await ReplyAsync(reply);
                 }
 
                 else
                 {
-                    await ReplyAsync($"What... You want me to make one up?? (This server doesn't have any! (((Try {Config.CommandPrefix} beginstory))))");
+                    await ReplyAsync(
+                        $"What... You want me to make one up?? (This server doesn't have any! (((Try {Config.CommandPrefix} beginstory))))");
                 }
             }
         }

@@ -18,14 +18,14 @@ namespace StupifyConsoleApp.TicTacZapManagement
         public static async Task<Segment> GetAsync(int templateId)
         {
             if (!File.Exists(TemplatePath + $@"\{templateId + TemplateExtension}")) return null;
-            var fileText = await File.ReadAllTextAsync(TemplatePath + $@"\{templateId+TemplateExtension}");
+            var fileText = await File.ReadAllTextAsync(TemplatePath + $@"\{templateId + TemplateExtension}");
             return Segments.DeserializeSegment(fileText);
         }
 
         private static async Task SaveAsync(int templateId, Segment segment)
         {
             var fileText = Segments.SerializeSegment(segment);
-            await File.WriteAllTextAsync(TemplatePath + $@"\{templateId+TemplateExtension}", fileText);
+            await File.WriteAllTextAsync(TemplatePath + $@"\{templateId + TemplateExtension}", fileText);
         }
     }
 }

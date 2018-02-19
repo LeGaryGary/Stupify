@@ -1,33 +1,30 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
 
 namespace TicTacZap
 {
     public class Universe
     {
+        public readonly (int x, int y) Center;
         public readonly int?[,] Segments;
         public readonly int Size;
-        public readonly (int x, int y) Center;
 
         public Universe(int size)
         {
             Size = size;
-            Segments = new int?[size,size];
+            Segments = new int?[size, size];
             Center = (Size / 2, Size / 2);
         }
 
         public string RenderTheEntiretyOfCreationAsWeKnowIt()
         {
             var str = string.Empty;
-            for (var y = Size-1; y >= 0; y--)
+            for (var y = Size - 1; y >= 0; y--)
             {
                 for (var x = 0; x < Size; x++)
-                {
-                    if (Segments[x, y] != null) str += " S ";
-                    else str += " ~ ";
-                }
+                    if (Segments[x, y] != null)
+                        str += " S ";
+                    else
+                        str += " ~ ";
 
                 str += Environment.NewLine;
             }
@@ -35,11 +32,11 @@ namespace TicTacZap
             return str;
         }
 
-        public (int,int) NewSegment(int segmentId)
+        public (int, int) NewSegment(int segmentId)
         {
             (var x, var y) = GetFirstEmptySegment();
             Segments[x, y] = segmentId;
-            return (x,y);
+            return (x, y);
         }
 
         public void DeleteSegment((int x, int y) coords)
@@ -71,7 +68,11 @@ namespace TicTacZap
                             layer++;
                             direction = Direction.Right;
                         }
-                        else y++;
+                        else
+                        {
+                            y++;
+                        }
+
                         break;
                     case Direction.Down:
                         if (Math.Abs(y - Center.y) == layer)
@@ -79,7 +80,11 @@ namespace TicTacZap
                             direction = Direction.Left;
                             x--;
                         }
-                        else y--;
+                        else
+                        {
+                            y--;
+                        }
+
                         break;
                     case Direction.Left:
                         if (Math.Abs(x - Center.x) == layer)
@@ -87,7 +92,11 @@ namespace TicTacZap
                             direction = Direction.Up;
                             y++;
                         }
-                        else x--;
+                        else
+                        {
+                            x--;
+                        }
+
                         break;
                     case Direction.Right:
                         if (Math.Abs(x - Center.x) == layer)
@@ -95,7 +104,11 @@ namespace TicTacZap
                             direction = Direction.Down;
                             y--;
                         }
-                        else x++;
+                        else
+                        {
+                            x++;
+                        }
+
                         break;
                 }
             }

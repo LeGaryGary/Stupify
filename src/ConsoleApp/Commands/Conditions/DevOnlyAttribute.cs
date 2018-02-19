@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
@@ -9,15 +8,14 @@ namespace StupifyConsoleApp.Commands.Conditions
 {
     public class DevOnlyAttribute : PreconditionAttribute
     {
-
-        public override Task<PreconditionResult> CheckPermissions(ICommandContext context, CommandInfo command, IServiceProvider services)
+        public override Task<PreconditionResult> CheckPermissions(ICommandContext context, CommandInfo command,
+            IServiceProvider services)
         {
             if (context.User is IGuildUser user && user.RoleIds.Contains(Config.DeveloperRole))
-            {
                 return Task.FromResult(PreconditionResult.FromSuccess());
-            }
 
-            return Task.FromResult(PreconditionResult.FromError("Trying to be sneaky eh? sorry only devs can do that :^)"));
+            return Task.FromResult(
+                PreconditionResult.FromError("Trying to be sneaky eh? sorry only devs can do that :^)"));
         }
     }
 }

@@ -2,7 +2,6 @@
 using Discord;
 using Discord.Commands;
 using Microsoft.EntityFrameworkCore;
-
 using StupifyConsoleApp.DataModels;
 using StupifyConsoleApp.TicTacZapManagement;
 
@@ -15,7 +14,8 @@ namespace StupifyConsoleApp.Commands.Modules
         private const double BreakChance = 0.2;
 
         [Command("Solve", RunMode = RunMode.Async)]
-        public async Task Solve(int segmentId, decimal thr = ConsiderationThreshold, double exp = ExpansionChance, double brk = BreakChance)
+        public async Task Solve(int segmentId, decimal thr = ConsiderationThreshold, double exp = ExpansionChance,
+            double brk = BreakChance)
         {
             var user = await this.GetUserAsync();
             if (!await this.UserHasSegmentAsync(segmentId))
@@ -23,6 +23,7 @@ namespace StupifyConsoleApp.Commands.Modules
                 await ReplyAsync(Responses.SegmentOwnershipProblem);
                 return;
             }
+
             var segment = await Db.Segments.FirstOrDefaultAsync(s => s.SegmentId == segmentId);
             if (segment == null)
             {
@@ -34,19 +35,16 @@ namespace StupifyConsoleApp.Commands.Modules
         }
 
         [Command("Solve")]
-        public async Task Solve(decimal thr = ConsiderationThreshold, double exp = ExpansionChance, double brk = BreakChance)
+        public async Task Solve(decimal thr = ConsiderationThreshold, double exp = ExpansionChance,
+            double brk = BreakChance)
         {
             var user = await this.GetUserAsync();
             var id = TicTacZapController.GetUserSelection(user.UserId);
 
             if (id != null)
-            {
-                await Solve((int)id, thr, exp, brk);
-            }
+                await Solve((int) id, thr, exp, brk);
             else
-            {
                 await ReplyAsync(Responses.SelectSegmentMessage);
-            }
         }
 
         private async Task RunAI(BotContext db, Segment segment, User user, decimal thr, double exp, double brk)
@@ -66,10 +64,9 @@ namespace StupifyConsoleApp.Commands.Modules
         private async Task UpdateMsg(IUserMessage msg, Segment segment, bool done = false)
         {
             var str = await TicTacZapController.RenderSegmentAsync(segment.SegmentId, Db) + "\n";
-            str += (done) ? "done." : "working...";
+            str += done ? "done." : "working...";
 
             await msg.ModifyAsync(message => message.Content = $"```{str}```");
         }
-
     }
 }

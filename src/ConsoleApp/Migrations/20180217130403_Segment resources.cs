@@ -7,19 +7,19 @@ namespace StupifyConsoleApp.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.RenameColumn(
-                name: "OutputPerTick",
-                table: "Segments",
-                newName: "UnitsPerTick");
+                "OutputPerTick",
+                "Segments",
+                "UnitsPerTick");
 
             migrationBuilder.AddColumn<decimal>(
-                name: "Energy",
-                table: "Segments",
+                "Energy",
+                "Segments",
                 nullable: false,
                 defaultValue: 0m);
 
             migrationBuilder.AddColumn<decimal>(
-                name: "EnergyPerTick",
-                table: "Segments",
+                "EnergyPerTick",
+                "Segments",
                 nullable: false,
                 defaultValue: 0m);
         }
@@ -27,17 +27,17 @@ namespace StupifyConsoleApp.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "Energy",
-                table: "Segments");
+                "Energy",
+                "Segments");
 
             migrationBuilder.DropColumn(
-                name: "EnergyPerTick",
-                table: "Segments");
+                "EnergyPerTick",
+                "Segments");
 
             migrationBuilder.RenameColumn(
-                name: "UnitsPerTick",
-                table: "Segments",
-                newName: "OutputPerTick");
+                "UnitsPerTick",
+                "Segments",
+                "OutputPerTick");
         }
     }
 }

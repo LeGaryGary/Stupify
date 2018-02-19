@@ -6,12 +6,12 @@ namespace TicTacZap
 {
     public class Inventory
     {
-        public Dictionary<BlockType, int> Blocks { get; set; } = new Dictionary<BlockType, int>();
-
         public Inventory(int startingBlocks)
         {
             AddBlocks(BlockType.BasicEnergy, startingBlocks);
         }
+
+        public Dictionary<BlockType, int> Blocks { get; set; } = new Dictionary<BlockType, int>();
 
         public void Reset()
         {
@@ -24,10 +24,7 @@ namespace TicTacZap
 
             var str = "Inventory:" + Environment.NewLine;
 
-            foreach (var block in Blocks)
-            {
-                str += $"`{block.Key} block x{block.Value}`";
-            }
+            foreach (var block in Blocks) str += $"`{block.Key} block x{block.Value}`";
 
             return str;
         }

@@ -1,6 +1,6 @@
 ﻿namespace BotDataGraph.MessageAnalyser.Models
 {
-    class Word
+    internal class Word
     {
     }
 }

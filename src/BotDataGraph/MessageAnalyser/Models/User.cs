@@ -12,7 +12,7 @@
 
         public object Parameters()
         {
-            return new { userId };
+            return new {userId};
         }
     }
 }

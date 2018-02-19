@@ -9,17 +9,20 @@ namespace StupifyConsoleApp.Commands.Modules.Moderation
     [RequireUserPermission(ChannelPermission.ManageMessages)]
     public class Mute : ModuleBase<SocketCommandContext>
     {
-        [Command("mute"), RequireUserPermission(ChannelPermission.ManageMessages)]
+        [Command("mute")]
+        [RequireUserPermission(ChannelPermission.ManageMessages)]
         public async Task MuteAsync(string userTag)
         {
             using (var db = new BotContext())
             {
-                var serverUser = await db.GetServerUserAsync(ulong.Parse(Regex.Replace(userTag, "[^0-9]", "")), Context.Guild.Id);
+                var serverUser = await db.GetServerUserAsync(ulong.Parse(Regex.Replace(userTag, "[^0-9]", "")),
+                    Context.Guild.Id);
                 if (serverUser == null)
                 {
                     await ReplyAsync("Thats not right!");
                     return;
                 }
+
                 serverUser.Muted = true;
                 await db.SaveChangesAsync();
                 await ReplyAsync("This muggle has been silenced!");
@@ -31,7 +34,8 @@ namespace StupifyConsoleApp.Commands.Modules.Moderation
         {
             using (var db = new BotContext())
             {
-                var serverUser = await db.GetServerUserAsync(ulong.Parse(Regex.Replace(cmdStr, "[^0-9]", "")), Context.Guild.Id);
+                var serverUser =
+                    await db.GetServerUserAsync(ulong.Parse(Regex.Replace(cmdStr, "[^0-9]", "")), Context.Guild.Id);
                 serverUser.Muted = false;
                 var saveTask = db.SaveChangesAsync();
                 await ReplyAsync("This muggle has been forgiven, for now...");

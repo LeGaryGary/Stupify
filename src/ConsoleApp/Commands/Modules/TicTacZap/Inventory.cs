@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Discord.Commands;
-using StupifyConsoleApp.DataModels;
 using StupifyConsoleApp.TicTacZapManagement;
 using TicTacZap.Segment.Blocks;
 
 namespace StupifyConsoleApp.Commands.Modules.TicTacZap
 {
-    public class Inventory:StupifyModuleBase
+    public class Inventory : StupifyModuleBase
     {
         [Command("Balance")]
         public async Task ShowBalance()
@@ -32,6 +31,7 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
                 await ReplyAsync("Your inventory is empty");
                 return;
             }
+
             await ReplyAsync(message);
         }
 
