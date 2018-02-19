@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-using StupifyConsoleApp.Client;
 using StupifyConsoleApp.DataModels;
 using TicTacZap.Segment.Blocks;
 

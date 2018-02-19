@@ -1,8 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Discord.Commands;
-using StupifyConsoleApp.Client;
+
 using StupifyConsoleApp.Commands.Conditions;
-using StupifyConsoleApp.DataModels;
 using StupifyConsoleApp.TicTacZapManagement;
 
 namespace StupifyConsoleApp.Commands.Modules
