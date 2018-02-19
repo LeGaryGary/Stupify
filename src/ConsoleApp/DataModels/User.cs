@@ -6,6 +6,7 @@ namespace StupifyConsoleApp.DataModels
     public class User
     {
         public int UserId { get; set; }
+
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
         public long DiscordUserId { get; set; }
 

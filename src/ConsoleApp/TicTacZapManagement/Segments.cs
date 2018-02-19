@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-
 using TicTacZap;
 using TicTacZap.Segment;
 using TicTacZap.Segment.Blocks;
@@ -13,8 +12,8 @@ namespace StupifyConsoleApp.TicTacZapManagement
 {
     internal static class Segments
     {
-        private static readonly string SegmentsPath;
         private const string SegmentExtension = ".SEG";
+        private static readonly string SegmentsPath;
         private static readonly List<Tuple<int, Segment>> SegmentCache;
 
         private static readonly Random Random;
@@ -69,7 +68,7 @@ namespace StupifyConsoleApp.TicTacZapManagement
             var fileText = SerializeSegment(segment);
 
             var streamWriter = File.CreateText(SegmentsPath + $@"\{segmentId + SegmentExtension}");
-            await streamWriter.WriteAsync((string) fileText);
+            await streamWriter.WriteAsync(fileText);
             streamWriter.Close();
         }
 
@@ -96,13 +95,9 @@ namespace StupifyConsoleApp.TicTacZapManagement
                 var blockType = segment.DeleteBlock(x, y);
                 if (blockType == null) continue;
                 if (blocks.ContainsKey(blockType.Value))
-                {
                     blocks[blockType.Value]++;
-                }
                 else
-                {
                     blocks.Add(blockType.Value, 1);
-                }
             }
 
             await SaveSegmentFileAsync(segmentId, segment);
@@ -136,15 +131,12 @@ namespace StupifyConsoleApp.TicTacZapManagement
 
             var blocks = segment.Blocks;
             for (var y = 0; y < blocks.GetLength(1); y++)
+            for (var x = 0; x < blocks.GetLength(0); x++)
             {
-                for (var x = 0; x < blocks.GetLength(0); x++)
-                {
-                    var block = blocks[x, y];
-                    if (block == null) continue;
+                var block = blocks[x, y];
+                if (block == null) continue;
 
-                    serSeg.BlocksList.Add(new Tuple<int, int, BlockType>(x, y, block.BlockType));
-
-                }
+                serSeg.BlocksList.Add(new Tuple<int, int, BlockType>(x, y, block.BlockType));
             }
 
             serSeg.Resources = segment.ResourcePerTick();
@@ -158,9 +150,7 @@ namespace StupifyConsoleApp.TicTacZapManagement
             var segment = new Segment();
             var blocks = segment.Blocks;
             foreach (var tuple in deserialized.BlocksList)
-            {
                 blocks[tuple.Item1, tuple.Item2] = TicTacZapExtensions.NewBlock(tuple.Item3);
-            }
 
             segment.SetResources(deserialized.Resources);
             return segment;

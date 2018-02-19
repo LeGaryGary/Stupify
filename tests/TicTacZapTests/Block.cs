@@ -1,4 +1,3 @@
-using System;
 using FluentAssertions;
 using TicTacZap.Segment.Blocks.Production.Energy;
 using Xunit;

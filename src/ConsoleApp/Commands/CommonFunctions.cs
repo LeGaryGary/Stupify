@@ -2,8 +2,6 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using Discord.Commands;
-
 using StupifyConsoleApp.DataModels;
 using StupifyConsoleApp.TicTacZapManagement;
 using TicTacZap;
@@ -14,7 +12,7 @@ namespace StupifyConsoleApp.Commands
     {
         public static async Task<User> GetUserAsync(this StupifyModuleBase moduleBase)
         {
-            return await moduleBase.Db.Users.FirstAsync(u => u.DiscordUserId == (long)moduleBase.Context.User.Id);
+            return await moduleBase.Db.Users.FirstAsync(u => u.DiscordUserId == (long) moduleBase.Context.User.Id);
         }
 
         public static async Task<IEnumerable<Segment>> GetSegments(this StupifyModuleBase moduleBase)
@@ -38,9 +36,10 @@ namespace StupifyConsoleApp.Commands
         {
             await TicTacZapController.SetUserSegmentSelection(
                 (await GetUserAsync(moduleBase)).UserId, segmentId, moduleBase.Db);
-            await moduleBase.Context.Channel.SendMessageAsync($"```{await TicTacZapController.RenderSegmentAsync(segmentId, moduleBase.Db)}```");
+            await moduleBase.Context.Channel.SendMessageAsync(
+                $"```{await TicTacZapController.RenderSegmentAsync(segmentId, moduleBase.Db)}```");
         }
-        
+
         public static async Task UpdateDbSegmentOutput(this StupifyModuleBase moduleBase, int segmentId)
         {
             var dbSegment = await moduleBase.Db.Segments.FirstAsync(s => s.SegmentId == segmentId);

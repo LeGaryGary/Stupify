@@ -17,7 +17,8 @@ namespace BotDataGraph.MessageAnalyser
                 .Distinct()
                 .ToArray();
 
-            return s.Split(separators).Select(word => word.Trim(punctuation)).Where(word => !string.IsNullOrEmpty(word));
+            return s.Split(separators).Select(word => word.Trim(punctuation))
+                .Where(word => !string.IsNullOrEmpty(word));
         }
     }
 }

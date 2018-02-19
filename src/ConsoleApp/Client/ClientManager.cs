@@ -12,9 +12,9 @@ namespace StupifyConsoleApp.Client
         static ClientManager()
         {
             Client = new DiscordSocketClient(new DiscordSocketConfig
-                                                 {
-                                                     AlwaysDownloadUsers = true
-                                                 });
+            {
+                AlwaysDownloadUsers = true
+            });
             Commands = new CommandService();
             Logger = new Logger(Config.LoggingDirectory);
 
@@ -39,7 +39,7 @@ namespace StupifyConsoleApp.Client
 
         public static async Task LogAsync(string message, bool requireDebug = false)
         {
-            await Logger.Log(DateTime.Now.ToString("T")+" "+message, requireDebug);
+            await Logger.Log(DateTime.Now.ToString("T") + " " + message, requireDebug);
         }
 
         private static async Task LogAsync(LogMessage message)

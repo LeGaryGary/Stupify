@@ -1,5 +1,4 @@
-﻿
-namespace StupifyConsoleApp.DataModels
+﻿namespace StupifyConsoleApp.DataModels
 {
     public class Segment
     {

@@ -3,17 +3,18 @@ using TicTacZap;
 using TicTacZap.Segment.Blocks;
 using TicTacZap.Segment.Blocks.Production.Energy;
 using Xunit;
-using TicTacZapSegment =  TicTacZap.Segment.Segment;
+using TicTacZapSegment = TicTacZap.Segment.Segment;
 
 namespace TicTacZapTests
 {
     public class Segment
     {
         [Fact]
-        public void AddSingleBlock()
+        public void AddBlockOnExistingBlock()
         {
             var segment = new TicTacZapSegment();
             segment.AddBlock(1, 1, BlockType.BasicEnergy).Should().BeTrue();
+            segment.AddBlock(1, 1, BlockType.BasicEnergy).Should().BeFalse();
 
             segment.ResourcePerTick(Resource.Energy).Should().Be(0);
             segment.ResourcePerTick(Resource.Unit).Should().Be(0);
@@ -23,11 +24,10 @@ namespace TicTacZapTests
         }
 
         [Fact]
-        public void AddBlockOnExistingBlock()
+        public void AddSingleBlock()
         {
             var segment = new TicTacZapSegment();
             segment.AddBlock(1, 1, BlockType.BasicEnergy).Should().BeTrue();
-            segment.AddBlock(1, 1, BlockType.BasicEnergy).Should().BeFalse();
 
             segment.ResourcePerTick(Resource.Energy).Should().Be(0);
             segment.ResourcePerTick(Resource.Unit).Should().Be(0);
@@ -102,8 +102,9 @@ namespace TicTacZapTests
             segment.AddBlock(8, 0, BlockType.BasicEnergy).Should().BeTrue();
 
             var actualText = segment.TextRender();
-            const string expectedText = " B  ~  B  ~  ~  ~  ~  ~  B \r\n B  ~  ~  ~  ~  ~  B  ~  ~ \r\n ~  B  ~  ~  B  ~  ~  ~  B \r\n ~  ~  ~  ~  ~  ~  ~  ~  ~ \r\n B  ~  ~  ~  C  ~  ~  B  ~ \r\n ~  ~  ~  ~  ~  ~  ~  ~  ~ \r\n ~  ~  ~  ~  ~  ~  ~  ~  ~ \r\n ~  ~  B  ~  B  ~  B  ~  ~ \r\n B  ~  ~  ~  ~  ~  ~  ~  B \r\n";
-            
+            const string expectedText =
+                " B  ~  B  ~  ~  ~  ~  ~  B \r\n B  ~  ~  ~  ~  ~  B  ~  ~ \r\n ~  B  ~  ~  B  ~  ~  ~  B \r\n ~  ~  ~  ~  ~  ~  ~  ~  ~ \r\n B  ~  ~  ~  C  ~  ~  B  ~ \r\n ~  ~  ~  ~  ~  ~  ~  ~  ~ \r\n ~  ~  ~  ~  ~  ~  ~  ~  ~ \r\n ~  ~  B  ~  B  ~  B  ~  ~ \r\n B  ~  ~  ~  ~  ~  ~  ~  B \r\n";
+
             actualText.Should().Be(expectedText);
         }
     }

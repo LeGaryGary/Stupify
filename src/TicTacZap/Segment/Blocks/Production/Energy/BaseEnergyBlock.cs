@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace TicTacZap.Segment.Blocks.Production.Energy
+﻿namespace TicTacZap.Segment.Blocks.Production.Energy
 {
     public abstract class BaseEnergyBlock : IProduceBlock
     {
@@ -11,7 +9,7 @@ namespace TicTacZap.Segment.Blocks.Production.Energy
 
         public decimal UpdateOutput(int sumOfDistancesInDirections, int neighbours)
         {
-            OutputPerTick = sumOfDistancesInDirections / (decimal)(neighbours + 1);
+            OutputPerTick = sumOfDistancesInDirections / (decimal) (neighbours + 1);
             return OutputPerTick;
         }
     }

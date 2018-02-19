@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-
 using StupifyConsoleApp.Client;
 using StupifyConsoleApp.DataModels;
 using TicTacZap;
@@ -12,14 +11,13 @@ namespace StupifyConsoleApp.TicTacZapManagement
 {
     internal static class TicTacZapController
     {
-        private static Dictionary<int, int?> UserSegmentSelection { get; } = new Dictionary<int, int?>(); 
-
-        public static ShopInventory Shop { get; } = new ShopInventory();
-
         static TicTacZapController()
         {
-            
         }
+
+        private static Dictionary<int, int?> UserSegmentSelection { get; } = new Dictionary<int, int?>();
+
+        public static ShopInventory Shop { get; } = new ShopInventory();
 
         public static async Task Run()
         {
@@ -65,6 +63,7 @@ namespace StupifyConsoleApp.TicTacZapManagement
                 text += Environment.NewLine;
                 text += $"{resource.Key.ToString()} in segment: {resource.Value}";
             }
+
             return text;
         }
 
@@ -73,7 +72,6 @@ namespace StupifyConsoleApp.TicTacZapManagement
             using (var db = new BotContext())
             {
                 foreach (var segment in await db.Segments.ToArrayAsync())
-                {
                     try
                     {
                         var user = await db.Users.FirstAsync(u => u.UserId == segment.UserId);
@@ -88,9 +86,7 @@ namespace StupifyConsoleApp.TicTacZapManagement
                         await ClientManager.LogAsync(e.ToString());
                         throw;
                     }
-                }
             }
-            
         }
 
         private static async Task Wait(this Stopwatch timer, int tickMinTime)
@@ -113,7 +109,6 @@ namespace StupifyConsoleApp.TicTacZapManagement
             if (!await db.Segments.AnyAsync(s => s.UserId == userId && s.SegmentId == segmentId)) return false;
             UserSegmentSelection[userId] = segmentId;
             return true;
-
         }
 
         public static int? GetUserSelection(int userId)
@@ -122,6 +117,5 @@ namespace StupifyConsoleApp.TicTacZapManagement
             UserSegmentSelection.Add(userId, null);
             return null;
         }
-
     }
 }

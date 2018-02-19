@@ -1,6 +1,6 @@
 ﻿namespace BotDataGraph.MessageAnalyser.Models
 {
-    class Route
+    internal class Route
     {
     }
 }

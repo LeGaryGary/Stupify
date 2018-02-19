@@ -18,18 +18,16 @@ namespace TicTacZap
             foreach (var resource in resources)
             {
                 if (resource.Value == 0) continue;
-                
+
                 segment.ResourceOutput.Add(resource.Key, resource.Value);
             }
         }
 
         public static Dictionary<Resource, decimal> ResourcePerTick(this Segment.Segment segment)
         {
-            var resources = new  Dictionary<Resource, decimal>();
+            var resources = new Dictionary<Resource, decimal>();
             foreach (Resource resource in Enum.GetValues(typeof(Resource)))
-            {
-                resources.Add(resource,ResourcePerTick(segment, resource));
-            }
+                resources.Add(resource, ResourcePerTick(segment, resource));
 
             return resources;
         }

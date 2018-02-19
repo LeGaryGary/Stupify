@@ -1,23 +1,19 @@
 ﻿using System.Threading.Tasks;
-
 using StupifyConsoleApp.DataModels;
 using StupifyConsoleApp.TicTacZapManagement;
 using TicTacZap;
 using TicTacZap.Segment.Blocks;
-
 using DBSegment = StupifyConsoleApp.DataModels.Segment;
 using Segment = TicTacZap.Segment.Segment;
 
 namespace StupifyConsoleApp.AI
 {
-    class AIController
+    internal class AIController
     {
-        private User _user;
+        private readonly BotContext _db;
         private readonly DBSegment _dbSeg;
         private readonly Segment _seg;
-        private readonly BotContext _db;
-
-        public IBlock[,] Blocks => (IBlock[,]) _seg.Blocks.Clone();
+        private User _user;
 
         public AIController(BotContext db, DBSegment segment, User user)
         {
@@ -26,6 +22,8 @@ namespace StupifyConsoleApp.AI
             _db = db;
             _seg = Segments.GetAsync(segment.SegmentId).GetAwaiter().GetResult();
         }
+
+        public IBlock[,] Blocks => (IBlock[,]) _seg.Blocks.Clone();
 
         public async Task UpdateDb()
         {

@@ -10,7 +10,7 @@ namespace StupifyConsoleApp.TicTacZapManagement
         private const string UniverseExtension = ".UNI";
         private static readonly string UniversePath;
 
-        private static Universe _universe;
+        private static readonly Universe _universe;
 
         static UniverseController()
         {
@@ -29,7 +29,7 @@ namespace StupifyConsoleApp.TicTacZapManagement
 
         public static string RenderTheEntiretyOfCreationAsWeKnowIt()
         {
-            return "```"+_universe.RenderTheEntiretyOfCreationAsWeKnowIt()+"```";
+            return "```" + _universe.RenderTheEntiretyOfCreationAsWeKnowIt() + "```";
         }
 
         public static async Task<(int, int)> NewSegment(int segmentId)

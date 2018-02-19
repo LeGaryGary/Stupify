@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-
 using StupifyConsoleApp.DataModels;
 using TicTacZap.Segment.Blocks;
 
@@ -9,17 +8,16 @@ namespace StupifyConsoleApp.AI
 {
     public class AI
     {
-        private double _expansionChance;
-        private decimal _considerationThreshold;
-        private double _breakChance;
-
-        private Random _rnd;
+        private readonly AIController _controller;
         private IBlock[,] _blocks;
+        private double _breakChance;
+        private decimal _considerationThreshold;
+        private double _expansionChance;
         private bool[,] _mark;
         private LinkedList<Tuple<int, int>> _placedBlocks;
         private List<Tuple<Tuple<int, int>, decimal>> _possibleExpansions;
 
-        private readonly AIController _controller;
+        private Random _rnd;
 
         public AI(BotContext db, Segment segment, User user)
         {
@@ -41,13 +39,11 @@ namespace StupifyConsoleApp.AI
 
             for (var x = 0; x < 9; x++)
             for (var y = 0; y < 9; y++)
-            {
                 if (_blocks[x, y] != null)
                 {
                     _placedBlocks.AddLast(new Tuple<int, int>(x, y));
                     _mark[x, y] = true;
                 }
-            }
         }
 
         private async Task AddBlock(Tuple<int, int> choice)
@@ -80,7 +76,9 @@ namespace StupifyConsoleApp.AI
         {
             if (_possibleExpansions.Count == 0) return null;
             _possibleExpansions.Sort((a, b) => b.Item2.CompareTo(a.Item2));
-            var bound = (_possibleExpansions.Count > 3) ? (int)Math.Ceiling(_possibleExpansions.Count / 3d) : _possibleExpansions.Count;
+            var bound = _possibleExpansions.Count > 3
+                ? (int) Math.Ceiling(_possibleExpansions.Count / 3d)
+                : _possibleExpansions.Count;
             return _possibleExpansions[_rnd.Next(0, bound)].Item1;
         }
 
@@ -94,13 +92,9 @@ namespace StupifyConsoleApp.AI
                 _possibleExpansions = new List<Tuple<Tuple<int, int>, decimal>>();
 
                 if (_rnd.NextDouble() < _expansionChance)
-                {
                     await NewExpansion();
-                }
                 else
-                {
                     await ExpandExisting();
-                }
 
                 var choice = GetChoice();
                 await AddBlock(choice);
@@ -117,7 +111,8 @@ namespace StupifyConsoleApp.AI
                 x = _rnd.Next(0, 9);
                 y = _rnd.Next(0, 9);
             } while (_blocks[x, y] != null && i++ < 20);
-            var choice = (_blocks[x, y] == null) ? new Tuple<int, int>(x, y) : null;
+
+            var choice = _blocks[x, y] == null ? new Tuple<int, int>(x, y) : null;
             if (choice != null)
             {
                 var output = await Test(x, y);
@@ -128,7 +123,7 @@ namespace StupifyConsoleApp.AI
 
         private async Task ExpandExisting()
         {
-            var visited = (bool[,])_mark.Clone();
+            var visited = (bool[,]) _mark.Clone();
             var output = _controller.Output();
             foreach (var block in _placedBlocks)
             {
@@ -136,29 +131,22 @@ namespace StupifyConsoleApp.AI
                 var y = block.Item2;
                 for (var i = -1; i <= 1; i++)
                 for (var j = -1; j <= 1; j++)
-                {
                     try
                     {
                         if (!visited[x + i, y + j] && _blocks[x + i, y + j] == null)
                         {
                             visited[x + i, y + j] = true;
                             var tmp = await Test(x + i, y + j);
-                            if (tmp - output > _considerationThreshold || (output == 0 && tmp == output))
-                            {
+                            if (tmp - output > _considerationThreshold || output == 0 && tmp == output)
                                 _possibleExpansions.Add(
                                     new Tuple<Tuple<int, int>, decimal>(new Tuple<int, int>(x + i, y + j),
                                         tmp));
-                            }
                         }
                     }
                     catch (IndexOutOfRangeException)
                     {
-                        continue;
                     }
-                }
             }
         }
-
-
     }
 }

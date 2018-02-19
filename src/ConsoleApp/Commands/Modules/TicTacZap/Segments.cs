@@ -3,29 +3,37 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord.Commands;
-using Microsoft.EntityFrameworkCore;
 using StupifyConsoleApp.DataModels;
 using StupifyConsoleApp.TicTacZapManagement;
-using TicTacZap;
 
 namespace StupifyConsoleApp.Commands.Modules.TicTacZap
 {
     public class Segments : StupifyModuleBase
     {
-
         [Command("Segments")]
         public async Task ListSegments()
         {
             var segments = await this.GetSegments();
             var renderSegmentList = RenderSegmentList(segments);
             if (renderSegmentList == string.Empty)
-            {
-                await ReplyAsync($"You don't have any segments, buy your first one: `{Config.CommandPrefix}Segment Buy`");
-            }
+                await ReplyAsync(
+                    $"You don't have any segments, buy your first one: `{Config.CommandPrefix}Segment Buy`");
             else
-            {
                 await ReplyAsync(renderSegmentList);
-            }
+        }
+
+        private static string RenderSegmentList(IEnumerable<Segment> segments)
+        {
+            var str = string.Empty;
+            foreach (var segment in segments)
+                str += $"Segment Id: {segment.SegmentId} Output: {segment.UnitsPerTick}" + Environment.NewLine;
+
+            return str;
+        }
+
+        private static decimal SegmentPrice(int segmentCount)
+        {
+            return Convert.ToDecimal(Math.Pow(2, segmentCount) - 1) * 100;
         }
 
         [Group("Segment")]
@@ -59,7 +67,8 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
                 user.Balance -= price;
 
                 await Db.SaveChangesAsync();
-                await ReplyAsync($"You have purchased a segment!\r\nId: {tuple.segmentId}\r\nCoordinates: {tuple.coords.x}, {tuple.coords.y}");
+                await ReplyAsync(
+                    $"You have purchased a segment!\r\nId: {tuple.segmentId}\r\nCoordinates: {tuple.coords.x}, {tuple.coords.y}");
             }
 
             [Command("Reset")]
@@ -75,12 +84,8 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
                 var blocks = await TicTacZapManagement.Segments.ResetSegmentAsync(segmentId);
 
                 foreach (var type in blocks)
-                {
                     if (type.Value > 0)
-                    {
                         await Inventories.AddToInventoryAsync(type.Key, type.Value, user.UserId);
-                    }
-                }
 
                 await Db.SaveChangesAsync();
                 await this.UpdateDbSegmentOutput(segmentId);
@@ -97,10 +102,10 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
                 }
 
                 var tuple = await DeleteSegment(segmentId);
-                await ReplyAsync($"It's gone...\r\nId: {segmentId}\r\nCoordinates: {tuple.x+1}, {tuple.y+1}");
+                await ReplyAsync($"It's gone...\r\nId: {segmentId}\r\nCoordinates: {tuple.x + 1}, {tuple.y + 1}");
             }
 
-            private async Task<(int segmentId,(int x,int y) coords)> NewSegment(User user)
+            private async Task<(int segmentId, (int x, int y) coords)> NewSegment(User user)
             {
                 var segment = new Segment
                 {
@@ -125,22 +130,6 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
                 await TicTacZapManagement.Segments.DeleteSegmentAsync(segmentId);
                 return await UniverseController.DeleteSegment(segmentId);
             }
-        }
-        
-        private static string RenderSegmentList(IEnumerable<Segment> segments)
-        {
-            var str = string.Empty;
-            foreach (var segment in segments)
-            {
-                str += $"Segment Id: {segment.SegmentId} Output: {segment.UnitsPerTick}" + Environment.NewLine;
-            }
-
-            return str;
-        }
-
-        private static decimal SegmentPrice(int segmentCount)
-        {
-            return Convert.ToDecimal(Math.Pow(2, segmentCount)-1) * 100;
         }
     }
 }

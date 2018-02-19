@@ -1,6 +1,6 @@
 ﻿namespace BotDataGraph.MessageAnalyser.Models
 {
-    class Channel
+    internal class Channel
     {
     }
 }

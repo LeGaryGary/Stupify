@@ -31,22 +31,22 @@ namespace StupifyConsoleApp.Commands.Modules
         {
             var modules = ClientManager.Commands.Modules;
             var message = string.Empty;
-            foreach (var module in modules)
-            {
-                message += module.Name + Environment.NewLine;
-            }
+            foreach (var module in modules) message += module.Name + Environment.NewLine;
             await ReplyAsync(message);
         }
 
         [Command("Help")]
         public async Task Help(string moduleName)
         {
-            var module = ClientManager.Commands.Modules.FirstOrDefault(m => string.Equals(m.Name, moduleName, StringComparison.OrdinalIgnoreCase));
+            var module = ClientManager.Commands.Modules.FirstOrDefault(m =>
+                string.Equals(m.Name, moduleName, StringComparison.OrdinalIgnoreCase));
             if (module == null)
             {
-                await ReplyAsync($"This module doesn't exist, please use {Config.CommandPrefix}help to see a list of modules.");
+                await ReplyAsync(
+                    $"This module doesn't exist, please use {Config.CommandPrefix}help to see a list of modules.");
                 return;
             }
+
             await ReplyAsync(RenderModuleHelp(module, string.Empty, 0));
         }
 
@@ -57,10 +57,15 @@ namespace StupifyConsoleApp.Commands.Modules
             {
                 if (prefix.Contains(command.Name))
                 {
-                    str += GetTab(tabNumber + 1) + $"-{command.Name}: `{Config.CommandPrefix}{prefix} {CommandParameterHelp(command)}`" + Environment.NewLine;
+                    str += GetTab(tabNumber + 1) +
+                           $"-{command.Name}: `{Config.CommandPrefix}{prefix} {CommandParameterHelp(command)}`" +
+                           Environment.NewLine;
                     continue;
                 }
-                str += GetTab(tabNumber + 1) + $"-{command.Name}: `{Config.CommandPrefix}{prefix} {command.Name} {CommandParameterHelp(command)}`" + Environment.NewLine;
+
+                str += GetTab(tabNumber + 1) +
+                       $"-{command.Name}: `{Config.CommandPrefix}{prefix} {command.Name} {CommandParameterHelp(command)}`" +
+                       Environment.NewLine;
             }
 
             foreach (var subModule in module.Submodules)
@@ -81,10 +86,7 @@ namespace StupifyConsoleApp.Commands.Modules
         private string GetTab(int tabNumber)
         {
             var str = string.Empty;
-            for (var i = 0; i < tabNumber; i++)
-            {
-                str += "\t";
-            }
+            for (var i = 0; i < tabNumber; i++) str += "\t";
 
             return str;
         }

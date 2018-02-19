@@ -8,21 +8,22 @@ namespace TicTacZap.Segment
 {
     public class Segment
     {
-        public IBlock Controller { get; } = new SegmentControllerBlock();
-        public IBlock[,] Blocks { get; } = new IBlock[9,9];
+        private int _lastX;
 
-        internal Dictionary<Resource, decimal> ResourceOutput { get; set; }
+        private int _lastY;
 
         public Segment()
         {
             Blocks[4, 4] = Controller;
 
             ResourceOutput = new Dictionary<Resource, decimal>();
-            foreach (Resource resource in Enum.GetValues(typeof(Resource)))
-            {
-                ResourceOutput.Add(resource, 0);
-            }
+            foreach (Resource resource in Enum.GetValues(typeof(Resource))) ResourceOutput.Add(resource, 0);
         }
+
+        public IBlock Controller { get; } = new SegmentControllerBlock();
+        public IBlock[,] Blocks { get; } = new IBlock[9, 9];
+
+        internal Dictionary<Resource, decimal> ResourceOutput { get; set; }
 
         public bool AddBlock(int x, int y, BlockType blockType)
         {
@@ -53,22 +54,19 @@ namespace TicTacZap.Segment
             ResourceOutput = new Dictionary<Resource, decimal>();
 
             for (var y = 0; y < Blocks.GetLength(1); y++)
+            for (var x = 0; x < Blocks.GetLength(0); x++)
             {
-                for (var x = 0; x < Blocks.GetLength(0); x++)
-                {
-                    if (Blocks[x,y] == null) continue;
+                if (Blocks[x, y] == null) continue;
 
-                    var block = Blocks[x, y];
-                    UpdateResourceOutput(Resource.Unit, -block.Upkeep);
+                var block = Blocks[x, y];
+                UpdateResourceOutput(Resource.Unit, -block.Upkeep);
 
-                    if (!(block is IProduceBlock produceBlock)) continue;
+                if (!(block is IProduceBlock produceBlock)) continue;
 
-                    produceBlock.UpdateOutput(
-                        DistanceSumInDirections(x, y),
-                        Neighbours(x, y));
-                    UpdateResourceOutput(produceBlock.OutputType, produceBlock.OutputPerTick);
-
-                }
+                produceBlock.UpdateOutput(
+                    DistanceSumInDirections(x, y),
+                    Neighbours(x, y));
+                UpdateResourceOutput(produceBlock.OutputType, produceBlock.OutputPerTick);
             }
         }
 
@@ -76,18 +74,16 @@ namespace TicTacZap.Segment
         {
             var total = 0;
             for (var i = -1; i <= 1; i++)
+            for (var j = -1; j <= 1; j++)
             {
-                for (var j = -1; j <= 1; j++)
+                if (i == 0 && j == 0) continue;
+                try
                 {
-                    if (i == 0 && j == 0) continue;
-                    try
-                    {
-                        if (Blocks[x + i, y + j] != null) total++;
-                    }
-                    catch (Exception e)
-                    {
-                        if (!(e is IndexOutOfRangeException)) throw;
-                    }
+                    if (Blocks[x + i, y + j] != null) total++;
+                }
+                catch (Exception e)
+                {
+                    if (!(e is IndexOutOfRangeException)) throw;
                 }
             }
 
@@ -104,31 +100,34 @@ namespace TicTacZap.Segment
             var diagonals = 0;
             try
             {
-                diagonals = Blocks[x - 1, y - 1] == null ? diagonals:diagonals+1;
+                diagonals = Blocks[x - 1, y - 1] == null ? diagonals : diagonals + 1;
             }
             catch (Exception e)
             {
                 if (!(e is IndexOutOfRangeException)) throw;
             }
+
             try
             {
-                diagonals = Blocks[x + 1, y - 1] == null ? diagonals:diagonals+1;
+                diagonals = Blocks[x + 1, y - 1] == null ? diagonals : diagonals + 1;
             }
             catch (Exception e)
             {
                 if (!(e is IndexOutOfRangeException)) throw;
             }
+
             try
             {
-                diagonals = Blocks[x + 1, y + 1] == null ? diagonals:diagonals+1;
+                diagonals = Blocks[x + 1, y + 1] == null ? diagonals : diagonals + 1;
             }
             catch (Exception e)
             {
                 if (!(e is IndexOutOfRangeException)) throw;
             }
+
             try
             {
-                diagonals = Blocks[x - 1, y + 1] == null ? diagonals:diagonals+1;
+                diagonals = Blocks[x - 1, y + 1] == null ? diagonals : diagonals + 1;
             }
             catch (Exception e)
             {
@@ -147,10 +146,6 @@ namespace TicTacZap.Segment
             sum += DistanceToBlock(x, y, Direction.Right);
             return sum;
         }
-
-        private int _lastY;
-
-        private int _lastX;
 
         private int DistanceToBlock(int x, int y, Direction direction)
         {
@@ -171,30 +166,30 @@ namespace TicTacZap.Segment
             {
                 IBlock block;
                 switch (direction)
-                {                    
+                {
                     case Direction.Up:
-                        block = Blocks[x,y+1];
+                        block = Blocks[x, y + 1];
                         if (block == null) return GetBlockInDirection(x, y + 1, direction);
                         _lastX = x;
                         _lastY = y + 1;
                         return block;
 
                     case Direction.Down:
-                        block = Blocks[x,y-1];
+                        block = Blocks[x, y - 1];
                         if (block == null) return GetBlockInDirection(x, y - 1, direction);
                         _lastX = x;
                         _lastY = y - 1;
                         return block;
 
                     case Direction.Left:
-                        block = Blocks[x-1,y];
+                        block = Blocks[x - 1, y];
                         if (block == null) return GetBlockInDirection(x - 1, y, direction);
                         _lastX = x - 1;
                         _lastY = y;
                         return block;
 
                     case Direction.Right:
-                        block = Blocks[x+1,y];
+                        block = Blocks[x + 1, y];
                         if (block == null) return GetBlockInDirection(x + 1, y, direction);
                         _lastX = x + 1;
                         _lastY = y;
@@ -205,10 +200,7 @@ namespace TicTacZap.Segment
             }
             catch (Exception e)
             {
-                if (e is IndexOutOfRangeException)
-                {
-                    return null;
-                }
+                if (e is IndexOutOfRangeException) return null;
                 throw;
             }
         }
@@ -220,17 +212,17 @@ namespace TicTacZap.Segment
                 ResourceOutput[produceBlockOutputType] += produceBlockOutputPerTick;
                 return;
             }
+
             ResourceOutput.Add(produceBlockOutputType, produceBlockOutputPerTick);
         }
 
         public string TextRender()
         {
             var stringBuilder = new StringBuilder();
-            for (var y = Blocks.GetLength(0)-1; y >= 0; y--)
+            for (var y = Blocks.GetLength(0) - 1; y >= 0; y--)
             {
                 for (var x = 0; x < Blocks.GetLength(1); x++)
-                {
-                    switch (Blocks[x,y]?.BlockType)
+                    switch (Blocks[x, y]?.BlockType)
                     {
                         case BlockType.Controller:
                             stringBuilder.Append(" C ");
@@ -242,7 +234,6 @@ namespace TicTacZap.Segment
                             stringBuilder.Append(" ~ ");
                             break;
                     }
-                }
 
                 stringBuilder.Append(Environment.NewLine);
             }

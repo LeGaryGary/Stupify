@@ -8,8 +8,6 @@ namespace StupifyConsoleApp
     {
         private readonly string _relativeLogFilePath;
 
-        private string Path => Directory.GetCurrentDirectory()+"\\"+_relativeLogFilePath;
-
         public Logger(string directory)
         {
             Directory.CreateDirectory(
@@ -18,6 +16,8 @@ namespace StupifyConsoleApp
                     directory));
             _relativeLogFilePath = directory + "\\" + DateTime.Now.ToString("yyyyMMddhhmmss") + ".txt";
         }
+
+        private string Path => Directory.GetCurrentDirectory() + "\\" + _relativeLogFilePath;
 
         public async Task Log(string message, bool requireDebug)
         {

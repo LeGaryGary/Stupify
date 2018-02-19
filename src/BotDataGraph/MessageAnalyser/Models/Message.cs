@@ -4,14 +4,15 @@ namespace BotDataGraph.MessageAnalyser.Models
 {
     public class Message
     {
+        private string channelId;
+
+        private string serverId;
+
         // Neo4J params
         private string time;
-        private string content;
-        
+
         // Neo4J relationships
         private string userId;
-        private string serverId;
-        private string channelId;
 
         public DateTime Time
         {
@@ -19,11 +20,7 @@ namespace BotDataGraph.MessageAnalyser.Models
             set => time = value.ToString("s");
         }
 
-        public string Content
-        {
-            get => content; 
-            set => content = value;
-        }
+        public string Content { get; set; }
 
         public ulong UserId
         {
@@ -45,17 +42,17 @@ namespace BotDataGraph.MessageAnalyser.Models
 
         public object Parameters()
         {
-            return new { userId, content, time, serverId };
+            return new {userId, Content, time, serverId};
         }
 
         public object Parameters(string startup)
         {
-            return new { userId, content, time, serverId, channelId, startupTime = startup };
+            return new {userId, Content, time, serverId, channelId, startupTime = startup};
         }
 
         public object Parameters(string startup, int lastNode)
         {
-            return new { userId, content, time, serverId, channelId, startupTime = startup, lastNodeId = lastNode };
+            return new {userId, Content, time, serverId, channelId, startupTime = startup, lastNodeId = lastNode};
         }
     }
 }
