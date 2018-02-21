@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+
+using StupifyConsoleApp.Client;
 using StupifyConsoleApp.DataModels;
 using TicTacZap.Segment.Blocks;
 
@@ -8,11 +10,20 @@ namespace StupifyConsoleApp.AI
 {
     public class AI
     {
+        public enum AIStatus
+        {
+            Working, Finished, Stopped
+        }
         private readonly AIController _controller;
         private IBlock[,] _blocks;
+
+        public AIStatus Status { get; private set; }
+
         private double _breakChance;
         private decimal _considerationThreshold;
         private double _expansionChance;
+
+        private bool _stop;
         private bool[,] _mark;
         private LinkedList<Tuple<int, int>> _placedBlocks;
         private List<Tuple<Tuple<int, int>, decimal>> _possibleExpansions;
@@ -29,6 +40,7 @@ namespace StupifyConsoleApp.AI
             _expansionChance = exp;
             _considerationThreshold = thr;
             _breakChance = brk;
+            _stop = false;
 
             _rnd = new Random();
             _blocks = _controller.Blocks;
@@ -84,10 +96,11 @@ namespace StupifyConsoleApp.AI
 
         public async Task Run(double exp, decimal thr, double brk)
         {
+            Status = AIStatus.Working;
             ResetProperties(exp, thr, brk);
 
             var it = 0;
-            while (it++ < 200)
+            while (it++ < 200 && !_stop)
             {
                 _possibleExpansions = new List<Tuple<Tuple<int, int>, decimal>>();
 
@@ -99,6 +112,13 @@ namespace StupifyConsoleApp.AI
                 var choice = GetChoice();
                 await AddBlock(choice);
             }
+
+            Status = (_stop) ? AIStatus.Stopped : AIStatus.Finished;
+        }
+
+        public void Stop()
+        {
+            _stop = true;
         }
 
         private async Task NewExpansion()
@@ -143,9 +163,7 @@ namespace StupifyConsoleApp.AI
                                         tmp));
                         }
                     }
-                    catch (IndexOutOfRangeException)
-                    {
-                    }
+                    catch (IndexOutOfRangeException) { }
             }
         }
     }

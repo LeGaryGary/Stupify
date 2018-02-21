@@ -1,8 +1,10 @@
 ﻿using System.Threading.Tasks;
+
 using StupifyConsoleApp.DataModels;
 using StupifyConsoleApp.TicTacZapManagement;
 using TicTacZap;
 using TicTacZap.Segment.Blocks;
+
 using DBSegment = StupifyConsoleApp.DataModels.Segment;
 using Segment = TicTacZap.Segment.Segment;
 
