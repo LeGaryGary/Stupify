@@ -12,7 +12,9 @@ namespace StupifyConsoleApp.Commands.Modules
     public class AI : StupifyModuleBase
     {
         private const decimal ConsiderationThreshold = 30;
+        private const decimal RemoveThreshold = 20;
         private const double ExpansionChance = 0.1;
+        private const double RemoveChance = 0.05;
         private const double BreakChance = 0.2;
 
         [Group("Solve")]
@@ -21,8 +23,8 @@ namespace StupifyConsoleApp.Commands.Modules
             private static readonly Dictionary<int, StupifyConsoleApp.AI.AI> AiInstances = new Dictionary<int, StupifyConsoleApp.AI.AI>();
 
             [Command(RunMode = RunMode.Async)]
-            public async Task Solve(int segmentId, decimal thr = ConsiderationThreshold, double exp = ExpansionChance,
-                double brk = BreakChance)
+            public async Task Solve(int segmentId, decimal addThr = ConsiderationThreshold, decimal rmvThr = RemoveThreshold,
+                double exp = ExpansionChance, double rmv = RemoveChance, double brk = BreakChance)
             {
                 var user = await this.GetUserAsync();
                 if (AiInstances.ContainsKey(user.UserId))
@@ -44,18 +46,18 @@ namespace StupifyConsoleApp.Commands.Modules
                     return;
                 }
 
-                await RunAI(Db, segment, user, thr, exp, brk);
+                await RunAI(Db, segment, user, addThr, rmvThr, exp, rmv, brk);
             }
 
             [Command]
-            public async Task Solve(decimal thr = ConsiderationThreshold, double exp = ExpansionChance,
-                double brk = BreakChance)
+            public async Task Solve(decimal addThr = ConsiderationThreshold, decimal rmvThr = RemoveThreshold,
+                double exp = ExpansionChance, double rmv = RemoveChance, double brk = BreakChance)
             {
                 var user = await this.GetUserAsync();
                 var id = TicTacZapController.GetUserSelection(user.UserId);
 
                 if (id != null)
-                    await Solve((int)id, thr, exp, brk);
+                    await Solve((int)id, addThr, rmvThr, exp, rmv, brk);
                 else
                     await ReplyAsync(Responses.SelectSegmentMessage);
             }
@@ -76,12 +78,12 @@ namespace StupifyConsoleApp.Commands.Modules
                 await msg.ModifyAsync(message => message.Content = "stopped.");
             }
 
-            private async Task RunAI(BotContext db, Segment segment, User user, decimal thr, double exp, double brk)
+            private async Task RunAI(BotContext db, Segment segment, User user, decimal addThr, decimal rmvThr, double exp, double rmv, double brk)
             {
                 var aiInstance = new StupifyConsoleApp.AI.AI(Db, segment, user);
                 AiInstances.Add(user.UserId, aiInstance);
 
-                var ai = Task.Run(() => aiInstance.Run(exp, thr, brk));
+                var ai = Task.Run(() => aiInstance.Run(exp, rmv, addThr, rmvThr, brk));
                 var msg = await ReplyAsync("hang on...");
 
                 while (!ai.IsCompleted)
