@@ -4,8 +4,10 @@ using System.Text;
 
 namespace StupifyConsoleApp.DataModels
 {
-    internal class SegmentTemplate
+    public class SegmentTemplate
     {
-
+        public int SegmentTemplateId { get; set; }
+        public virtual User User { get; set; }
+        public string Name { get; set; }
     }
 }

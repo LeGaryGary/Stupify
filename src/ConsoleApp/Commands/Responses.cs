@@ -4,7 +4,9 @@ namespace StupifyConsoleApp.Commands
 {
     public static class Responses
     {
-        public static readonly string SegmentOwnershipProblem = "You don't own a segment with this Id!";
+        public const string SegmentOwnershipProblem = "You don't own a segment with this Id!";
+
+        public const string TemplateOwnershipProblem = "You don't own a template with this Id!";
 
         public static readonly string SelectSegmentMessage =
             $"Please select a segment with {Config.CommandPrefix}segment [segmentId]";

@@ -11,6 +11,7 @@ namespace StupifyConsoleApp.DataModels
         public DbSet<ServerStory> ServerStories { get; set; }
         public DbSet<ServerStoryPart> ServerStoryParts { get; set; }
         public DbSet<Segment> Segments { get; set; }
+        public DbSet<SegmentTemplate> SegmentTemplates { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
