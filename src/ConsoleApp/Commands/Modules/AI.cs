@@ -18,7 +18,7 @@ namespace StupifyConsoleApp.Commands.Modules
         private const double RemoveChance = 0.05;
         private const double BreakChance = 0.2;
 
-            private static readonly Dictionary<int, StupifyConsoleApp.AI.AI> AiInstances = new Dictionary<int, StupifyConsoleApp.AI.AI>();
+        private static readonly Dictionary<int, StupifyConsoleApp.AI.AI> AiInstances = new Dictionary<int, StupifyConsoleApp.AI.AI>();
 
         [Command(RunMode = RunMode.Async)]
         public async Task Solve(int segmentId, decimal addThr = ConsiderationThreshold,
