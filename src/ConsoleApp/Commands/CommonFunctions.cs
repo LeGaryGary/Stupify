@@ -18,7 +18,7 @@ namespace StupifyConsoleApp.Commands
         public static async Task<IEnumerable<Segment>> GetSegments(this StupifyModuleBase moduleBase)
         {
             var user = await GetUserAsync(moduleBase);
-            return moduleBase.Db.Segments.Where(s => s.UserId == user.UserId);
+            return moduleBase.Db.Segments.Where(s => s.User.UserId == user.UserId);
         }
 
         public static async Task<bool> UserHasSegmentAsync(this StupifyModuleBase moduleBase, int segmentId)
@@ -29,7 +29,7 @@ namespace StupifyConsoleApp.Commands
         public static async Task<int> SegmentCountAsync(this StupifyModuleBase moduleBase)
         {
             var user = await moduleBase.GetUserAsync();
-            return await moduleBase.Db.Segments.Where(s => s.UserId == user.UserId).CountAsync();
+            return await moduleBase.Db.Segments.Where(s => s.User.UserId == user.UserId).CountAsync();
         }
 
         public static async Task ShowSegmentAsync(this StupifyModuleBase moduleBase, int segmentId)

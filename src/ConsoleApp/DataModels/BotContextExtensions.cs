@@ -83,5 +83,16 @@ namespace StupifyConsoleApp.DataModels
 
             return dict;
         }
+
+        public static async Task<int> NewTemplateAsync(this BotContext context, User user)
+        {
+            var segmentTemplate = new SegmentTemplate
+            {
+                User = user
+            };
+            context.SegmentTemplates.Add(segmentTemplate);
+            await context.SaveChangesAsync();
+            return segmentTemplate.SegmentTemplateId;
+        }
     }
 }

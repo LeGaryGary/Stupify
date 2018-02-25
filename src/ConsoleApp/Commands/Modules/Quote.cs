@@ -28,7 +28,7 @@ namespace StupifyConsoleApp.Commands.Modules
         }
 
         [Command("RandomQuote")]
-        public async Task RandomQuoteAsync([Remainder] string request = null)
+        public async Task RandomQuoteAsync()
         {
             using (var db = new BotContext())
             {
