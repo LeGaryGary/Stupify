@@ -1,10 +1,10 @@
 ﻿using System.Linq;
 using FluentAssertions;
 using TicTacZap;
-using TicTacZap.Segment.Blocks;
-using TicTacZap.Segment.Blocks.Production.Energy;
+using TicTacZap.Blocks;
+using TicTacZap.Blocks.Production.Energy;
 using Xunit;
-using TicTacZapSegment = TicTacZap.Segment.Segment;
+using TicTacZapSegment = TicTacZap.Segment;
 
 namespace TicTacZapTests
 {

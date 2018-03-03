@@ -1,6 +1,6 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
-using TicTacZap.Segment;
+using TicTacZap;
 
 namespace StupifyConsoleApp.TicTacZapManagement
 {
@@ -22,7 +22,7 @@ namespace StupifyConsoleApp.TicTacZapManagement
             return Segments.DeserializeSegment(fileText);
         }
 
-        private static async Task SaveAsync(int templateId, Segment segment)
+        public static async Task SaveAsync(int templateId, Segment segment)
         {
             var fileText = Segments.SerializeSegment(segment);
             await File.WriteAllTextAsync(TemplatePath + $@"\{templateId + TemplateExtension}", fileText);

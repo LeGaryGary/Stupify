@@ -1,5 +1,5 @@
 using FluentAssertions;
-using TicTacZap.Segment.Blocks.Production.Energy;
+using TicTacZap.Blocks.Production.Energy;
 using Xunit;
 
 namespace TicTacZapTests

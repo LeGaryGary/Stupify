@@ -16,6 +16,7 @@ namespace StupifyConsoleApp.TicTacZapManagement
         }
 
         private static Dictionary<int, int?> UserSegmentSelection { get; } = new Dictionary<int, int?>();
+        private static Dictionary<int, int?> UserTemplateSelection { get; } = new Dictionary<int, int?>();
 
         public static ShopInventory Shop { get; } = new ShopInventory();
 
@@ -71,10 +72,11 @@ namespace StupifyConsoleApp.TicTacZapManagement
         {
             using (var db = new BotContext())
             {
-                foreach (var segment in await db.Segments.ToArrayAsync())
+                var segments = await db.Segments.Include(s => s.User).ToArrayAsync();
+                foreach (var segment in segments)
                     try
                     {
-                        var user = await db.Users.FirstAsync(u => u.UserId == segment.UserId);
+                        var user = await db.Users.FirstAsync(u => u.UserId == segment.User.UserId);
 
                         user.Balance += segment.UnitsPerTick;
                         segment.Energy += segment.EnergyPerTick;
@@ -106,15 +108,30 @@ namespace StupifyConsoleApp.TicTacZapManagement
         public static async Task<bool> SetUserSegmentSelection(int userId, int segmentId, BotContext db)
         {
             if (!UserSegmentSelection.ContainsKey(userId)) UserSegmentSelection.Add(userId, null);
-            if (!await db.Segments.AnyAsync(s => s.UserId == userId && s.SegmentId == segmentId)) return false;
+            if (!await db.Segments.AnyAsync(s => s.User.UserId == userId && s.SegmentId == segmentId)) return false;
             UserSegmentSelection[userId] = segmentId;
             return true;
         }
 
-        public static int? GetUserSelection(int userId)
+        public static int? GetUserSegmentSelection(int userId)
         {
             if (UserSegmentSelection.ContainsKey(userId)) return UserSegmentSelection[userId];
             UserSegmentSelection.Add(userId, null);
+            return null;
+        }
+
+        public static async Task<bool> SetUserTemplateSelection(int userId, int templateId, BotContext db)
+        {
+            if (!UserTemplateSelection.ContainsKey(userId)) UserTemplateSelection.Add(userId, null);
+            if (!await db.SegmentTemplates.AnyAsync(s => s.User.UserId == userId && s.SegmentTemplateId == templateId)) return false;
+            UserTemplateSelection[userId] = templateId;
+            return true;
+        }
+
+        public static int? GetUserTemplateSelection(int userId)
+        {
+            if (UserTemplateSelection.ContainsKey(userId)) return UserTemplateSelection[userId];
+            UserTemplateSelection.Add(userId, null);
             return null;
         }
     }

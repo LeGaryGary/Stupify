@@ -17,7 +17,7 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
             var renderSegmentList = RenderSegmentList(segments);
             if (renderSegmentList == string.Empty)
                 await ReplyAsync(
-                    $"You don't have any segments, buy your first one: `{Config.CommandPrefix}Segment Buy`");
+                    $"You don't have any segments, buy your first one: `{Config.CommandPrefix} Segment Buy`");
             else
                 await ReplyAsync(renderSegmentList);
         }
@@ -63,12 +63,12 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
                     return;
                 }
 
-                var tuple = await NewSegment(user);
+                var tuple = await NewSegment(user.UserId);
                 user.Balance -= price;
 
                 await Db.SaveChangesAsync();
                 await ReplyAsync(
-                    $"You have purchased a segment!\r\nId: {tuple.segmentId}\r\nCoordinates: {tuple.coords.x}, {tuple.coords.y}");
+                    $"You have purchased a segment!\r\nId: {tuple.segmentId}\r\nCoordinates: {tuple.coords.x+1}, {tuple.coords.y+1}");
             }
 
             [Command("Reset")]
@@ -105,14 +105,15 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
                 await ReplyAsync($"It's gone...\r\nId: {segmentId}\r\nCoordinates: {tuple.x + 1}, {tuple.y + 1}");
             }
 
-            private async Task<(int segmentId, (int x, int y) coords)> NewSegment(User user)
+            private async Task<(int segmentId, (int x, int y) coords)> NewSegment(int userId)
             {
+                var user = Db.Users.First(u => u.UserId == userId);
                 var segment = new Segment
                 {
                     UnitsPerTick = 0,
                     EnergyPerTick = 0,
                     Energy = 0,
-                    UserId = user.UserId
+                    User = user
                 };
                 await Db.Segments.AddAsync(segment);
                 await Db.SaveChangesAsync();

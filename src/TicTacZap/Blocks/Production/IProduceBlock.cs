@@ -1,4 +1,4 @@
-﻿namespace TicTacZap.Segment.Blocks.Production
+﻿namespace TicTacZap.Blocks.Production
 {
     public interface IProduceBlock : IBlock
     {
