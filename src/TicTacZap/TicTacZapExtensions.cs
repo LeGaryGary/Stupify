@@ -1,18 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using TicTacZap.Segment.Blocks;
-using TicTacZap.Segment.Blocks.Production.Energy;
+using TicTacZap.Blocks;
+using TicTacZap.Blocks.Production.Energy;
 
 namespace TicTacZap
 {
     public static class TicTacZapExtensions
     {
-        public static decimal ResourcePerTick(this Segment.Segment segment, Resource resource)
+        public static decimal ResourcePerTick(this Segment segment, Resource resource)
         {
             return segment.ResourceOutput.ContainsKey(resource) ? segment.ResourceOutput[resource] : 0;
         }
 
-        public static void SetResources(this Segment.Segment segment, Dictionary<Resource, decimal> resources)
+        public static void SetResources(this Segment segment, Dictionary<Resource, decimal> resources)
         {
             segment.ResourceOutput = new Dictionary<Resource, decimal>();
             foreach (var resource in resources)
@@ -23,7 +23,7 @@ namespace TicTacZap
             }
         }
 
-        public static Dictionary<Resource, decimal> ResourcePerTick(this Segment.Segment segment)
+        public static Dictionary<Resource, decimal> ResourcePerTick(this Segment segment)
         {
             var resources = new Dictionary<Resource, decimal>();
             foreach (Resource resource in Enum.GetValues(typeof(Resource)))

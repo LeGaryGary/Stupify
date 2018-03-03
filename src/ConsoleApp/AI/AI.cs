@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 using StupifyConsoleApp.Client;
 using StupifyConsoleApp.DataModels;
-using TicTacZap.Segment.Blocks;
+using TicTacZap.Blocks;
 
 namespace StupifyConsoleApp.AI
 {

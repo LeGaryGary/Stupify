@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using TicTacZap;
-using TicTacZap.Segment.Blocks;
+using TicTacZap.Blocks;
 
 namespace StupifyConsoleApp.TicTacZapManagement
 {
@@ -30,7 +30,7 @@ namespace StupifyConsoleApp.TicTacZapManagement
             return inventory;
         }
 
-        private static async Task SaveInventoryAsync(int userId, Inventory inventory)
+        public static async Task SaveInventoryAsync(int userId, Inventory inventory)
         {
             var fileText = JsonConvert.SerializeObject(inventory);
             await File.WriteAllTextAsync(InventoriesPath + $@"\{userId + InventoryExtension}", fileText);

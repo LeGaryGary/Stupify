@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using TicTacZap;
@@ -16,7 +17,7 @@ namespace StupifyConsoleApp.TicTacZapManagement
         {
             UniversePath = Config.DataDirectory + @"\Universes";
             Directory.CreateDirectory(UniversePath);
-            if (File.Exists(UniversePath + Config.UniverseName + UniverseExtension))
+            if (File.Exists(UniversePath + @"\" + Config.UniverseName + UniverseExtension))
             {
                 _universe = LoadUniverseFile();
             }
@@ -49,7 +50,7 @@ namespace StupifyConsoleApp.TicTacZapManagement
 
         private static Universe LoadUniverseFile()
         {
-            var fileText = File.ReadAllText(UniversePath + Config.UniverseName + UniverseExtension);
+            var fileText = File.ReadAllText(UniversePath + @"\" + Config.UniverseName + UniverseExtension);
             return JsonConvert.DeserializeObject<Universe>(fileText);
         }
 

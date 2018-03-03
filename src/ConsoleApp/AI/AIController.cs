@@ -1,12 +1,10 @@
 ﻿using System.Threading.Tasks;
-
 using StupifyConsoleApp.DataModels;
 using StupifyConsoleApp.TicTacZapManagement;
 using TicTacZap;
-using TicTacZap.Segment.Blocks;
-
+using TicTacZap.Blocks;
 using DBSegment = StupifyConsoleApp.DataModels.Segment;
-using Segment = TicTacZap.Segment.Segment;
+using TicTacZapSegment = TicTacZap.Segment;
 
 namespace StupifyConsoleApp.AI
 {
@@ -14,7 +12,7 @@ namespace StupifyConsoleApp.AI
     {
         private readonly BotContext _db;
         private readonly DBSegment _dbSeg;
-        private readonly Segment _seg;
+        private readonly TicTacZapSegment _seg;
         private User _user;
 
         public AIController(BotContext db, DBSegment segment, User user)

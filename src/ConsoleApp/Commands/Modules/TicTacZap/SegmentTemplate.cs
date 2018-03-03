@@ -6,6 +6,7 @@ using Discord.Commands;
 using Microsoft.EntityFrameworkCore;
 using StupifyConsoleApp.DataModels;
 using StupifyConsoleApp.TicTacZapManagement;
+using TicTacZap.Blocks;
 
 namespace StupifyConsoleApp.Commands.Modules.TicTacZap
 {
@@ -15,7 +16,7 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
         public async Task SaveTemplateCommand()
         {
             var user = await this.GetUserAsync();
-            var userSelection = TicTacZapController.GetUserSelection(user.UserId);
+            var userSelection = TicTacZapController.GetUserSegmentSelection(user.UserId);
             if (userSelection == null)
             {
                 await ReplyAsync(Responses.SelectSegmentMessage);
@@ -40,6 +41,12 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
                 message += Environment.NewLine;
             }
 
+            if (message == string.Empty)
+            {
+                await ReplyAsync($"You have no segment templates, use `{Config.CommandPrefix} SaveTemplate` to save your current segment.");
+                return;
+            }
+
             await ReplyAsync("```" + message + "```");
         }
 
@@ -51,11 +58,88 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
             if (dbTemplate == null)
             {
                 await ReplyAsync(Responses.TemplateOwnershipProblem);
+                return;
             }
 
-            var template = await SegmentTemplates.GetAsync(templateId);
-            await ReplyAsync("```" + template.TextRender() + "```");
+            await this.ShowTemplateAsync(templateId);
         }
+
+        [Command("ApplyTemplate")]
+        public async Task ApplyTemplateCommand()
+        {
+            var user = await this.GetUserAsync();
+            var selectedSegment = TicTacZapController.GetUserSegmentSelection(user.UserId);
+            var selectedTemplate = TicTacZapController.GetUserTemplateSelection(user.UserId);
+
+            if (selectedSegment == null)
+            {
+                await ReplyAsync(Responses.SelectSegmentMessage);
+                return;
+            }
+
+            if (selectedTemplate == null)
+            {
+                await ReplyAsync(Responses.SelectTemplateMessage);
+                return;
+            }
+
+            var segmentId = (int)selectedSegment;
+            var templateId = (int)selectedTemplate;
+
+            await this.ClearSegmentToInventory(segmentId, user.UserId);
+            
+            var template = await SegmentTemplates.GetAsync(templateId);
+            var templateBlocks = new Dictionary<BlockType, int>();
+
+            for (var y = 0; y < template.Blocks.GetLength(1); y++)
+            for (var x = 0; x < template.Blocks.GetLength(0); x++) 
+            {
+                var block = template.Blocks[x, y];
+                if (block == null || block.BlockType == BlockType.Controller) continue;
+
+                if (!templateBlocks.ContainsKey(block.BlockType)) templateBlocks.Add(block.BlockType, 0);
+                templateBlocks[block.BlockType]++;
+            }
+
+            var inv = await Inventories.GetInventoryAsync(user.UserId);
+            var buy = true;
+            var notEnough = new Dictionary<BlockType, int>();
+            foreach (var templateblock in templateBlocks)
+            {
+                if (inv.Blocks.ContainsKey(templateblock.Key) &&
+                    inv.Blocks[templateblock.Key] - templateblock.Value >= 0) continue;
+
+                buy = false;
+                notEnough.Add(templateblock.Key, templateblock.Value - inv.Blocks[templateblock.Key]);
+            }
+
+            if (!buy)
+            {
+                var message = "You don't have enough blocks, you are missing:" + Environment.NewLine;
+                foreach (var block in notEnough)
+                {
+                    message += $"{block.Key} x{block.Value}";
+                }
+
+                await ReplyAsync(message);
+                return;
+            }
+
+            for (var y = 0; y < template.Blocks.GetLength(1); y++)
+            for (var x = 0; x < template.Blocks.GetLength(0); x++) 
+            {
+                var block = template.Blocks[x, y];
+                if (block == null || block.BlockType == BlockType.Controller) continue;
+
+                inv.RemoveBlocks(block.BlockType, 1);
+                await TicTacZapManagement.Segments.AddBlockAsync(segmentId, x, y, block.BlockType);
+            }
+
+            await Inventories.SaveInventoryAsync(user.UserId, inv);
+            await this.UpdateDbSegmentOutput(segmentId);
+        }
+
+        
 
         private async Task<List<DataModels.SegmentTemplate>> GetTemplatesAsync()
         {

@@ -11,6 +11,9 @@ namespace StupifyConsoleApp.Commands
         public static readonly string SelectSegmentMessage =
             $"Please select a segment with {Config.CommandPrefix} segment [segmentId]";
 
+        public static readonly string SelectTemplateMessage = 
+            $"Please select a template with {Config.CommandPrefix} Template [templateId]";
+
         public static readonly string ShopAdvisoryMessage =
             $"Please buy the item you are trying to use! `{Config.CommandPrefix} shop` and `{Config.CommandPrefix} buy [type] [quantity]`";
 

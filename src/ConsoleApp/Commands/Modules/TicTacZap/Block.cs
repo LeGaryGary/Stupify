@@ -2,14 +2,26 @@
 using System.Threading.Tasks;
 using Discord.Commands;
 using StupifyConsoleApp.TicTacZapManagement;
-using TicTacZap.Segment.Blocks;
+using TicTacZap.Blocks;
 
 namespace StupifyConsoleApp.Commands.Modules.TicTacZap
 {
     public class Block : StupifyModuleBase
     {
         [Command("AddBlock")]
-        public async Task AddBlockCommand(int segmentId, int x, int y, string type)
+        public async Task AddBlockCommand(int x, int y, string type)
+        {
+            var segmentSelectionId = TicTacZapController.GetUserSegmentSelection((await this.GetUserAsync()).UserId);
+            if (segmentSelectionId != null)
+            {
+                await AddBlockCommand((int) segmentSelectionId, x, y, type);
+                return;
+            }
+
+            await ReplyAsync(Responses.SelectSegmentMessage);
+        }
+
+        private async Task AddBlockCommand(int segmentId, int x, int y, string type)
         {
             var blockType = Enum.Parse<BlockType>(type);
             if (await Inventories.RemoveFromInventoryAsync(blockType, 1, (await this.GetUserAsync()).UserId))
@@ -21,19 +33,6 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
             }
 
             await ReplyAsync(Responses.ShopAdvisoryMessage);
-        }
-
-        [Command("AddBlock")]
-        public async Task AddBlockCommand(int x, int y, string type)
-        {
-            var segmentSelectionId = TicTacZapController.GetUserSelection((await this.GetUserAsync()).UserId);
-            if (segmentSelectionId != null)
-            {
-                await AddBlockCommand((int) segmentSelectionId, x, y, type);
-                return;
-            }
-
-            await ReplyAsync(Responses.SelectSegmentMessage);
         }
 
         [Command("RemoveBlock")]
@@ -55,7 +54,7 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
         [Command("RemoveBlock")]
         public async Task RemoveBlockCommand(int x, int y)
         {
-            var segmentSelectionId = TicTacZapController.GetUserSelection((await this.GetUserAsync()).UserId);
+            var segmentSelectionId = TicTacZapController.GetUserSegmentSelection((await this.GetUserAsync()).UserId);
             if (segmentSelectionId != null)
             {
                 await RemoveBlockCommand((int) segmentSelectionId, x, y);

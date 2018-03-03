@@ -54,7 +54,7 @@ namespace StupifyConsoleApp.Commands.Modules
             double exp = ExpansionChance, double rmv = RemoveChance, double brk = BreakChance)
         {
             var user = await this.GetUserAsync();
-            var id = TicTacZapController.GetUserSelection(user.UserId);
+            var id = TicTacZapController.GetUserSegmentSelection(user.UserId);
 
             if (id != null)
                 await Solve((int) id, addThr, rmvThr, exp, rmv, brk);
