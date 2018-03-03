@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using TicTacZap.Segment.Blocks;
+using TicTacZap.Blocks;
 
 namespace TicTacZap
 {

@@ -16,6 +16,7 @@ namespace StupifyConsoleApp.TicTacZapManagement
         }
 
         private static Dictionary<int, int?> UserSegmentSelection { get; } = new Dictionary<int, int?>();
+        private static Dictionary<int, int?> UserTemplateSelection { get; } = new Dictionary<int, int?>();
 
         public static ShopInventory Shop { get; } = new ShopInventory();
 
@@ -112,10 +113,25 @@ namespace StupifyConsoleApp.TicTacZapManagement
             return true;
         }
 
-        public static int? GetUserSelection(int userId)
+        public static int? GetUserSegmentSelection(int userId)
         {
             if (UserSegmentSelection.ContainsKey(userId)) return UserSegmentSelection[userId];
             UserSegmentSelection.Add(userId, null);
+            return null;
+        }
+
+        public static async Task<bool> SetUserTemplateSelection(int userId, int templateId, BotContext db)
+        {
+            if (!UserTemplateSelection.ContainsKey(userId)) UserTemplateSelection.Add(userId, null);
+            if (!await db.SegmentTemplates.AnyAsync(s => s.User.UserId == userId && s.SegmentTemplateId == templateId)) return false;
+            UserTemplateSelection[userId] = templateId;
+            return true;
+        }
+
+        public static int? GetUserTemplateSelection(int userId)
+        {
+            if (UserTemplateSelection.ContainsKey(userId)) return UserTemplateSelection[userId];
+            UserTemplateSelection.Add(userId, null);
             return null;
         }
     }

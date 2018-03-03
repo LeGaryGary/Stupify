@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Discord.Commands;
 using StupifyConsoleApp.TicTacZapManagement;
-using TicTacZap.Segment.Blocks;
+using TicTacZap.Blocks;
 
 namespace StupifyConsoleApp.Commands.Modules.TicTacZap
 {
@@ -26,7 +26,7 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
         [Command("AddBlock")]
         public async Task AddBlockCommand(int x, int y, string type)
         {
-            var segmentSelectionId = TicTacZapController.GetUserSelection((await this.GetUserAsync()).UserId);
+            var segmentSelectionId = TicTacZapController.GetUserSegmentSelection((await this.GetUserAsync()).UserId);
             if (segmentSelectionId != null)
             {
                 await AddBlockCommand((int) segmentSelectionId, x, y, type);
@@ -55,7 +55,7 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
         [Command("RemoveBlock")]
         public async Task RemoveBlockCommand(int x, int y)
         {
-            var segmentSelectionId = TicTacZapController.GetUserSelection((await this.GetUserAsync()).UserId);
+            var segmentSelectionId = TicTacZapController.GetUserSegmentSelection((await this.GetUserAsync()).UserId);
             if (segmentSelectionId != null)
             {
                 await RemoveBlockCommand((int) segmentSelectionId, x, y);

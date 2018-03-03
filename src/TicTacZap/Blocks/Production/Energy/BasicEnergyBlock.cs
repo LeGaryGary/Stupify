@@ -1,4 +1,4 @@
-﻿namespace TicTacZap.Segment.Blocks.Production.Energy
+﻿namespace TicTacZap.Blocks.Production.Energy
 {
     public class BasicEnergyBlock : BaseEnergyBlock
     {

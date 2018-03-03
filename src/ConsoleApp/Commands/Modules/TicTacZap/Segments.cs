@@ -17,7 +17,7 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
             var renderSegmentList = RenderSegmentList(segments);
             if (renderSegmentList == string.Empty)
                 await ReplyAsync(
-                    $"You don't have any segments, buy your first one: `{Config.CommandPrefix}Segment Buy`");
+                    $"You don't have any segments, buy your first one: `{Config.CommandPrefix} Segment Buy`");
             else
                 await ReplyAsync(renderSegmentList);
         }

@@ -1,6 +1,6 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
-using TicTacZap.Segment;
+using TicTacZap;
 
 namespace StupifyConsoleApp.TicTacZapManagement
 {

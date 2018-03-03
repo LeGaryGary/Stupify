@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using TicTacZap.Segment.Blocks;
-using TicTacZap.Segment.Blocks.Production;
+using TicTacZap.Blocks;
+using TicTacZap.Blocks.Production;
 
-namespace TicTacZap.Segment
+namespace TicTacZap
 {
     public class Segment
     {

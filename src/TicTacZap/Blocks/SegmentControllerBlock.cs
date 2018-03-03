@@ -1,4 +1,4 @@
-﻿namespace TicTacZap.Segment.Blocks
+﻿namespace TicTacZap.Blocks
 {
     public class SegmentControllerBlock : IBlock
     {

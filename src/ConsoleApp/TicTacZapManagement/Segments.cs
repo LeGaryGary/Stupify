@@ -5,8 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using TicTacZap;
-using TicTacZap.Segment;
-using TicTacZap.Segment.Blocks;
+using TicTacZap.Blocks;
 
 namespace StupifyConsoleApp.TicTacZapManagement
 {
