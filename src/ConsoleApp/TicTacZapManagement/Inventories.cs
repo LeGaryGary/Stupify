@@ -30,7 +30,7 @@ namespace StupifyConsoleApp.TicTacZapManagement
             return inventory;
         }
 
-        private static async Task SaveInventoryAsync(int userId, Inventory inventory)
+        public static async Task SaveInventoryAsync(int userId, Inventory inventory)
         {
             var fileText = JsonConvert.SerializeObject(inventory);
             await File.WriteAllTextAsync(InventoriesPath + $@"\{userId + InventoryExtension}", fileText);

@@ -4,9 +4,9 @@ namespace TicTacZap
 {
     public class Universe
     {
-        public readonly (int x, int y) Center;
-        public readonly int?[,] Segments;
-        public readonly int Size;
+        public (int x, int y) Center;
+        public int?[,] Segments;
+        public int Size;
 
         public Universe(int size)
         {

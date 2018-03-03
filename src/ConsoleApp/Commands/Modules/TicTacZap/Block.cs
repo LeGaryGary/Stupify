@@ -9,7 +9,19 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
     public class Block : StupifyModuleBase
     {
         [Command("AddBlock")]
-        public async Task AddBlockCommand(int segmentId, int x, int y, string type)
+        public async Task AddBlockCommand(int x, int y, string type)
+        {
+            var segmentSelectionId = TicTacZapController.GetUserSegmentSelection((await this.GetUserAsync()).UserId);
+            if (segmentSelectionId != null)
+            {
+                await AddBlockCommand((int) segmentSelectionId, x, y, type);
+                return;
+            }
+
+            await ReplyAsync(Responses.SelectSegmentMessage);
+        }
+
+        private async Task AddBlockCommand(int segmentId, int x, int y, string type)
         {
             var blockType = Enum.Parse<BlockType>(type);
             if (await Inventories.RemoveFromInventoryAsync(blockType, 1, (await this.GetUserAsync()).UserId))
@@ -21,19 +33,6 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
             }
 
             await ReplyAsync(Responses.ShopAdvisoryMessage);
-        }
-
-        [Command("AddBlock")]
-        public async Task AddBlockCommand(int x, int y, string type)
-        {
-            var segmentSelectionId = TicTacZapController.GetUserSegmentSelection((await this.GetUserAsync()).UserId);
-            if (segmentSelectionId != null)
-            {
-                await AddBlockCommand((int) segmentSelectionId, x, y, type);
-                return;
-            }
-
-            await ReplyAsync(Responses.SelectSegmentMessage);
         }
 
         [Command("RemoveBlock")]
