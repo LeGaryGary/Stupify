@@ -4,5 +4,9 @@
     {
         BlockType BlockType { get; }
         decimal Upkeep { get; }
+        int MaxHealth { get; }
+        int Health { get; set; }
+
+        void DestroyThis();
     }
 }
