@@ -44,6 +44,7 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
 
                 if (blockType != null)
                     await Inventories.AddToInventoryAsync(blockType.Value, 1, (await this.GetUserAsync()).UserId);
+                await this.UpdateDbSegmentOutput(segmentId);
                 await this.ShowSegmentAsync(segmentId);
                 return;
             }
