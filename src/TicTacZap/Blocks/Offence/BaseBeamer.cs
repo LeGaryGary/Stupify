@@ -86,7 +86,6 @@ namespace TicTacZap.Blocks.Offence
 
         public void DestroyThis()
         {
-            throw new NotImplementedException();
         }
     }
 }

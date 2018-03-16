@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using StupifyConsoleApp.Client;
 using StupifyConsoleApp.DataModels;
 using TicTacZap;
+using TicTacZap.Blocks.Offence;
 
 namespace StupifyConsoleApp.TicTacZapManagement
 {
@@ -18,6 +20,8 @@ namespace StupifyConsoleApp.TicTacZapManagement
         private static Dictionary<int, int?> UserSegmentSelection { get; } = new Dictionary<int, int?>();
         private static Dictionary<int, int?> UserTemplateSelection { get; } = new Dictionary<int, int?>();
 
+        internal static List<(int attackingSegment, int defendingSegment, Direction direction)> CurrentWars { get; } = new List<(int, int, Direction)>();
+
         public static ShopInventory Shop { get; } = new ShopInventory();
 
         public static async Task Run()
@@ -28,6 +32,7 @@ namespace StupifyConsoleApp.TicTacZapManagement
                 timer.Start();
                 while (true)
                 {
+                    await PerformAttacks();
                     await UpdateBalances();
 
                     await timer.Wait(1000);
@@ -66,6 +71,42 @@ namespace StupifyConsoleApp.TicTacZapManagement
             }
 
             return text;
+        }
+
+        private static async Task PerformAttacks()
+        {
+            using (var context = new BotContext())
+            {
+                foreach (var war in CurrentWars)
+                {
+                    if (!await context.Segments.AnyAsync(s => s.SegmentId == war.attackingSegment) ||
+                        !await context.Segments.AnyAsync(s => s.SegmentId == war.defendingSegment))
+                    {
+                        CurrentWars.Remove(war);
+                        continue;
+                    }
+
+                    var attackingSegment = await Segments.GetAsync(war.attackingSegment);
+                    var defendingSegment = await Segments.GetAsync(war.defendingSegment);
+
+                    foreach (var block in attackingSegment.Blocks)
+                    {
+                        if (block is IOffenceBlock attackBlock)
+                        {
+                            attackBlock.AttackSegment(war.direction, defendingSegment);
+                        }
+                    }
+
+                    if (defendingSegment.Blocks[4, 4] != null) continue;
+
+                    await Segments.DeleteSegmentAsync(war.defendingSegment);
+                    await UniverseController.DeleteSegment(war.defendingSegment);
+                
+                    var removeSeg = await context.Segments.FirstAsync(s => s.SegmentId == war.defendingSegment);
+                    context.Segments.Remove(removeSeg);
+                    await context.SaveChangesAsync();
+                }
+            }
         }
 
         private static async Task UpdateBalances()

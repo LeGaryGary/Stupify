@@ -32,9 +32,11 @@ namespace TicTacZap
             return str;
         }
 
-        public (int, int) NewSegment(int segmentId)
+        public (int x, int y)? NewSegment(int segmentId)
         {
-            (var x, var y) = GetFirstEmptySegment();
+            var locationNullable = GetFirstEmptySegment();
+            if (!locationNullable.HasValue) return null;
+            (var x, int y) = ((int, int)) locationNullable;
             Segments[x, y] = segmentId;
             return (x, y);
         }
@@ -44,12 +46,12 @@ namespace TicTacZap
             Segments[coords.x, coords.y] = null;
         }
 
-        private (int, int) GetFirstEmptySegment()
+        private (int x, int y)? GetFirstEmptySegment()
         {
             return FindSegment(null);
         }
 
-        public (int, int) FindSegment(int? segmentId)
+        public (int x, int y)? FindSegment(int? segmentId)
         {
             var x = Center.x;
             var y = Center.y;
@@ -72,8 +74,8 @@ namespace TicTacZap
                         {
                             y++;
                         }
-
                         break;
+
                     case Direction.Down:
                         if (Math.Abs(y - Center.y) == layer)
                         {
@@ -84,8 +86,8 @@ namespace TicTacZap
                         {
                             y--;
                         }
-
                         break;
+
                     case Direction.Left:
                         if (Math.Abs(x - Center.x) == layer)
                         {
@@ -96,8 +98,8 @@ namespace TicTacZap
                         {
                             x--;
                         }
-
                         break;
+
                     case Direction.Right:
                         if (Math.Abs(x - Center.x) == layer)
                         {
@@ -108,7 +110,6 @@ namespace TicTacZap
                         {
                             x++;
                         }
-
                         break;
                 }
             }

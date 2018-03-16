@@ -33,19 +33,55 @@ namespace StupifyConsoleApp.TicTacZapManagement
             return "```" + Universe.RenderTheEntiretyOfCreationAsWeKnowIt() + "```";
         }
 
-        public static async Task<(int, int)> NewSegment(int segmentId)
+        public static async Task<(int, int)?> NewSegment(int segmentId)
         {
             var newSegmentCoords = Universe.NewSegment(segmentId);
             await SaveUniverseFileAsync();
             return newSegmentCoords;
         }
 
-        public static async Task<(int, int)> DeleteSegment(int segmentId)
+        public static async Task<(int, int)?> DeleteSegment(int segmentId)
         {
             var coords = Universe.FindSegment(segmentId);
-            Universe.DeleteSegment(coords);
+            if (!coords.HasValue) return null;
+            Universe.DeleteSegment(((int x,int y))coords);
             await SaveUniverseFileAsync();
             return coords;
+        }
+
+        public static async Task<int?> GetAdjacentSegmentInDirection(int originalSegment, Direction direction)
+        {
+            var locationNullable = Universe.FindSegment(originalSegment);
+            if (!locationNullable.HasValue) return null;
+            var location = ((int x, int y))locationNullable;
+
+            switch (direction)
+            {
+                case Direction.Up:
+                    location.y++;
+                    break;
+                case Direction.Down:
+                    location.y--;
+                    break;
+                case Direction.Left:
+                    location.x--;
+                    break;
+                case Direction.Right:
+                    location.x++;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(direction), direction, null);
+            }
+
+            if (location.x >= Universe.Segments.GetLength(0) ||
+                location.x < 0 ||
+                location.y >= Universe.Segments.GetLength(1) ||
+                location.y < 0)
+            {
+                return null;
+            }
+
+            return Universe.Segments[location.x, location.y];
         }
 
         private static Universe LoadUniverseFile()

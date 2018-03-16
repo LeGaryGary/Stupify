@@ -27,7 +27,7 @@ namespace TicTacZap
 
         public bool AddBlock(int x, int y, BlockType blockType)
         {
-            var block = TicTacZapExtensions.NewBlock(blockType);
+            var block = TicTacZapExtensions.NewBlock(blockType, x, y);
             return AddBlock(x, y, block);
         }
 

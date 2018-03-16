@@ -18,7 +18,6 @@ namespace TicTacZap.Blocks.Defence
 
         public void DestroyThis()
         {
-            throw new NotImplementedException();
         }
     }
 }

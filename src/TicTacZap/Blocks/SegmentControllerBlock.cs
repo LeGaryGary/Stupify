@@ -15,7 +15,6 @@
 
         public void DestroyThis()
         {
-            throw new System.NotImplementedException();
         }
     }
 }

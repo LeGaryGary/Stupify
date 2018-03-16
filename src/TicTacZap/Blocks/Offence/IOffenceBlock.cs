@@ -4,7 +4,7 @@ using System.Text;
 
 namespace TicTacZap.Blocks.Offence
 {
-    interface IOffenceBlock : IBlock
+    public interface IOffenceBlock : IBlock
     {
         void AttackSegment(Direction enemyDirection, Segment enemySegment);
     }
