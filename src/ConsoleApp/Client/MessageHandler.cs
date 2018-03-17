@@ -60,11 +60,14 @@ namespace StupifyConsoleApp.Client
                     case CommandError.UnmetPrecondition:
                         await context.Channel.SendMessageAsync(result.ErrorReason);
                         break;
+                    case CommandError.ParseFailed:
+                        await context.Channel.SendMessageAsync("That's not right!");
+                        break;
                     default:
                         await ClientManager.LogAsync(
                             $"\r\nThe message: {context.Message} \r\nHas caused the following error: {result.ErrorReason}\r\nIn the server: {context.Guild.Name}");
                         await context.Channel.SendMessageAsync(
-                            "Internal error! You may shout at the the developers here: https://discord.gg/nb5rUhd");
+                            "Internal error! You may shout at the developers here: https://discord.gg/nb5rUhd");
                         break;
                 }
             sw.Stop();

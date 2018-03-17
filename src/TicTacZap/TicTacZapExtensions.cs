@@ -59,5 +59,14 @@ namespace TicTacZap
 
             return block;
         }
+
+        public static string GetUnicodeHealth(this IHealth healthObject)
+        {
+            var health = (decimal) healthObject.Health / healthObject.MaxHealth;
+
+            if (health == 1) return "💚";
+
+            return health < 0.5m ? "❤" : "💛";
+        }
     }
 }

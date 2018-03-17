@@ -10,6 +10,7 @@ namespace TicTacZap
         {
             BlocksPrices.Add(BlockType.BasicEnergy, 100);
             BlocksPrices.Add(BlockType.BasicBeamer, 1000);
+            BlocksPrices.Add(BlockType.BasicWall, 20);
         }
 
         private Dictionary<BlockType, decimal> BlocksPrices { get; } = new Dictionary<BlockType, decimal>();

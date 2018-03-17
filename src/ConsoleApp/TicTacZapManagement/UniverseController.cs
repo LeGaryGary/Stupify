@@ -28,9 +28,12 @@ namespace StupifyConsoleApp.TicTacZapManagement
             }
         }
 
-        public static string RenderTheEntiretyOfCreationAsWeKnowIt()
+        public static string RenderRelativeToSegment(int segmentId, int scope)
         {
-            return "```" + Universe.RenderTheEntiretyOfCreationAsWeKnowIt() + "```";
+            if (scope > 12) return null;
+            var locationNullable = Universe.FindSegment(segmentId);
+            if (!locationNullable.HasValue) return null;
+            return Universe.RenderRelative(locationNullable.Value, scope);
         }
 
         public static async Task<(int, int)?> NewSegment(int segmentId)

@@ -246,5 +246,28 @@ namespace TicTacZap
 
             return stringBuilder.ToString();
         }
+
+        public string HealthTextRender()
+        {
+            var stringBuilder = new StringBuilder();
+            for (var y = Blocks.GetLength(0) - 1; y >= 0; y--)
+            {
+                for (var x = 0; x < Blocks.GetLength(1); x++)
+                {
+                    var block = Blocks[x, y];
+                    if (block == null)
+                    {
+                        stringBuilder.Append("➖");
+                        continue;
+                    }
+
+                    stringBuilder.Append(block.UnicodeHealth());
+                }
+
+                stringBuilder.Append(Environment.NewLine);
+            }
+
+            return stringBuilder.ToString();
+        }
     }
 }

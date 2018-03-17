@@ -135,7 +135,7 @@ namespace StupifyConsoleApp.TicTacZapManagement
                 var block = blocks[x, y];
                 if (block == null) continue;
 
-                serSeg.BlocksList.Add(new Tuple<int, int, BlockType>(x, y, block.BlockType));
+                serSeg.BlocksList.Add(new Tuple<int, int, BlockType, int>(x, y, block.BlockType, block.Health));
             }
 
             serSeg.Resources = segment.ResourcePerTick();
@@ -149,7 +149,10 @@ namespace StupifyConsoleApp.TicTacZapManagement
             var segment = new Segment();
             var blocks = segment.Blocks;
             foreach (var tuple in deserialized.BlocksList)
+            {
                 blocks[tuple.Item1, tuple.Item2] = TicTacZapExtensions.NewBlock(tuple.Item3, tuple.Item1, tuple.Item2);
+                blocks[tuple.Item1, tuple.Item2].Health = tuple.Item4;
+            }
 
             segment.SetResources(deserialized.Resources);
             return segment;

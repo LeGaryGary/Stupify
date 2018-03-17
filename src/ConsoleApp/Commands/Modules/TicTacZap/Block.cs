@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using System.Threading.Tasks;
 using Discord.Commands;
 using StupifyConsoleApp.TicTacZapManagement;
@@ -8,13 +9,36 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
 {
     public class Block : StupifyModuleBase
     {
+        [Command("BlockInfo")]
+        public async Task BlockInfoCommand(int x, int y)
+        {
+            var segmentSelectionId = TicTacZapController.GetUserSegmentSelection((await this.GetUserAsync()).UserId);
+            if (!segmentSelectionId.HasValue)
+            {
+                await ReplyAsync(Responses.SelectSegmentMessage);
+                return;
+            }
+
+            var text = await TicTacZapController.RenderBlockInfoAsync(segmentSelectionId.Value, x-1, y-1);
+            if (string.IsNullOrEmpty(text))
+            {
+                await ReplyAsync(Responses.NoSuchBlock);
+                return;
+            }
+
+            await ReplyAsync($"```{text}```");
+            return;
+
+            
+        }
+
         [Command("AddBlock")]
         public async Task AddBlockCommand(int x, int y, string type)
         {
             var segmentSelectionId = TicTacZapController.GetUserSegmentSelection((await this.GetUserAsync()).UserId);
-            if (segmentSelectionId != null)
+            if (segmentSelectionId.HasValue)
             {
-                await AddBlockCommand((int) segmentSelectionId, x, y, type);
+                await AddBlockCommand(segmentSelectionId.Value, x, y, type);
                 return;
             }
 
@@ -24,9 +48,11 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
         private async Task AddBlockCommand(int segmentId, int x, int y, string type)
         {
             var blockType = Enum.Parse<BlockType>(type);
-            if (await Inventories.RemoveFromInventoryAsync(blockType, 1, (await this.GetUserAsync()).UserId))
+            var userId = (await this.GetUserAsync()).UserId;
+            if (await Inventories.RemoveFromInventoryAsync(blockType, 1, userId))
             {
-                await TicTacZapManagement.Segments.AddBlockAsync(segmentId, x - 1, y - 1, blockType);
+                if (!await TicTacZapManagement.Segments.AddBlockAsync(segmentId, x - 1, y - 1, blockType)) 
+                    await Inventories.AddToInventoryAsync(blockType, 1, userId);
                 await this.UpdateDbSegmentOutput(segmentId);
                 await this.ShowSegmentAsync(segmentId);
                 return;

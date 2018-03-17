@@ -52,6 +52,18 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
                 await ReplyAsync(Responses.SegmentOwnershipProblem);
             }
 
+            [Command]
+            public async Task Segment(int segmentId, Overlay overlayType)
+            {
+                if (await this.UserHasSegmentAsync(segmentId))
+                {
+                    await this.ShowSegmentAsync(segmentId, overlayType);
+                    return;
+                }
+
+                await ReplyAsync(Responses.SegmentOwnershipProblem);
+            }
+
             [Command("Buy")]
             public async Task BuySegment()
             {
@@ -121,6 +133,13 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
                     await ReplyAsync(Responses.SelectSegmentMessage);
                     return;
                 }
+
+                if (!await TicTacZapController.SegmentReadyForCombat(segment.Value))
+                {
+                    await ReplyAsync("This segment isn't ready for combat (needs to have offensive blocks and not already be in combat)");
+                    return;
+                }
+
                 var defendingSegment = await UniverseController.GetAdjacentSegmentInDirection(segment.Value, direction);
                 if (defendingSegment.HasValue)
                 {
@@ -142,9 +161,16 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
                         default:
                             throw new ArgumentOutOfRangeException(nameof(direction), direction, null);
                     }
-                    TicTacZapController.CurrentWars.Add((segment.Value, defendingSegment.Value, direction));
-                    TicTacZapController.CurrentWars.Add((defendingSegment.Value, segment.Value, opposite));
+                    await ReplyAsync("Attacker:");
+                    var attackMessage = await ReplyAsync("```Loading...```");
+                    await ReplyAsync("Defender:");
+                    var defenceMessage = await ReplyAsync("```Loading...```");
+                    TicTacZapController.CurrentWars.Add((defendingSegment.Value, segment.Value, opposite, attackMessage));
+                    TicTacZapController.CurrentWars.Add((segment.Value, defendingSegment.Value, direction, defenceMessage));
+                    return;
                 }
+
+                await ReplyAsync("Good luck fighting... empty space? Try attacking something more interesting please");
             }
 
             private async Task<(int segmentId, (int x, int y)? coords)> NewSegment(int userId)

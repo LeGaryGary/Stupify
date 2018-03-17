@@ -1,10 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using StupifyConsoleApp.Commands.Modules.TicTacZap;
 using StupifyConsoleApp.DataModels;
 using StupifyConsoleApp.TicTacZapManagement;
 using TicTacZap;
+using Segments = StupifyConsoleApp.TicTacZapManagement.Segments;
 
 namespace StupifyConsoleApp.Commands
 {
@@ -38,6 +41,21 @@ namespace StupifyConsoleApp.Commands
                 (await moduleBase.GetUserAsync()).UserId, segmentId, moduleBase.Db);
             await moduleBase.Context.Channel.SendMessageAsync(
                 $"```{await TicTacZapController.RenderSegmentAsync(segmentId, moduleBase.Db)}```");
+        }
+
+        public static async Task ShowSegmentAsync(this StupifyModuleBase moduleBase, int segmentId, Overlay overlay)
+        {
+            await TicTacZapController.SetUserSegmentSelection(
+                (await moduleBase.GetUserAsync()).UserId, segmentId, moduleBase.Db);
+            switch (overlay)
+            {
+                case Overlay.Health:
+                    await moduleBase.Context.Channel.SendMessageAsync(
+                        $"```{await TicTacZapController.RenderSegmentHealthAsync(segmentId)}```");
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(overlay), overlay, null);
+            }
         }
 
         public static async Task ShowTemplateAsync(this StupifyModuleBase moduleBase, int templateId)

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 
 namespace TicTacZap
 {
@@ -15,21 +16,28 @@ namespace TicTacZap
             Center = (Size / 2, Size / 2);
         }
 
-        public string RenderTheEntiretyOfCreationAsWeKnowIt()
+        public string RenderRelative((int x, int y) location, int scope)
         {
-            var str = string.Empty;
-            for (var y = Size - 1; y >= 0; y--)
+            var str = new StringBuilder();
+            for (var y = location.y+scope; y >= location.y-scope; y--)
             {
-                for (var x = 0; x < Size; x++)
-                    if (Segments[x, y] != null)
-                        str += " S ";
-                    else
-                        str += " ~ ";
+                for (var x = location.x - scope; x < location.x + scope + 1; x++)
+                {
+                    if (x < 0 || y < 0 ||
+                        x >= Size ||
+                        y >= Size)
+                    {
+                        str.Append("   ");
+                        continue;
+                    }
 
-                str += Environment.NewLine;
+                    str.Append(Segments[x, y] != null ? " S " : " ~ ");
+                }
+
+                str.Append(Environment.NewLine);
             }
 
-            return str;
+            return str.ToString();
         }
 
         public (int x, int y)? NewSegment(int segmentId)

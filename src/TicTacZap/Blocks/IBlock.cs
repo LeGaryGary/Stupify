@@ -1,12 +1,11 @@
 ﻿namespace TicTacZap.Blocks
 {
-    public interface IBlock
+    public interface IBlock : IHealth
     {
         BlockType BlockType { get; }
         decimal Upkeep { get; }
-        int MaxHealth { get; }
-        int Health { get; set; }
 
         void DestroyThis();
+        BlockInfo RenderBlockInfo();
     }
 }

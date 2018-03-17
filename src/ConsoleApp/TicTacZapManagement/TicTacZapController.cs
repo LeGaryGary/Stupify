@@ -4,11 +4,13 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Discord;
 using Microsoft.EntityFrameworkCore;
 using StupifyConsoleApp.Client;
 using StupifyConsoleApp.DataModels;
 using TicTacZap;
 using TicTacZap.Blocks.Offence;
+using Direction = TicTacZap.Direction;
 
 namespace StupifyConsoleApp.TicTacZapManagement
 {
@@ -21,7 +23,7 @@ namespace StupifyConsoleApp.TicTacZapManagement
         private static Dictionary<int, int?> UserSegmentSelection { get; } = new Dictionary<int, int?>();
         private static Dictionary<int, int?> UserTemplateSelection { get; } = new Dictionary<int, int?>();
 
-        internal static List<(int attackingSegment, int defendingSegment, Direction direction)> CurrentWars { get; } = new List<(int, int, Direction)>();
+        internal static List<(int attackingSegment, int defendingSegment, Direction direction, IUserMessage message)> CurrentWars { get; } = new List<(int, int, Direction, IUserMessage)>();
 
         public static ShopInventory Shop { get; } = new ShopInventory();
         
@@ -81,11 +83,27 @@ namespace StupifyConsoleApp.TicTacZapManagement
             return text;
         }
 
+        public static async Task<string> RenderSegmentHealthAsync(int segmentId)
+        {
+            var segment = await Segments.GetAsync(segmentId);
+            return segment.HealthTextRender();
+        }
+
+        public static async Task<bool> SegmentReadyForCombat(int segmentId)
+        {
+            if (CurrentWars.Any(w => w.attackingSegment == segmentId))
+            {
+                return false;
+            }
+
+            return (await Segments.GetAsync(segmentId)).Blocks.OfType<IOffenceBlock>().Any();
+        }
+
         private static async Task PerformAttacks()
         {
             using (var context = new BotContext())
             {
-                var endedWars = new List<(int, int, Direction)>();
+                var endedWars = new List<(int, int, Direction, IUserMessage)>();
                 foreach (var war in CurrentWars)
                 {
                     if (!await context.Segments.AnyAsync(s => s.SegmentId == war.attackingSegment) ||
@@ -109,6 +127,7 @@ namespace StupifyConsoleApp.TicTacZapManagement
                     if (defendingSegment.Blocks[4, 4] != null)
                     {
                         await Segments.SetAsync(war.defendingSegment, defendingSegment);
+                        await war.message.ModifyAsync(m => m.Content = defendingSegment.HealthTextRender());
                         continue;
                     }
 
@@ -118,6 +137,8 @@ namespace StupifyConsoleApp.TicTacZapManagement
                     var removeSeg = await context.Segments.FirstAsync(s => s.SegmentId == war.defendingSegment);
                     context.Segments.Remove(removeSeg);
                     await context.SaveChangesAsync();
+
+                    await war.message.ModifyAsync(m => m.Content = "Destroyed!");
                 }
 
                 foreach (var war in endedWars)
@@ -192,6 +213,29 @@ namespace StupifyConsoleApp.TicTacZapManagement
             if (UserTemplateSelection.ContainsKey(userId)) return UserTemplateSelection[userId];
             UserTemplateSelection.Add(userId, null);
             return null;
+        }
+
+        public static async Task<string> RenderBlockInfoAsync(int segmentSelectionId, int x, int y)
+        {
+            var segment = await Segments.GetAsync(segmentSelectionId);
+
+            if (x < 0 || y < 0 ||
+                x >= segment.Blocks.GetLength(0) ||
+                y >= segment.Blocks.GetLength(1))
+            {
+                return null;
+            }
+
+            var block = segment.Blocks[x, y];
+            if (block == null) return null;
+
+            var info = block.RenderBlockInfo();
+
+            var str = string.Empty;
+            str += $"Block: {info.Type}" + Environment.NewLine;
+            str += $"Health: {info.Health}/{info.MaxHealth}";
+
+            return str;
         }
     }
 }

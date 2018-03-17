@@ -3,18 +3,13 @@ using System.Data;
 
 namespace TicTacZap.Blocks.Offence
 {
-    public abstract class BaseBeamer : IOffenceBlock
+    public abstract class BaseBeamer : BaseBlock, IOffenceBlock
     {
         private readonly int _x;
         private readonly int _y;
         private readonly Func<int,int,Direction,Segment,(int x, int y)?> _targetLocator;
 
         protected int BeamPower;
-
-        public BlockType BlockType { get; protected set; }
-        public decimal Upkeep { get; protected set; }
-        public int MaxHealth { get; protected set; }
-        public int Health { get; set; }
 
         protected BaseBeamer(int xInSegment, int yInSegment, Func<int,int,Direction,Segment,(int x, int y)?> targetLocator)
         {
@@ -30,7 +25,7 @@ namespace TicTacZap.Blocks.Offence
             if (!target.HasValue) return;
             var (x, y) = target.Value;
             
-            if ((enemySegment.Blocks[x, y].Health -= BeamPower) >= 0) return;
+            if ((enemySegment.Blocks[x, y].Health -= BeamPower) > 0) return;
 
             enemySegment.Blocks[x, y].DestroyThis();
             enemySegment.Blocks[x, y] = null;
@@ -82,10 +77,6 @@ namespace TicTacZap.Blocks.Offence
             return (int)Math.Pow(
                 Math.Pow(attackerLocation.x - defenderLocationAdjusted.x, 2) +
                 Math.Pow(attackerLocation.y - defenderLocationAdjusted.y, 2), 0.5);
-        }
-
-        public void DestroyThis()
-        {
         }
     }
 }

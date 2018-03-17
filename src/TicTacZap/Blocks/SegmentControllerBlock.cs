@@ -1,20 +1,14 @@
 ﻿namespace TicTacZap.Blocks
 {
-    public class SegmentControllerBlock : IBlock
+    public class SegmentControllerBlock : BaseBlock
     {
-        public BlockType BlockType { get; }
-        public decimal Upkeep { get; } = 0;
-        public int MaxHealth { get; } = 50;
-        public int Health { get; set; }
 
         public SegmentControllerBlock()
         {
             BlockType = BlockType.Controller;
+            MaxHealth = 50;
             Health = MaxHealth;
-        }
-
-        public void DestroyThis()
-        {
+            Upkeep = 0;
         }
     }
 }

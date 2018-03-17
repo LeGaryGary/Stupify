@@ -24,7 +24,7 @@ namespace TicTacZap
 
             var str = "Inventory:" + Environment.NewLine;
 
-            foreach (var block in Blocks) str += $"`{block.Key} block x{block.Value}`";
+            foreach (var block in Blocks) if(block.Value != 0) str += $"`{block.Key} block x{block.Value}`" + Environment.NewLine;
 
             return str;
         }
