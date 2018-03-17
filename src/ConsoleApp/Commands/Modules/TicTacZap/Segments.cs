@@ -116,32 +116,34 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
             public async Task AttackSegmentCommand(Direction direction)
             {
                 var segment = TicTacZapController.GetUserSegmentSelection((await this.GetUserAsync()).UserId);
-                if (segment.HasValue)
+                if (!segment.HasValue)
                 {
-                    var defendingSegment = await UniverseController.GetAdjacentSegmentInDirection(segment.Value, direction);
-                    if (defendingSegment.HasValue)
+                    await ReplyAsync(Responses.SelectSegmentMessage);
+                    return;
+                }
+                var defendingSegment = await UniverseController.GetAdjacentSegmentInDirection(segment.Value, direction);
+                if (defendingSegment.HasValue)
+                {
+                    Direction opposite;
+                    switch (direction)
                     {
-                        Direction opposite;
-                        switch (direction)
-                        {
-                            case Direction.Up:
-                                opposite = Direction.Down;
-                                break;
-                            case Direction.Down:
-                                opposite = Direction.Up;
-                                break;
-                            case Direction.Left:
-                                opposite = Direction.Right;
-                                break;
-                            case Direction.Right:
-                                opposite = Direction.Left;
-                                break;
-                            default:
-                                throw new ArgumentOutOfRangeException(nameof(direction), direction, null);
-                        }
-                        TicTacZapController.CurrentWars.Add((segment.Value, defendingSegment.Value, direction));
-                        TicTacZapController.CurrentWars.Add((defendingSegment.Value, segment.Value, opposite));
+                        case Direction.Up:
+                            opposite = Direction.Down;
+                            break;
+                        case Direction.Down:
+                            opposite = Direction.Up;
+                            break;
+                        case Direction.Left:
+                            opposite = Direction.Right;
+                            break;
+                        case Direction.Right:
+                            opposite = Direction.Left;
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException(nameof(direction), direction, null);
                     }
+                    TicTacZapController.CurrentWars.Add((segment.Value, defendingSegment.Value, direction));
+                    TicTacZapController.CurrentWars.Add((defendingSegment.Value, segment.Value, opposite));
                 }
             }
 

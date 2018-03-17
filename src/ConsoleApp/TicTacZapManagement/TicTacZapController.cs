@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using StupifyConsoleApp.Client;
@@ -23,17 +24,24 @@ namespace StupifyConsoleApp.TicTacZapManagement
         internal static List<(int attackingSegment, int defendingSegment, Direction direction)> CurrentWars { get; } = new List<(int, int, Direction)>();
 
         public static ShopInventory Shop { get; } = new ShopInventory();
+        
+        private static SemaphoreSlim _semaphoreRunLock = new SemaphoreSlim(1, 1);
 
         public static async Task Run()
         {
+            
             try
             {
                 var timer = new Stopwatch();
                 timer.Start();
                 while (true)
                 {
+                    await _semaphoreRunLock.WaitAsync();
+
                     await PerformAttacks();
                     await UpdateBalances();
+
+                    _semaphoreRunLock.Release();
 
                     await timer.Wait(1000);
                 }
@@ -77,12 +85,13 @@ namespace StupifyConsoleApp.TicTacZapManagement
         {
             using (var context = new BotContext())
             {
+                var endedWars = new List<(int, int, Direction)>();
                 foreach (var war in CurrentWars)
                 {
                     if (!await context.Segments.AnyAsync(s => s.SegmentId == war.attackingSegment) ||
                         !await context.Segments.AnyAsync(s => s.SegmentId == war.defendingSegment))
                     {
-                        CurrentWars.Remove(war);
+                        endedWars.Add(war);
                         continue;
                     }
 
@@ -97,7 +106,11 @@ namespace StupifyConsoleApp.TicTacZapManagement
                         }
                     }
 
-                    if (defendingSegment.Blocks[4, 4] != null) continue;
+                    if (defendingSegment.Blocks[4, 4] != null)
+                    {
+                        await Segments.SetAsync(war.defendingSegment, defendingSegment);
+                        continue;
+                    }
 
                     await Segments.DeleteSegmentAsync(war.defendingSegment);
                     await UniverseController.DeleteSegment(war.defendingSegment);
@@ -105,6 +118,11 @@ namespace StupifyConsoleApp.TicTacZapManagement
                     var removeSeg = await context.Segments.FirstAsync(s => s.SegmentId == war.defendingSegment);
                     context.Segments.Remove(removeSeg);
                     await context.SaveChangesAsync();
+                }
+
+                foreach (var war in endedWars)
+                {
+                    CurrentWars.Remove(war);
                 }
             }
         }

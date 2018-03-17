@@ -230,6 +230,12 @@ namespace TicTacZap
                         case BlockType.BasicEnergy:
                             stringBuilder.Append(" B ");
                             break;
+                        case BlockType.BasicWall:
+                            stringBuilder.Append(" W ");
+                            break;
+                        case BlockType.BasicBeamer:
+                            stringBuilder.Append(" Q ");
+                            break;
                         default:
                             stringBuilder.Append(" ~ ");
                             break;

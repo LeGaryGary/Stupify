@@ -9,7 +9,7 @@ namespace TicTacZap.Blocks.Offence
         public BasicBeamer(int x, int y, Func<int,int,Direction,Segment,(int x, int y)?> targetLocator = null) : base(x, y, targetLocator)
         {
             BlockType = BlockType.BasicBeamer;
-            Upkeep = 10;
+            Upkeep = 0;
             MaxHealth = 50;
             Health = MaxHealth;
             BeamPower = 1;
