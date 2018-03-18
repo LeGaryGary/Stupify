@@ -55,6 +55,7 @@ namespace StupifyConsoleApp.Client
                         await context.Channel.SendMessageAsync("Command not found!");
                         break;
                     case CommandError.BadArgCount:
+                    case CommandError.ParseFailed:
                         await context.Channel.SendMessageAsync("That's not right!");
                         break;
                     case CommandError.UnmetPrecondition:
