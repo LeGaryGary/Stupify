@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord.Commands;
-using StupifyConsoleApp.DataModels;
+using Microsoft.EntityFrameworkCore;
 using StupifyConsoleApp.TicTacZapManagement;
+using TicTacZap;
+using Segment = StupifyConsoleApp.DataModels.Segment;
 
 namespace StupifyConsoleApp.Commands.Modules.TicTacZap
 {
@@ -24,21 +26,32 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
 
         private static string RenderSegmentList(IEnumerable<Segment> segments)
         {
-            var str = string.Empty;
-            foreach (var segment in segments)
-                str += $"Segment Id: {segment.SegmentId} Output: {segment.UnitsPerTick}" + Environment.NewLine;
-
-            return str;
+            return segments.Aggregate(
+                string.Empty,
+                (current, segment) => 
+                    current + ($"Segment Id: {segment.SegmentId} Output: {segment.UnitsPerTick}" + Environment.NewLine));
         }
 
         private static decimal SegmentPrice(int segmentCount)
         {
-            return Convert.ToDecimal(Math.Pow(2, segmentCount) - 1) * 100;
+            return segmentCount * 100;
         }
 
         [Group("Segment")]
         public class SegmentModule : StupifyModuleBase
         {
+            [Command]
+            public async Task Segment()
+            {
+                var segmentId = TicTacZapController.GetUserSegmentSelection((await this.GetUserAsync()).UserId);
+                if (!segmentId.HasValue)
+                {
+                    await ReplyAsync(Responses.SelectSegmentMessage);
+                    return;
+                }
+                await this.ShowSegmentAsync(segmentId.Value);
+            }
+
             [Command]
             public async Task Segment(int segmentId)
             {
@@ -51,24 +64,40 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
                 await ReplyAsync(Responses.SegmentOwnershipProblem);
             }
 
+            [Command]
+            public async Task Segment(int segmentId, Overlay overlayType)
+            {
+                if (await this.UserHasSegmentAsync(segmentId))
+                {
+                    await this.ShowSegmentAsync(segmentId, overlayType);
+                    return;
+                }
+
+                await ReplyAsync(Responses.SegmentOwnershipProblem);
+            }
+
             [Command("Buy")]
             public async Task BuySegment()
             {
                 var user = await this.GetUserAsync();
 
+                //if (await Db.Segments.Where(s => s.User.UserId == user.UserId).CountAsync() >= 50)
+                //{
+                //    await ReplyAsync("You have reached the maximum number of segments, unable to add more");
+                //}
+
                 var price = SegmentPrice(await this.SegmentCountAsync());
-                if (price > user.Balance)
+                if (!TicTacZapController.MakeTransaction(await this.GetUserAsync(), await TicTacZapController.GetBankAsync(Db), price))
                 {
                     await ReplyAsync(Responses.NotEnoughUnits(price));
                     return;
                 }
-
-                var tuple = await NewSegment(user.UserId);
-                user.Balance -= price;
-
                 await Db.SaveChangesAsync();
+
+                var segment = await NewSegment(user.UserId);
+
                 await ReplyAsync(
-                    $"You have purchased a segment!\r\nId: {tuple.segmentId}\r\nCoordinates: {tuple.coords.x+1}, {tuple.coords.y+1}");
+                    $"You have purchased a segment!\r\nId: {segment.segmentId}\r\nCoordinates: {segment.coords.Value.x+1}, {segment.coords.Value.y+1}");
             }
 
             [Command("Reset")]
@@ -101,18 +130,72 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
                     return;
                 }
 
-                var tuple = await DeleteSegment(segmentId);
-                await ReplyAsync($"It's gone...\r\nId: {segmentId}\r\nCoordinates: {tuple.x + 1}, {tuple.y + 1}");
+                var locationNullable = await DeleteSegment(segmentId);
+                if (locationNullable.HasValue)
+                {
+                    await ReplyAsync($"It's gone...\r\nId: {segmentId}\r\nCoordinates: {locationNullable.Value.x + 1}, {locationNullable.Value.y + 1}");
+                    return;
+                }
+
+                await ReplyAsync("Something went wrong, we couldn't find your segment in the universe, how odd");
             }
 
-            private async Task<(int segmentId, (int x, int y) coords)> NewSegment(int userId)
+            [Command("Attack")]
+            public async Task AttackSegmentCommand(Direction direction)
+            {
+                var segment = TicTacZapController.GetUserSegmentSelection((await this.GetUserAsync()).UserId);
+                if (!segment.HasValue)
+                {
+                    await ReplyAsync(Responses.SelectSegmentMessage);
+                    return;
+                }
+
+                if (!await TicTacZapController.SegmentReadyForCombat(segment.Value))
+                {
+                    await ReplyAsync("This segment isn't ready for combat (needs to have offensive blocks and not already be in combat)");
+                    return;
+                }
+
+                var defendingSegment = await UniverseController.GetAdjacentSegmentInDirection(segment.Value, direction);
+                if (defendingSegment.HasValue)
+                {
+                    Direction opposite;
+                    switch (direction)
+                    {
+                        case Direction.Up:
+                            opposite = Direction.Down;
+                            break;
+                        case Direction.Down:
+                            opposite = Direction.Up;
+                            break;
+                        case Direction.Left:
+                            opposite = Direction.Right;
+                            break;
+                        case Direction.Right:
+                            opposite = Direction.Left;
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException(nameof(direction), direction, null);
+                    }
+                    await ReplyAsync("Attacker:");
+                    var attackMessage = await ReplyAsync("```Loading...```");
+                    await ReplyAsync("Defender:");
+                    var defenceMessage = await ReplyAsync("```Loading...```");
+                    TicTacZapController.CurrentWars.Add((defendingSegment.Value, segment.Value, opposite, attackMessage));
+                    TicTacZapController.CurrentWars.Add((segment.Value, defendingSegment.Value, direction, defenceMessage));
+                    return;
+                }
+
+                await ReplyAsync("Good luck fighting... empty space? Try attacking something more interesting please");
+            }
+
+            private async Task<(int segmentId, (int x, int y)? coords)> NewSegment(int userId)
             {
                 var user = Db.Users.First(u => u.UserId == userId);
                 var segment = new Segment
                 {
                     UnitsPerTick = 0,
                     EnergyPerTick = 0,
-                    Energy = 0,
                     User = user
                 };
                 await Db.Segments.AddAsync(segment);
@@ -123,7 +206,7 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
                 return (segment.SegmentId, coords);
             }
 
-            private async Task<(int x, int y)> DeleteSegment(int segmentId)
+            private async Task<(int x, int y)?> DeleteSegment(int segmentId)
             {
                 var dbSegment = Db.Segments.First(s => s.SegmentId == segmentId);
                 Db.Segments.Remove(dbSegment);

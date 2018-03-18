@@ -4,11 +4,13 @@ using Discord;
 using Discord.Commands;
 using Microsoft.EntityFrameworkCore;
 
+using StupifyConsoleApp.Commands.Conditions;
 using StupifyConsoleApp.DataModels;
 using StupifyConsoleApp.TicTacZapManagement;
 
 namespace StupifyConsoleApp.Commands.Modules
 {
+    [Debug]
     [Group("Solve")]
     public class AI : StupifyModuleBase
     {

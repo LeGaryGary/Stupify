@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 
 namespace TicTacZap
 {
@@ -15,26 +16,35 @@ namespace TicTacZap
             Center = (Size / 2, Size / 2);
         }
 
-        public string RenderTheEntiretyOfCreationAsWeKnowIt()
+        public string RenderRelative((int x, int y) location, int scope)
         {
-            var str = string.Empty;
-            for (var y = Size - 1; y >= 0; y--)
+            var str = new StringBuilder();
+            for (var y = location.y+scope; y >= location.y-scope; y--)
             {
-                for (var x = 0; x < Size; x++)
-                    if (Segments[x, y] != null)
-                        str += " S ";
-                    else
-                        str += " ~ ";
+                for (var x = location.x - scope; x < location.x + scope + 1; x++)
+                {
+                    if (x < 0 || y < 0 ||
+                        x >= Size ||
+                        y >= Size)
+                    {
+                        str.Append("   ");
+                        continue;
+                    }
 
-                str += Environment.NewLine;
+                    str.Append(Segments[x, y] != null ? " S " : " ~ ");
+                }
+
+                str.Append(Environment.NewLine);
             }
 
-            return str;
+            return str.ToString();
         }
 
-        public (int, int) NewSegment(int segmentId)
+        public (int x, int y)? NewSegment(int segmentId)
         {
-            (var x, var y) = GetFirstEmptySegment();
+            var locationNullable = GetFirstEmptySegment();
+            if (!locationNullable.HasValue) return null;
+            (var x, int y) = ((int, int)) locationNullable;
             Segments[x, y] = segmentId;
             return (x, y);
         }
@@ -44,12 +54,12 @@ namespace TicTacZap
             Segments[coords.x, coords.y] = null;
         }
 
-        private (int, int) GetFirstEmptySegment()
+        private (int x, int y)? GetFirstEmptySegment()
         {
             return FindSegment(null);
         }
 
-        public (int, int) FindSegment(int? segmentId)
+        public (int x, int y)? FindSegment(int? segmentId)
         {
             var x = Center.x;
             var y = Center.y;
@@ -72,8 +82,8 @@ namespace TicTacZap
                         {
                             y++;
                         }
-
                         break;
+
                     case Direction.Down:
                         if (Math.Abs(y - Center.y) == layer)
                         {
@@ -84,8 +94,8 @@ namespace TicTacZap
                         {
                             y--;
                         }
-
                         break;
+
                     case Direction.Left:
                         if (Math.Abs(x - Center.x) == layer)
                         {
@@ -96,8 +106,8 @@ namespace TicTacZap
                         {
                             x--;
                         }
-
                         break;
+
                     case Direction.Right:
                         if (Math.Abs(x - Center.x) == layer)
                         {
@@ -108,7 +118,6 @@ namespace TicTacZap
                         {
                             x++;
                         }
-
                         break;
                 }
             }

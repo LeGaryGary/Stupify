@@ -11,6 +11,8 @@ namespace StupifyConsoleApp.Commands
         public static readonly string SelectSegmentMessage =
             $"Please select a segment with {Config.CommandPrefix} segment [segmentId]";
 
+        public const string NoSuchBlock = "No such block exists";
+
         public static readonly string SelectTemplateMessage = 
             $"Please select a template with {Config.CommandPrefix} Template [templateId]";
 
@@ -19,7 +21,7 @@ namespace StupifyConsoleApp.Commands
 
         public static string NotEnoughUnits(decimal price)
         {
-            return $"Come back when you have more money (you need {price} {Resource.Unit} to buy this)";
+            return $"Not enough Units: {price} is required";
         }
     }
 }

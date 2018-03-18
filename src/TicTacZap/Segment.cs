@@ -27,7 +27,7 @@ namespace TicTacZap
 
         public bool AddBlock(int x, int y, BlockType blockType)
         {
-            var block = TicTacZapExtensions.NewBlock(blockType);
+            var block = TicTacZapExtensions.NewBlock(blockType, x, y);
             return AddBlock(x, y, block);
         }
 
@@ -49,7 +49,7 @@ namespace TicTacZap
             return blockType;
         }
 
-        private void UpdateSegmentOutput()
+        public void UpdateSegmentOutput()
         {
             ResourceOutput = new Dictionary<Resource, decimal>();
 
@@ -230,10 +230,39 @@ namespace TicTacZap
                         case BlockType.BasicEnergy:
                             stringBuilder.Append(" B ");
                             break;
+                        case BlockType.BasicWall:
+                            stringBuilder.Append(" W ");
+                            break;
+                        case BlockType.BasicBeamer:
+                            stringBuilder.Append(" Q ");
+                            break;
                         default:
                             stringBuilder.Append(" ~ ");
                             break;
                     }
+
+                stringBuilder.Append(Environment.NewLine);
+            }
+
+            return stringBuilder.ToString();
+        }
+
+        public string HealthTextRender()
+        {
+            var stringBuilder = new StringBuilder();
+            for (var y = Blocks.GetLength(0) - 1; y >= 0; y--)
+            {
+                for (var x = 0; x < Blocks.GetLength(1); x++)
+                {
+                    var block = Blocks[x, y];
+                    if (block == null)
+                    {
+                        stringBuilder.Append("➖");
+                        continue;
+                    }
+
+                    stringBuilder.Append(block.UnicodeHealth());
+                }
 
                 stringBuilder.Append(Environment.NewLine);
             }

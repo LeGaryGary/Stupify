@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Security.Cryptography.X509Certificates;
 using TicTacZap.Blocks;
+using TicTacZap.Blocks.Defence;
+using TicTacZap.Blocks.Offence;
 using TicTacZap.Blocks.Production.Energy;
 
 namespace TicTacZap
@@ -32,7 +35,7 @@ namespace TicTacZap
             return resources;
         }
 
-        public static IBlock NewBlock(BlockType blockType)
+        public static IBlock NewBlock(BlockType blockType, int x, int y)
         {
             IBlock block;
 
@@ -44,11 +47,26 @@ namespace TicTacZap
                 case BlockType.BasicEnergy:
                     block = new BasicEnergyBlock();
                     break;
+                case BlockType.BasicWall:
+                    block = new BasicWall();
+                    break;
+                case BlockType.BasicBeamer:
+                    block = new BasicBeamer(x, y);
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(blockType), blockType, null);
             }
 
             return block;
+        }
+
+        public static string GetUnicodeHealth(this IHealth healthObject)
+        {
+            var health = (decimal) healthObject.Health / healthObject.MaxHealth;
+
+            if (health == 1) return "💚";
+
+            return health < 0.5m ? "❤️" : "💛";
         }
     }
 }

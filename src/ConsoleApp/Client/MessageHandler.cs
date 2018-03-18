@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using BotDataGraph.MessageAnalyser;
 using BotDataGraph.MessageAnalyser.Models;
@@ -65,13 +66,17 @@ namespace StupifyConsoleApp.Client
                         await ClientManager.LogAsync(
                             $"\r\nThe message: {context.Message} \r\nHas caused the following error: {result.ErrorReason}\r\nIn the server: {context.Guild.Name}");
                         await context.Channel.SendMessageAsync(
-                            "Internal error! You may shout at the the developers here: https://discord.gg/nb5rUhd");
+                            "Internal error! You may shout at the developers here: https://discord.gg/nb5rUhd");
                         break;
                 }
             sw.Stop();
+
             await ClientManager.LogAsync(
                 $"Command \"{context.Message}\" in \"{context.Guild.Name}\" took " + sw.ElapsedMilliseconds + "ms",
                 true);
+
+            await Task.Delay(5000);
+            await context.Message.DeleteAsync();
             await addMessageNodeTask;
         }
 

@@ -26,6 +26,8 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
             var templateId = await Db.NewTemplateAsync(user);
             var segment = await TicTacZapManagement.Segments.GetAsync((int)userSelection);
             await SegmentTemplates.SaveAsync(templateId, segment);
+
+            await ReplyAsync($"Segment saved, Id: {templateId}");
         }
 
         [Command("Templates")]
