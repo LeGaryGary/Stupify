@@ -13,7 +13,7 @@ namespace TicTacZap.Blocks.Offence
             MaxHealth = 50;
             Health = MaxHealth;
             EnergyConsumption = 10;
-            BeamPower = 1;
+            BeamPower = 5;
         }
     }
 }

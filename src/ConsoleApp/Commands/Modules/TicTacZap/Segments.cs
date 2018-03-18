@@ -41,6 +41,18 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
         public class SegmentModule : StupifyModuleBase
         {
             [Command]
+            public async Task Segment()
+            {
+                var segmentId = TicTacZapController.GetUserSegmentSelection((await this.GetUserAsync()).UserId);
+                if (!segmentId.HasValue)
+                {
+                    await ReplyAsync(Responses.SelectSegmentMessage);
+                    return;
+                }
+                await this.ShowSegmentAsync(segmentId.Value);
+            }
+
+            [Command]
             public async Task Segment(int segmentId)
             {
                 if (await this.UserHasSegmentAsync(segmentId))

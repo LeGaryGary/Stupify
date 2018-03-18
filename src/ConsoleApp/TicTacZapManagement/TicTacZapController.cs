@@ -133,7 +133,7 @@ namespace StupifyConsoleApp.TicTacZapManagement
                         await Segments.SetAsync(war.defendingSegment, defendingSegment);
 
                         var healthTextRender = defendingSegment.HealthTextRender();
-                        if (war.message.Content != healthTextRender) await war.message.ModifyAsync(m => m.Content = $"```{healthTextRender}```");
+                        if (war.message.Content != healthTextRender && Tick%5 == 0) await war.message.ModifyAsync(m => m.Content = $"```{healthTextRender}```");
 
                         continue;
                     }
@@ -142,7 +142,7 @@ namespace StupifyConsoleApp.TicTacZapManagement
                     // Get the segment owners and make loot transaction
                     var attackUser = (await context.Segments.Include(s => s.User).FirstAsync(s => s.SegmentId == war.attackingSegment)).User;
                     var defenceUser = (await context.Segments.Include(s => s.User).FirstAsync(s => s.SegmentId == war.defendingSegment)).User;
-                    var lootAmount = defenceUser.Balance / await context.Segments.Where(s => s.User.UserId == defenceUser.UserId).CountAsync();
+                     var lootAmount = defenceUser.Balance / await context.Segments.Where(s => s.User.UserId == defenceUser.UserId).CountAsync();
                     MakeTransaction(defenceUser, attackUser, lootAmount);
 
                     // Delete defending segment

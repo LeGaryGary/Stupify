@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using BotDataGraph.MessageAnalyser;
 using BotDataGraph.MessageAnalyser.Models;
@@ -69,9 +70,13 @@ namespace StupifyConsoleApp.Client
                         break;
                 }
             sw.Stop();
+
             await ClientManager.LogAsync(
                 $"Command \"{context.Message}\" in \"{context.Guild.Name}\" took " + sw.ElapsedMilliseconds + "ms",
                 true);
+
+            await Task.Delay(5000);
+            await context.Message.DeleteAsync();
             await addMessageNodeTask;
         }
 
