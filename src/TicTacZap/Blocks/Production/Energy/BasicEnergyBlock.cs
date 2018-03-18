@@ -6,6 +6,8 @@
         {
             BlockType = BlockType.BasicEnergy;
             Upkeep = 0;
+            MaxHealth = 10;
+            Health = MaxHealth;
         }
     }
 }

@@ -9,6 +9,8 @@ namespace TicTacZap
         public ShopInventory()
         {
             BlocksPrices.Add(BlockType.BasicEnergy, 100);
+            BlocksPrices.Add(BlockType.BasicBeamer, 100);
+            BlocksPrices.Add(BlockType.BasicWall, 20);
         }
 
         private Dictionary<BlockType, decimal> BlocksPrices { get; } = new Dictionary<BlockType, decimal>();
@@ -22,9 +24,24 @@ namespace TicTacZap
             return str;
         }
 
-        public decimal GetTotal(BlockType block, int quantity)
+        public decimal? GetBuyTotal(BlockType block, int quantity)
         {
-            return BlocksPrices[block] * quantity;
+            if (BlocksPrices.ContainsKey(block))
+            {
+                return BlocksPrices[block] * quantity * 1.05m;
+            }
+
+            return null;
+        }
+
+        public decimal? GetSellTotal(BlockType block, int quantity)
+        {
+            if (BlocksPrices.ContainsKey(block))
+            {
+                return BlocksPrices[block] * quantity * 0.95m;
+            }
+
+            return null;
         }
     }
 }

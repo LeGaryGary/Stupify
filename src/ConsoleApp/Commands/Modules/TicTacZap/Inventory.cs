@@ -32,38 +32,66 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
                 return;
             }
 
-            await ReplyAsync(message);
+            await ReplyAsync("Inventory:" + Environment.NewLine + message);
         }
 
         [Command("Shop")]
         public async Task ShowShopInventory()
         {
-            var message = TicTacZapController.Shop.TextRender();
+            var message = "Buy: 105%\r\nSell: 95%\r\n";
+            message += TicTacZapController.Shop.TextRender();
             await ReplyAsync(message);
         }
 
         [Command("Buy")]
-        public async Task BuyFromShop(string blockString, int quantity)
+        public async Task BuyFromShop(BlockType block, int quantity)
         {
-            var block = Enum.Parse<BlockType>(blockString);
-            var total = TicTacZapController.Shop.GetTotal(block, quantity);
-            if (await RemoveBalanceAsync(total))
+            var total = TicTacZapController.Shop.GetBuyTotal(block, quantity);
+            if (!total.HasValue)
             {
-                await Inventories.AddToInventoryAsync(block, quantity, (await this.GetUserAsync()).UserId);
-                await ShowInventory();
+                await ReplyAsync("The shop doesn't sell this type of block.");
                 return;
             }
 
-            await ReplyAsync(Responses.NotEnoughUnits(total));
+            if (!TicTacZapController.MakeTransaction(
+                await this.GetUserAsync(),
+                await TicTacZapController.GetBankAsync(Db),
+                total.Value))
+            {
+                await ReplyAsync(Responses.NotEnoughUnits(total.Value));
+                return;
+            }
+
+            await Db.SaveChangesAsync();
+            await Inventories.AddToInventoryAsync(block, quantity, (await this.GetUserAsync()).UserId);
+            await ShowInventory();
         }
 
-        private async Task<bool> RemoveBalanceAsync(decimal units)
+        [Command("Sell")]
+        public async Task SellToShop(BlockType block, int quantity)
         {
-            var user = await this.GetUserAsync();
-            if (units > user.Balance) return false;
-            user.Balance -= units;
-            await Db.SaveChangesAsync();
-            return true;
+            var total = TicTacZapController.Shop.GetSellTotal(block, quantity);
+            if (!total.HasValue)
+            {
+                await ReplyAsync("The shop doesn't buy this type of block.");
+                return;
+            }
+
+            if (!TicTacZapController.MakeTransaction(
+                await TicTacZapController.GetBankAsync(Db),
+                await this.GetUserAsync(),
+                total.Value))
+            {
+                await ReplyAsync(Responses.NotEnoughUnits(total.Value));
+                return;
+            }
+
+            if (await Inventories.RemoveFromInventoryAsync(block, quantity, (await this.GetUserAsync()).UserId)) await Db.SaveChangesAsync();
+            else
+            {
+                await ReplyAsync("You don't have the required blocks...");
+            }
+            await ShowInventory();
         }
     }
 }
