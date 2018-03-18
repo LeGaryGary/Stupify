@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+
+using StupifyConsoleApp.Client;
 using StupifyConsoleApp.DataModels;
 using TicTacZap.Blocks;
 
@@ -8,11 +10,22 @@ namespace StupifyConsoleApp.AI
 {
     public class AI
     {
+        public enum AIStatus
+        {
+            Working, Finished, Stopped
+        }
         private readonly AIController _controller;
         private IBlock[,] _blocks;
+
+        public AIStatus Status { get; private set; }
+
         private double _breakChance;
         private decimal _considerationThreshold;
+        private decimal _removeThreshold;
         private double _expansionChance;
+        private double _removeChance;
+
+        private bool _stop;
         private bool[,] _mark;
         private LinkedList<Tuple<int, int>> _placedBlocks;
         private List<Tuple<Tuple<int, int>, decimal>> _possibleExpansions;
@@ -24,11 +37,14 @@ namespace StupifyConsoleApp.AI
             _controller = new AIController(db, segment, user);
         }
 
-        private void ResetProperties(double exp, decimal thr, double brk)
+        private void ResetProperties(double exp, double rmv, decimal addThr, decimal rmvThr, double brk)
         {
             _expansionChance = exp;
-            _considerationThreshold = thr;
+            _removeChance = rmv;
+            _considerationThreshold = addThr;
+            _removeThreshold = rmvThr;
             _breakChance = brk;
+            _stop = false;
 
             _rnd = new Random();
             _blocks = _controller.Blocks;
@@ -63,42 +79,86 @@ namespace StupifyConsoleApp.AI
             }
         }
 
-        private async Task<decimal> Test(int x, int y)
+        private async Task<decimal> Test(int x, int y, bool rmv = false)
         {
-            await _controller.AddBlock(x, y);
-            var output = _controller.Output();
-            await _controller.RemoveBlock(x, y);
+            decimal output;
+            if (!rmv)
+            {
+                await _controller.AddBlock(x, y);
+                output = _controller.Output();
+                await _controller.RemoveBlock(x, y);
+            }
+            else
+            {
+                await _controller.RemoveBlock(x, y);
+                output = _controller.Output();
+                await _controller.AddBlock(x, y);
+            }
 
             return output;
         }
 
-        private Tuple<int, int> GetChoice()
+        private Tuple<int, int> GetChoice(bool ascending = false)
         {
             if (_possibleExpansions.Count == 0) return null;
-            _possibleExpansions.Sort((a, b) => b.Item2.CompareTo(a.Item2));
+            if (!ascending)
+            {
+                _possibleExpansions.Sort((a, b) => b.Item2.CompareTo(a.Item2));
+            }
+            else
+            {
+                _possibleExpansions.Sort((a, b) => a.Item2.CompareTo(b.Item2));
+            }
+
             var bound = _possibleExpansions.Count > 3
                 ? (int) Math.Ceiling(_possibleExpansions.Count / 3d)
                 : _possibleExpansions.Count;
             return _possibleExpansions[_rnd.Next(0, bound)].Item1;
         }
 
-        public async Task Run(double exp, decimal thr, double brk)
+        public async Task Run(double exp, double rmv, decimal addThr, decimal rmvThr, double brk)
         {
-            ResetProperties(exp, thr, brk);
+            Status = AIStatus.Working;
+            ResetProperties(exp, rmv, addThr, rmvThr, brk);
 
             var it = 0;
-            while (it++ < 200)
+            while (it++ < 300 && !_stop)
             {
                 _possibleExpansions = new List<Tuple<Tuple<int, int>, decimal>>();
+                Tuple<int, int> choice = null;
 
                 if (_rnd.NextDouble() < _expansionChance)
+                {
                     await NewExpansion();
+                    choice = GetChoice();
+                    if(choice !=null)
+                        await _controller.AddBlock(choice.Item1, choice.Item2);
+                }
+                else if (_rnd.NextDouble() < _removeChance && _placedBlocks.Count > 0)
+                {
+                    await RemoveBlock();
+                    choice = GetChoice(true);
+                    if (choice != null)
+                        await _controller.RemoveBlock(choice.Item1, choice.Item2);
+                }
                 else
+                {
                     await ExpandExisting();
+                    choice = GetChoice();
+                    if (choice != null)
+                        await _controller.AddBlock(choice.Item1, choice.Item2);
+                }
 
-                var choice = GetChoice();
+
                 await AddBlock(choice);
             }
+
+            Status = (_stop) ? AIStatus.Stopped : AIStatus.Finished;
+        }
+
+        public void Stop()
+        {
+            _stop = true;
         }
 
         private async Task NewExpansion()
@@ -118,6 +178,22 @@ namespace StupifyConsoleApp.AI
                 var output = await Test(x, y);
                 _possibleExpansions.Add(new Tuple<Tuple<int, int>, decimal>(new Tuple<int, int>(x, y),
                     output));
+            }
+        }
+
+        private async Task RemoveBlock()
+        {
+            var output = _controller.Output();
+            foreach (var block in _placedBlocks)
+            {
+                var x = block.Item1;
+                var y = block.Item2;
+                var tmp = await Test(x, y, true);
+                if (tmp > output || output - tmp < _removeThreshold)
+                {
+                    _possibleExpansions.Add(new Tuple<Tuple<int, int>, decimal>(new Tuple<int, int>(x, y),
+                        tmp));
+                }
             }
         }
 
@@ -143,9 +219,7 @@ namespace StupifyConsoleApp.AI
                                         tmp));
                         }
                     }
-                    catch (IndexOutOfRangeException)
-                    {
-                    }
+                    catch (IndexOutOfRangeException) { }
             }
         }
     }

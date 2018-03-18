@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Discord.Commands;
+
 using StupifyConsoleApp.Commands.Conditions;
 using StupifyConsoleApp.TicTacZapManagement;
 

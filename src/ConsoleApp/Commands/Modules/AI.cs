@@ -1,23 +1,38 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Microsoft.EntityFrameworkCore;
+
 using StupifyConsoleApp.DataModels;
 using StupifyConsoleApp.TicTacZapManagement;
 
 namespace StupifyConsoleApp.Commands.Modules
 {
+    [Group("Solve")]
     public class AI : StupifyModuleBase
     {
         private const decimal ConsiderationThreshold = 30;
+        private const decimal RemoveThreshold = 20;
         private const double ExpansionChance = 0.1;
+        private const double RemoveChance = 0.05;
         private const double BreakChance = 0.2;
 
-        [Command("Solve", RunMode = RunMode.Async)]
-        public async Task Solve(int segmentId, decimal thr = ConsiderationThreshold, double exp = ExpansionChance,
-            double brk = BreakChance)
+        private static readonly Dictionary<int, StupifyConsoleApp.AI.AI> AiInstances = new Dictionary<int, StupifyConsoleApp.AI.AI>();
+
+        [Command(RunMode = RunMode.Async)]
+        public async Task Solve(int segmentId, decimal addThr = ConsiderationThreshold,
+            decimal rmvThr = RemoveThreshold,
+            double exp = ExpansionChance, double rmv = RemoveChance, double brk = BreakChance)
         {
             var user = await this.GetUserAsync();
+            if (AiInstances.ContainsKey(user.UserId))
+            {
+                await ReplyAsync(
+                    $"you already have an AI instance running, you can stop it using {Config.CommandPrefix} Solve Stop");
+                return;
+            }
+
             if (!await this.UserHasSegmentAsync(segmentId))
             {
                 await ReplyAsync(Responses.SegmentOwnershipProblem);
@@ -31,42 +46,74 @@ namespace StupifyConsoleApp.Commands.Modules
                 return;
             }
 
-            await RunAI(Db, segment, user, thr, exp, brk);
+            await RunAI(Db, segment, user, addThr, rmvThr, exp, rmv, brk);
         }
 
-        [Command("Solve")]
-        public async Task Solve(decimal thr = ConsiderationThreshold, double exp = ExpansionChance,
-            double brk = BreakChance)
+        [Command]
+        public async Task Solve(decimal addThr = ConsiderationThreshold, decimal rmvThr = RemoveThreshold,
+            double exp = ExpansionChance, double rmv = RemoveChance, double brk = BreakChance)
         {
             var user = await this.GetUserAsync();
             var id = TicTacZapController.GetUserSegmentSelection(user.UserId);
 
             if (id != null)
-                await Solve((int) id, thr, exp, brk);
+                await Solve((int) id, addThr, rmvThr, exp, rmv, brk);
             else
                 await ReplyAsync(Responses.SelectSegmentMessage);
         }
 
-        private async Task RunAI(BotContext db, Segment segment, User user, decimal thr, double exp, double brk)
+        [Command("Stop")]
+        public async Task Stop()
+        {
+            var user = await this.GetUserAsync();
+            if (!AiInstances.ContainsKey(user.UserId))
+            {
+                await ReplyAsync("you have no AI instances running");
+                return;
+            }
+
+            var msg = await ReplyAsync("stopping.");
+            var instance = AiInstances[user.UserId];
+            instance.Stop();
+            await msg.ModifyAsync(message => message.Content = "stopped.");
+        }
+
+        private async Task RunAI(BotContext db, Segment segment, User user, decimal addThr, decimal rmvThr, double exp,
+            double rmv, double brk)
         {
             var aiInstance = new StupifyConsoleApp.AI.AI(Db, segment, user);
-            var ai = Task.Run(() => aiInstance.Run(exp, thr, brk));
+            AiInstances.Add(user.UserId, aiInstance);
+
+            var ai = Task.Run(() => aiInstance.Run(exp, rmv, addThr, rmvThr, brk));
             var msg = await ReplyAsync("hang on...");
+
             while (!ai.IsCompleted)
             {
-                await UpdateMsg(msg, segment);
+                await UpdateMsg(msg, segment, aiInstance.Status);
                 await Task.Delay(2000);
             }
 
-            await UpdateMsg(msg, segment, true);
+            await UpdateMsg(msg, segment, aiInstance.Status);
         }
 
-        private async Task UpdateMsg(IUserMessage msg, Segment segment, bool done = false)
+        private async Task UpdateMsg(IUserMessage msg, Segment segment, StupifyConsoleApp.AI.AI.AIStatus status)
         {
             var str = await TicTacZapController.RenderSegmentAsync(segment.SegmentId, Db) + "\n";
-            str += done ? "done." : "working...";
+            switch (status)
+            {
+                case StupifyConsoleApp.AI.AI.AIStatus.Finished:
+                    str += "done.";
+                    break;
+                case StupifyConsoleApp.AI.AI.AIStatus.Stopped:
+                    str += "stopped.";
+                    break;
+                case StupifyConsoleApp.AI.AI.AIStatus.Working:
+                    str += "working...";
+                    break;
+            }
 
             await msg.ModifyAsync(message => message.Content = $"```{str}```");
         }
+
     }
 }
