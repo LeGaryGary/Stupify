@@ -33,7 +33,7 @@ namespace StupifyConsoleApp.DataModels
 
             await context.ServerUsers.AddAsync(new ServerUser
             {
-                User = await userTask ?? new User {DiscordUserId = discordUserId},
+                User = await userTask ?? new User {DiscordUserId = discordUserId, Balance = 1000},
                 Server = await serverTask ?? new Server {DiscordGuildId = discordServerId}
             });
             await context.SaveChangesAsync();
@@ -63,20 +63,18 @@ namespace StupifyConsoleApp.DataModels
             return await context.ServerStoryParts.FirstAsync(ssp => ssp.ServerStoryPartId == sspId);
         }
 
-        public static Dictionary<Resource, decimal> GetSegmentResources(this BotContext context, int segmentId)
+        public static async Task<Dictionary<Resource, decimal>> GetSegmentResourcesAsync(this BotContext context, int segmentId)
         {
             var dict = new Dictionary<Resource, decimal>();
-            var segment = context.Segments.First(s => s.SegmentId == segmentId);
-
-            dict.Add(Resource.Energy, segment.Energy);
-
+            var segment = await context.Segments.FirstAsync(s => s.SegmentId == segmentId);
+            
             return dict;
         }
 
-        public static Dictionary<Resource, decimal> GetSegmentResourcePerTick(this BotContext context, int segmentId)
+        public static async Task<Dictionary<Resource, decimal>> GetSegmentResourcePerTickAsync(this BotContext context, int segmentId)
         {
             var dict = new Dictionary<Resource, decimal>();
-            var segment = context.Segments.First(s => s.SegmentId == segmentId);
+            var segment = await context.Segments.FirstAsync(s => s.SegmentId == segmentId);
 
             dict.Add(Resource.Energy, segment.EnergyPerTick);
             dict.Add(Resource.Unit, segment.UnitsPerTick);

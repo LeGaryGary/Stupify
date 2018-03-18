@@ -3,13 +3,15 @@ using System.Data;
 
 namespace TicTacZap.Blocks.Offence
 {
-    public abstract class BaseBeamer : BaseBlock, IOffenceBlock
+    public abstract class BaseBeamer : BaseBlock, IOffenceBlock, IEnergyConsumer
     {
         private readonly int _x;
         private readonly int _y;
         private readonly Func<int,int,Direction,Segment,(int x, int y)?> _targetLocator;
 
+        public int EnergyConsumption { get; protected set; }
         protected int BeamPower;
+
 
         protected BaseBeamer(int xInSegment, int yInSegment, Func<int,int,Direction,Segment,(int x, int y)?> targetLocator)
         {
@@ -29,6 +31,7 @@ namespace TicTacZap.Blocks.Offence
 
             enemySegment.Blocks[x, y].DestroyThis();
             enemySegment.Blocks[x, y] = null;
+            enemySegment.UpdateSegmentOutput();
         }
 
         private static (int x, int y)? DefaultTargeter(int x, int y, Direction enemyDirection, Segment enemySegment)

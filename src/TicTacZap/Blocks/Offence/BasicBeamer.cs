@@ -12,6 +12,7 @@ namespace TicTacZap.Blocks.Offence
             Upkeep = 0;
             MaxHealth = 50;
             Health = MaxHealth;
+            EnergyConsumption = 10;
             BeamPower = 1;
         }
     }

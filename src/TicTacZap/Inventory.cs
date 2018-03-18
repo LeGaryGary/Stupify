@@ -22,7 +22,7 @@ namespace TicTacZap
         {
             if (Blocks.Count == 0) return "";
 
-            var str = "Inventory:" + Environment.NewLine;
+            var str = string.Empty;
 
             foreach (var block in Blocks) if(block.Value != 0) str += $"`{block.Key} block x{block.Value}`" + Environment.NewLine;
 

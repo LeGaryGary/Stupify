@@ -23,7 +23,7 @@ namespace StupifyConsoleApp.TicTacZapManagement
             }
             else
             {
-                Universe = new Universe(1000);
+                Universe = new Universe(999);
                 SaveUniverseFileAsync().GetAwaiter().GetResult();
             }
         }

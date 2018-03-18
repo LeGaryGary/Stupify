@@ -73,8 +73,7 @@ namespace StupifyConsoleApp.Commands
         {
             var dbSegment = await moduleBase.Db.Segments.FirstAsync(s => s.SegmentId == segmentId);
             var segmentOutput = await Segments.GetOutput(segmentId);
-
-            dbSegment.UnitsPerTick = segmentOutput[Resource.Unit];
+            
             dbSegment.EnergyPerTick = segmentOutput[Resource.Energy];
 
             await moduleBase.Db.SaveChangesAsync();

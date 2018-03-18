@@ -66,7 +66,7 @@ namespace TicTacZap
 
             if (health == 1) return "💚";
 
-            return health < 0.5m ? "❤" : "💛";
+            return health < 0.5m ? "❤️" : "💛";
         }
     }
 }

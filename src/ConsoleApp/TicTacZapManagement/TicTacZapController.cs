@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Discord;
 using Microsoft.EntityFrameworkCore;
 using StupifyConsoleApp.Client;
 using StupifyConsoleApp.DataModels;
 using TicTacZap;
+using TicTacZap.Blocks;
 using TicTacZap.Blocks.Offence;
 using Direction = TicTacZap.Direction;
 
@@ -26,8 +26,8 @@ namespace StupifyConsoleApp.TicTacZapManagement
         internal static List<(int attackingSegment, int defendingSegment, Direction direction, IUserMessage message)> CurrentWars { get; } = new List<(int, int, Direction, IUserMessage)>();
 
         public static ShopInventory Shop { get; } = new ShopInventory();
-        
-        private static SemaphoreSlim _semaphoreRunLock = new SemaphoreSlim(1, 1);
+
+        public static int Tick { get; private set; }
 
         public static async Task Run()
         {
@@ -38,13 +38,11 @@ namespace StupifyConsoleApp.TicTacZapManagement
                 timer.Start();
                 while (true)
                 {
-                    await _semaphoreRunLock.WaitAsync();
+                    Tick++;
 
                     await PerformAttacks();
                     await UpdateBalances();
-
-                    _semaphoreRunLock.Release();
-
+                    
                     await timer.Wait(1000);
                 }
             }
@@ -63,8 +61,8 @@ namespace StupifyConsoleApp.TicTacZapManagement
 
         public static async Task<string> RenderSegmentAsync(int segmentId, BotContext db)
         {
-            var resourcesPerTick = db.GetSegmentResourcePerTick(segmentId);
-            var resources = db.GetSegmentResources(segmentId);
+            var resourcesPerTick = await db.GetSegmentResourcePerTickAsync(segmentId);
+            var resources = await db.GetSegmentResourcesAsync(segmentId);
             var segment = await Segments.GetAsync(segmentId);
             var text = segment.TextRender();
 
@@ -116,8 +114,14 @@ namespace StupifyConsoleApp.TicTacZapManagement
                     var attackingSegment = await Segments.GetAsync(war.attackingSegment);
                     var defendingSegment = await Segments.GetAsync(war.defendingSegment);
 
+                    var remainingTickEnergy = attackingSegment.ResourcePerTick(Resource.Energy);
                     foreach (var block in attackingSegment.Blocks)
                     {
+                        if (block is IEnergyConsumer energyConsumer)
+                        {
+                            if (energyConsumer.EnergyConsumption > remainingTickEnergy) continue;
+                            remainingTickEnergy -= energyConsumer.EnergyConsumption;
+                        }
                         if (block is IOffenceBlock attackBlock)
                         {
                             attackBlock.AttackSegment(war.direction, defendingSegment);
@@ -127,18 +131,29 @@ namespace StupifyConsoleApp.TicTacZapManagement
                     if (defendingSegment.Blocks[4, 4] != null)
                     {
                         await Segments.SetAsync(war.defendingSegment, defendingSegment);
-                        await war.message.ModifyAsync(m => m.Content = defendingSegment.HealthTextRender());
+
+                        var healthTextRender = defendingSegment.HealthTextRender();
+                        if (war.message.Content != healthTextRender) await war.message.ModifyAsync(m => m.Content = $"```{healthTextRender}```");
+
                         continue;
                     }
+                    // ---------- Attacking segment has won ----------
 
+                    // Get the segment owners and make loot transaction
+                    var attackUser = (await context.Segments.Include(s => s.User).FirstAsync(s => s.SegmentId == war.attackingSegment)).User;
+                    var defenceUser = (await context.Segments.Include(s => s.User).FirstAsync(s => s.SegmentId == war.defendingSegment)).User;
+                    var lootAmount = defenceUser.Balance / await context.Segments.Where(s => s.User.UserId == defenceUser.UserId).CountAsync();
+                    MakeTransaction(defenceUser, attackUser, lootAmount);
+
+                    // Delete defending segment
                     await Segments.DeleteSegmentAsync(war.defendingSegment);
                     await UniverseController.DeleteSegment(war.defendingSegment);
-                
                     var removeSeg = await context.Segments.FirstAsync(s => s.SegmentId == war.defendingSegment);
                     context.Segments.Remove(removeSeg);
+                    
                     await context.SaveChangesAsync();
-
-                    await war.message.ModifyAsync(m => m.Content = "Destroyed!");
+                    
+                    await war.message.ModifyAsync(m => m.Content = "```Destroyed!```");
                 }
 
                 foreach (var war in endedWars)
@@ -152,22 +167,15 @@ namespace StupifyConsoleApp.TicTacZapManagement
         {
             using (var db = new BotContext())
             {
-                var segments = await db.Segments.Include(s => s.User).ToArrayAsync();
-                foreach (var segment in segments)
-                    try
-                    {
-                        var user = await db.Users.FirstAsync(u => u.UserId == segment.User.UserId);
+                var bank = await GetBankAsync(db);
 
-                        user.Balance += segment.UnitsPerTick;
-                        segment.Energy += segment.EnergyPerTick;
+                foreach (var dbSegment in await db.Segments.Include(s => s.User).ToArrayAsync())
+                {
+                    var amount = bank.Balance / 100000000000m + dbSegment.UnitsPerTick;
+                    MakeTransaction(bank, dbSegment.User, amount);
+                }
 
-                        await db.SaveChangesAsync();
-                    }
-                    catch (Exception e)
-                    {
-                        await ClientManager.LogAsync(e.ToString());
-                        throw;
-                    }
+                await db.SaveChangesAsync();
             }
         }
 
@@ -236,6 +244,30 @@ namespace StupifyConsoleApp.TicTacZapManagement
             str += $"Health: {info.Health}/{info.MaxHealth}";
 
             return str;
+        }
+
+        public static async Task<User> GetBankAsync(BotContext context)
+        {
+            var bankUser = await context.Users.FirstOrDefaultAsync(u => u.DiscordUserId == -1)
+                            ?? context.Users.Add(new User
+                            {
+                                Balance = 100000000000,
+                                DiscordUserId = -1,
+                            }).Entity;
+
+            await context.SaveChangesAsync();
+
+            return bankUser;
+        }
+
+        public static bool MakeTransaction(User fromUser, User toUser, decimal amount)
+        {
+            if (fromUser.Balance < amount) return false;
+
+            fromUser.Balance -= amount;
+            toUser.Balance += amount;
+
+            return true;
         }
     }
 }

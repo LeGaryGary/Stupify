@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord.Commands;
+using Microsoft.EntityFrameworkCore;
 using StupifyConsoleApp.TicTacZapManagement;
 using TicTacZap;
 using Segment = StupifyConsoleApp.DataModels.Segment;
@@ -25,16 +26,15 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
 
         private static string RenderSegmentList(IEnumerable<Segment> segments)
         {
-            var str = string.Empty;
-            foreach (var segment in segments)
-                str += $"Segment Id: {segment.SegmentId} Output: {segment.UnitsPerTick}" + Environment.NewLine;
-
-            return str;
+            return segments.Aggregate(
+                string.Empty,
+                (current, segment) => 
+                    current + ($"Segment Id: {segment.SegmentId} Output: {segment.UnitsPerTick}" + Environment.NewLine));
         }
 
         private static decimal SegmentPrice(int segmentCount)
         {
-            return Convert.ToDecimal(Math.Pow(2, segmentCount) - 1) * 100;
+            return segmentCount * 100;
         }
 
         [Group("Segment")]
@@ -69,19 +69,23 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
             {
                 var user = await this.GetUserAsync();
 
+                //if (await Db.Segments.Where(s => s.User.UserId == user.UserId).CountAsync() >= 50)
+                //{
+                //    await ReplyAsync("You have reached the maximum number of segments, unable to add more");
+                //}
+
                 var price = SegmentPrice(await this.SegmentCountAsync());
-                if (price > user.Balance)
+                if (!TicTacZapController.MakeTransaction(await this.GetUserAsync(), await TicTacZapController.GetBankAsync(Db), price))
                 {
                     await ReplyAsync(Responses.NotEnoughUnits(price));
                     return;
                 }
-
-                var tuple = await NewSegment(user.UserId);
-                user.Balance -= price;
-
                 await Db.SaveChangesAsync();
+
+                var segment = await NewSegment(user.UserId);
+
                 await ReplyAsync(
-                    $"You have purchased a segment!\r\nId: {tuple.segmentId}\r\nCoordinates: {tuple.coords.Value.x+1}, {tuple.coords.Value.y+1}");
+                    $"You have purchased a segment!\r\nId: {segment.segmentId}\r\nCoordinates: {segment.coords.Value.x+1}, {segment.coords.Value.y+1}");
             }
 
             [Command("Reset")]
@@ -180,7 +184,6 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
                 {
                     UnitsPerTick = 0,
                     EnergyPerTick = 0,
-                    Energy = 0,
                     User = user
                 };
                 await Db.Segments.AddAsync(segment);

@@ -2,11 +2,13 @@
 using Discord;
 using Discord.Commands;
 using Microsoft.EntityFrameworkCore;
+using StupifyConsoleApp.Commands.Conditions;
 using StupifyConsoleApp.DataModels;
 using StupifyConsoleApp.TicTacZapManagement;
 
 namespace StupifyConsoleApp.Commands.Modules
 {
+    [Debug]
     public class AI : StupifyModuleBase
     {
         private const decimal ConsiderationThreshold = 30;

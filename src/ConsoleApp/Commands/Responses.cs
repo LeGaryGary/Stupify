@@ -21,7 +21,7 @@ namespace StupifyConsoleApp.Commands
 
         public static string NotEnoughUnits(decimal price)
         {
-            return $"Come back when you have more money (you need {price} {Resource.Unit} to buy this)";
+            return $"Not enough Units: {price} is required";
         }
     }
 }

@@ -49,7 +49,7 @@ namespace TicTacZap
             return blockType;
         }
 
-        private void UpdateSegmentOutput()
+        public void UpdateSegmentOutput()
         {
             ResourceOutput = new Dictionary<Resource, decimal>();
 
