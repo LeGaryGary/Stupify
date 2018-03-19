@@ -2,10 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Discord;
 using Discord.Commands;
+using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
+using StupifyConsoleApp.Client;
 using StupifyConsoleApp.TicTacZapManagement;
-using TicTacZap;
+using Direction = TicTacZap.Direction;
 using Segment = StupifyConsoleApp.DataModels.Segment;
 
 namespace StupifyConsoleApp.Commands.Modules.TicTacZap
@@ -72,7 +75,7 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
                     await this.ShowSegmentAsync(segmentId, overlayType);
                     return;
                 }
-
+                
                 await ReplyAsync(Responses.SegmentOwnershipProblem);
             }
 
@@ -137,7 +140,26 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
                     return;
                 }
 
-                await ReplyAsync("Something went wrong, we couldn't find your segment in the universe, how odd");
+                await ReplyAsync("Something went wrong, we couldn't find your segment in the universe, how odd...");
+            }
+
+            [Command("Edit")]
+            public async Task EditSegmentCommand(int segmentId)
+            {
+                if (!await this.UserHasSegmentAsync(segmentId))
+                {
+                    await ReplyAsync(Responses.SegmentOwnershipProblem);
+                    return;
+                }
+
+                var userID = Context.User.Id;
+                var message = await ReplyAsync($"```{await TicTacZapController.RenderSegmentAsync(segmentId, Db, new Tuple<int, int>(0, 0))}```");
+                await message.AddReactionAsync(new Emoji("⬆"));
+                await message.AddReactionAsync(new Emoji("⬇"));
+                await message.AddReactionAsync(new Emoji("➡"));
+                await message.AddReactionAsync(new Emoji("⬅"));
+                await message.AddReactionAsync(new Emoji("❌"));
+                ClientManager.NewEditOwner(message.Id, userID);
             }
 
             [Command("Attack")]

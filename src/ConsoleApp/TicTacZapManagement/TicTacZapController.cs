@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Discord;
 using Microsoft.EntityFrameworkCore;
@@ -59,12 +60,19 @@ namespace StupifyConsoleApp.TicTacZapManagement
             return inventory.TextRender();
         }
 
-        public static async Task<string> RenderSegmentAsync(int segmentId, BotContext db)
+        public static async Task<string> RenderSegmentAsync(int segmentId, BotContext db, Tuple<int, int> selection = null)
         {
             var resourcesPerTick = await db.GetSegmentResourcePerTickAsync(segmentId);
             var resources = await db.GetSegmentResourcesAsync(segmentId);
             var segment = await Segments.GetAsync(segmentId);
             var text = segment.TextRender();
+
+            if (selection != null)
+            {
+                var i = selection.Item1 * 29 + selection.Item2 * 3 + 1;
+                var tmp = new StringBuilder(text) {[i] = '#'};
+                text = tmp.ToString();
+            }
 
             foreach (var resource in resourcesPerTick)
             {

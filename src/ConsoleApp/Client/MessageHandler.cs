@@ -75,7 +75,6 @@ namespace StupifyConsoleApp.Client
                 $"Command \"{context.Message}\" in \"{context.Guild.Name}\" took " + sw.ElapsedMilliseconds + "ms",
                 true);
 
-            await Task.Delay(5000);
             await context.Message.DeleteAsync();
             await addMessageNodeTask;
         }

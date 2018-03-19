@@ -13,7 +13,8 @@ namespace StupifyConsoleApp.Client
         {
             Client = new DiscordSocketClient(new DiscordSocketConfig
             {
-                AlwaysDownloadUsers = true
+                AlwaysDownloadUsers = true,
+                MessageCacheSize = 100
             });
             Commands = new CommandService();
             Logger = new Logger(Config.LoggingDirectory);
@@ -22,6 +23,7 @@ namespace StupifyConsoleApp.Client
 
             Client.Log += LogAsync;
             Client.MessageReceived += MessageHandler.Handle;
+            Client.ReactionAdded += ReactionHandler.HandleSegmentEdit;
         }
 
         public static DiscordSocketClient Client { get; }
@@ -42,6 +44,11 @@ namespace StupifyConsoleApp.Client
             await Logger.Log(DateTime.Now.ToString("T") + " " + message, requireDebug);
         }
 
+        public static void NewEditOwner(ulong messageID, ulong userID)
+        {
+            ReactionHandler.NewEditOwner(messageID, userID);
+        }
+
         private static async Task LogAsync(LogMessage message)
         {
             await Logger.Log(message.ToString(), false);
@@ -51,7 +58,7 @@ namespace StupifyConsoleApp.Client
         {
             while (true)
             {
-                await Client.SetGameAsync($"{Config.CommandPrefix}help | Servers: {Client.Guilds.Count}");
+                await Client.SetGameAsync($"{Config.CommandPrefix} help | Servers: {Client.Guilds.Count}");
                 await Task.Delay(60000);
             }
         }
