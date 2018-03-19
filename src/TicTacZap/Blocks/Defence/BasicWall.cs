@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace TicTacZap.Blocks.Defence
+﻿namespace TicTacZap.Blocks.Defence
 {
     public class BasicWall : BaseBlock
     {
