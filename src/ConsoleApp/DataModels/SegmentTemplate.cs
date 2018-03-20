@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace StupifyConsoleApp.DataModels
+﻿namespace StupifyConsoleApp.DataModels
 {
     public class SegmentTemplate
     {

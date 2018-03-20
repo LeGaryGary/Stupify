@@ -24,7 +24,7 @@ namespace StupifyConsoleApp.TicTacZapManagement
         private static Dictionary<int, int?> UserSegmentSelection { get; } = new Dictionary<int, int?>();
         private static Dictionary<int, int?> UserTemplateSelection { get; } = new Dictionary<int, int?>();
 
-        internal static List<(int attackingSegment, int defendingSegment, Direction direction, IUserMessage message)> CurrentWars { get; } = new List<(int, int, Direction, IUserMessage)>();
+        internal static List<(int attackingSegment, int defendingSegment, Direction direction, IUserMessage attackingmessage, Queue<string> battlefeed)> CurrentWars { get; } = new List<(int, int, Direction, IUserMessage, Queue<string>)>();
 
         public static ShopInventory Shop { get; } = new ShopInventory();
 
@@ -32,7 +32,6 @@ namespace StupifyConsoleApp.TicTacZapManagement
 
         public static async Task Run()
         {
-            
             try
             {
                 var timer = new Stopwatch();
@@ -109,7 +108,7 @@ namespace StupifyConsoleApp.TicTacZapManagement
         {
             using (var context = new BotContext())
             {
-                var endedWars = new List<(int, int, Direction, IUserMessage)>();
+                var endedWars = new List<(int, int, Direction, IUserMessage, Queue<string>)>();
                 foreach (var war in CurrentWars)
                 {
                     if (!await context.Segments.AnyAsync(s => s.SegmentId == war.attackingSegment) ||
@@ -123,6 +122,7 @@ namespace StupifyConsoleApp.TicTacZapManagement
                     var defendingSegment = await Segments.GetAsync(war.defendingSegment);
 
                     var remainingTickEnergy = attackingSegment.ResourcePerTick(Resource.Energy);
+                    var blocksAttacking = 0;
                     foreach (var block in attackingSegment.Blocks)
                     {
                         if (block is IEnergyConsumer energyConsumer)
@@ -130,18 +130,28 @@ namespace StupifyConsoleApp.TicTacZapManagement
                             if (energyConsumer.EnergyConsumption > remainingTickEnergy) continue;
                             remainingTickEnergy -= energyConsumer.EnergyConsumption;
                         }
-                        if (block is IOffenceBlock attackBlock)
-                        {
-                            attackBlock.AttackSegment(war.direction, defendingSegment);
-                        }
+
+                        if (!(block is IOffenceBlock attackBlock)) continue;
+
+                        attackBlock.AttackSegment(war.direction, defendingSegment);
+                        blocksAttacking++;
                     }
+
+                    war.battlefeed.Enqueue(attackingSegment.Blocks.OfType<IOffenceBlock>().Any()
+                        ? $"{Tick}:: {Math.Round((decimal) blocksAttacking / attackingSegment.Blocks.OfType<IOffenceBlock>().Count() * 100, 2)} of attacking blocks had enough energy!"
+                        : $"{Tick}:: There are no offensive blocks!");
+                    if (war.battlefeed.Count > 5) war.battlefeed.Dequeue();
 
                     if (defendingSegment.Blocks[4, 4] != null)
                     {
                         await Segments.SetAsync(war.defendingSegment, defendingSegment);
 
-                        var healthTextRender = defendingSegment.HealthTextRender();
-                        if (war.message.Content != healthTextRender && Tick%5 == 0) await war.message.ModifyAsync(m => m.Content = $"```{healthTextRender}```");
+                        var healthTextRender = attackingSegment.HealthTextRender() + Environment.NewLine;
+                        foreach (var str in war.battlefeed)
+                        {
+                            healthTextRender += str + Environment.NewLine;
+                        }
+                        if (war.attackingmessage.Content != healthTextRender && Tick%2 == 0) await war.attackingmessage.ModifyAsync(m => m.Content = $"```{healthTextRender}```");
 
                         continue;
                     }
@@ -161,7 +171,7 @@ namespace StupifyConsoleApp.TicTacZapManagement
                     
                     await context.SaveChangesAsync();
                     
-                    await war.message.ModifyAsync(m => m.Content = "```Destroyed!```");
+                    await war.attackingmessage.ModifyAsync(m => m.Content = "```Your opponent has been destroyed!```");
                 }
 
                 foreach (var war in endedWars)

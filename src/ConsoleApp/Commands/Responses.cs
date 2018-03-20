@@ -1,6 +1,4 @@
-﻿using TicTacZap;
-
-namespace StupifyConsoleApp.Commands
+﻿namespace StupifyConsoleApp.Commands
 {
     public static class Responses
     {

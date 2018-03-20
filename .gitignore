@@ -265,3 +265,5 @@ __pycache__/
 /ConsoleApp/Inventories
 *.INV
 *.SEG
+/.vscode/launch.json
+/.vscode/tasks.json
