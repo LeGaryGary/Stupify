@@ -4,54 +4,55 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using Microsoft.Extensions.Logging;
 
 namespace StupifyConsoleApp.Client
 {
-    public static class ClientManager
+    public class ClientManager
     {
-        static ClientManager()
+        private readonly DiscordSocketClient _client;
+
+        public ClientManager(IMessageHandler messageHandler, ILogger<ClientManager> logger, DiscordSocketClient client)
         {
-            Client = new DiscordSocketClient(new DiscordSocketConfig
+            _client = client;
+
+            _client.MessageReceived += messageHandler.Handle;
+            _client.Log += logMessage =>
             {
-                AlwaysDownloadUsers = true
-            });
-            Commands = new CommandService();
-            Logger = new Logger(Config.LoggingDirectory);
-
-            Commands.AddModulesAsync(Assembly.GetEntryAssembly()).GetAwaiter().GetResult();
-
-            Client.Log += LogAsync;
-            Client.MessageReceived += MessageHandler.Handle;
+                switch (logMessage.Severity)
+                {
+                    case LogSeverity.Critical:
+                        logger.LogCritical(logMessage.Message);
+                        break;
+                    case LogSeverity.Error:
+                        logger.LogError(logMessage.Message);
+                        break;
+                    case LogSeverity.Warning:
+                        logger.LogWarning(logMessage.Message);
+                        break;
+                    case LogSeverity.Info:
+                        logger.LogInformation(logMessage.Message);
+                        break;
+                    case LogSeverity.Verbose:
+                        logger.LogDebug(logMessage.Message);
+                        break;
+                    case LogSeverity.Debug:
+                        logger.LogTrace(logMessage.Message);
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+                return Task.CompletedTask;
+            };
         }
 
-        public static DiscordSocketClient Client { get; }
-
-        public static CommandService Commands { get; }
-
-        private static Logger Logger { get; }
-
-        public static async Task Start()
+        public async Task Start()
         {
-            await Client.LoginAsync(TokenType.Bot, Config.DiscordBotUserToken);
-            await Client.StartAsync();
-            await SetStatus();
-        }
-
-        public static async Task LogAsync(string message, bool requireDebug = false)
-        {
-            await Logger.Log(DateTime.Now.ToString("T") + " " + message, requireDebug);
-        }
-
-        private static async Task LogAsync(LogMessage message)
-        {
-            await Logger.Log(message.ToString(), false);
-        }
-
-        private static async Task SetStatus()
-        {
+            await _client.LoginAsync(TokenType.Bot, Config.DiscordBotUserToken);
+            await _client.StartAsync();
             while (true)
             {
-                await Client.SetGameAsync($"{Config.CommandPrefix}help | Servers: {Client.Guilds.Count}");
+                await _client.SetGameAsync($"{Config.CommandPrefix}help | Servers: {_client.Guilds.Count}");
                 await Task.Delay(60000);
             }
         }

@@ -1,32 +1,31 @@
 ﻿using System.Diagnostics;
-using System.Linq;
 using System.Threading.Tasks;
-using BotDataGraph.MessageAnalyser;
-using BotDataGraph.MessageAnalyser.Models;
 using Discord.Commands;
 using Discord.WebSocket;
+using Microsoft.Extensions.Logging;
 using StupifyConsoleApp.DataModels;
 
 namespace StupifyConsoleApp.Client
 {
-    internal static class MessageHandler
+    public class MessageHandler: IMessageHandler
     {
-        private static readonly Neo4JMessageHandler Neo4JMessageHandler;
+        private readonly DiscordSocketClient _client;
+        private readonly CommandService _commandService;
+        private readonly ILogger<MessageHandler> _logger;
 
-        static MessageHandler()
+        MessageHandler(DiscordSocketClient client, CommandService commandService, ILogger<MessageHandler> logger)
         {
-            if (Config.Neo4JMessageHandlerEnabled)
-                Neo4JMessageHandler = new Neo4JMessageHandler(Config.Neo4JUri, Config.Neo4JAuth);
+            _client = client;
+            _commandService = commandService;
+            _logger = logger;
         }
 
-        internal static async Task Handle(SocketMessage messageParam)
+        public async Task Handle(SocketMessage messageParam)
         {
             if (!(messageParam is SocketUserMessage message) || messageParam.Author.IsBot) return;
 
             var argPos = 0;
-            var context = new SocketCommandContext(ClientManager.Client, message);
-
-            var addMessageNodeTask = PassMessageToNeo4J(context);
+            var context = new SocketCommandContext(_client, message);
 
             using (var db = new BotContext())
             {
@@ -34,21 +33,19 @@ namespace StupifyConsoleApp.Client
                 if (serverUser.Muted)
                 {
                     await context.Message.DeleteAsync();
-                    await addMessageNodeTask;
                     return;
                 }
             }
 
             if (!(message.HasStringPrefix(Config.CommandPrefix + " ", ref argPos)
-                  || message.HasMentionPrefix(ClientManager.Client.CurrentUser, ref argPos)))
+                  || message.HasMentionPrefix(_client.CurrentUser, ref argPos)))
             {
-                await addMessageNodeTask;
                 return;
             }
 
             var sw = new Stopwatch();
             sw.Start();
-            var result = await ClientManager.Commands.ExecuteAsync(context, argPos);
+            var result = await _commandService.ExecuteAsync(context, argPos, Config.ServiceProvider);
             if (!result.IsSuccess)
                 switch (result.Error)
                 {
@@ -63,37 +60,22 @@ namespace StupifyConsoleApp.Client
                         await context.Channel.SendMessageAsync(result.ErrorReason);
                         break;
                     default:
-                        await ClientManager.LogAsync(
-                            $"\r\nThe message: {context.Message} \r\nHas caused the following error: {result.ErrorReason}\r\nIn the server: {context.Guild.Name}");
+                        _logger.LogError("The message: {Message} \r\nHas caused the following error: {ErrorReason}\r\nIn the server: {Guild}", context.Message, result.ErrorReason, context.Guild.Name);
                         await context.Channel.SendMessageAsync(
                             "Internal error! You may shout at the developers here: https://discord.gg/nb5rUhd");
                         break;
                 }
             sw.Stop();
 
-            await ClientManager.LogAsync(
-                $"Command \"{context.Message}\" in \"{context.Guild.Name}\" took " + sw.ElapsedMilliseconds + "ms",
-                true);
+            _logger.LogTrace("Command {Message} in {Guild} took {ElapsedMilliseconds}ms", context.Message, context.Guild.Name, sw.ElapsedMilliseconds);
 
             await Task.Delay(5000);
             await context.Message.DeleteAsync();
-            await addMessageNodeTask;
         }
+    }
 
-        private static async Task PassMessageToNeo4J(SocketCommandContext context)
-        {
-            if (Config.Neo4JMessageHandlerEnabled)
-            {
-                var neo4JMessage = new Message
-                {
-                    Time = context.Message.CreatedAt.DateTime,
-                    UserId = context.User.Id,
-                    Content = context.Message.Content,
-                    ServerId = context.Guild.Id,
-                    ChannelId = context.Channel.Id
-                };
-                await Neo4JMessageHandler.Handle(neo4JMessage);
-            }
-        }
+    public interface IMessageHandler
+    {
+        Task Handle(SocketMessage messageParam);
     }
 }
