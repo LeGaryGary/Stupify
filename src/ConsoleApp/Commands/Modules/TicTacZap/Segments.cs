@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord.Commands;
-using Microsoft.EntityFrameworkCore;
 using StupifyConsoleApp.TicTacZapManagement;
 using TicTacZap;
 using Segment = StupifyConsoleApp.DataModels.Segment;
@@ -181,8 +180,8 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
                     var attackMessage = await ReplyAsync("```Loading...```");
                     await ReplyAsync("Defender:");
                     var defenceMessage = await ReplyAsync("```Loading...```");
-                    TicTacZapController.CurrentWars.Add((defendingSegment.Value, segment.Value, opposite, attackMessage));
-                    TicTacZapController.CurrentWars.Add((segment.Value, defendingSegment.Value, direction, defenceMessage));
+                    TicTacZapController.CurrentWars.Add((segment.Value, defendingSegment.Value, direction, attackMessage, new Queue<string>()));
+                    TicTacZapController.CurrentWars.Add((defendingSegment.Value, segment.Value, opposite, defenceMessage, new Queue<string>()));
                     return;
                 }
 

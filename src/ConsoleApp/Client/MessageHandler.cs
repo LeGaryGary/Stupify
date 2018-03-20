@@ -68,8 +68,7 @@ namespace StupifyConsoleApp.Client
             sw.Stop();
 
             _logger.LogTrace("Command {Message} in {Guild} took {ElapsedMilliseconds}ms", context.Message, context.Guild.Name, sw.ElapsedMilliseconds);
-
-            await Task.Delay(5000);
+            
             await context.Message.DeleteAsync();
         }
     }

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace TicTacZap.Blocks
+﻿namespace TicTacZap.Blocks
 {
     public abstract class BaseBlock : IBlock
     {
