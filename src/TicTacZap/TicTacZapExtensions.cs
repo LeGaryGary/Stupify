@@ -59,6 +59,30 @@ namespace TicTacZap
             return block;
         }
 
+        public static Direction Opposite(this Direction direction)
+        {
+            Direction opposite;
+            switch (direction)
+            {
+                case Direction.Up:
+                    opposite = Direction.Down;
+                    break;
+                case Direction.Down:
+                    opposite = Direction.Up;
+                    break;
+                case Direction.Left:
+                    opposite = Direction.Right;
+                    break;
+                case Direction.Right:
+                    opposite = Direction.Left;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(direction), direction, null);
+            }
+
+            return opposite;
+        }
+
         public static string GetUnicodeHealth(this IHealth healthObject)
         {
             var health = (decimal) healthObject.Health / healthObject.MaxHealth;

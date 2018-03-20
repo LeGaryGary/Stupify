@@ -3,8 +3,13 @@ using StupifyConsoleApp.DataModels;
 
 namespace StupifyConsoleApp.Commands
 {
-    public abstract class StupifyModuleBase : ModuleBase<SocketCommandContext>
+    public abstract class StupifyModuleBase : ModuleBase<CommandContext>
     {
-        public BotContext Db { get; } = new BotContext();
+        public readonly BotContext Db;
+
+        protected StupifyModuleBase(BotContext db)
+        {
+            Db = db;
+        }
     }
 }

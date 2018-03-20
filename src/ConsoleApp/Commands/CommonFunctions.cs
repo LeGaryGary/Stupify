@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using StupifyConsoleApp.Commands.Modules.TicTacZap;
 using StupifyConsoleApp.DataModels;
 using StupifyConsoleApp.TicTacZapManagement;
@@ -13,6 +14,8 @@ namespace StupifyConsoleApp.Commands
 {
     public static class CommonFunctions
     {
+        private static TicTacZapController TicTacZapController => Config.ServiceProvider.GetService<TicTacZapController>();
+
         public static async Task<User> GetUserAsync(this StupifyModuleBase moduleBase)
         {
             return await moduleBase.Db.Users.FirstAsync(u => u.DiscordUserId == (long) moduleBase.Context.User.Id);
@@ -37,21 +40,18 @@ namespace StupifyConsoleApp.Commands
 
         public static async Task ShowSegmentAsync(this StupifyModuleBase moduleBase, int segmentId)
         {
-            await TicTacZapController.SetUserSegmentSelection(
-                (await moduleBase.GetUserAsync()).UserId, segmentId, moduleBase.Db);
+            await TicTacZapController.SetUserSegmentSelection((await moduleBase.GetUserAsync()).UserId, segmentId);
             await moduleBase.Context.Channel.SendMessageAsync(
-                $"```{await TicTacZapController.RenderSegmentAsync(segmentId, moduleBase.Db)}```");
+                $"```{await TicTacZapController.RenderSegmentAsync(segmentId)}```");
         }
 
         public static async Task ShowSegmentAsync(this StupifyModuleBase moduleBase, int segmentId, Overlay overlay)
         {
-            await TicTacZapController.SetUserSegmentSelection(
-                (await moduleBase.GetUserAsync()).UserId, segmentId, moduleBase.Db);
+            await TicTacZapController.SetUserSegmentSelection((await moduleBase.GetUserAsync()).UserId, segmentId);
             switch (overlay)
             {
                 case Overlay.Health:
-                    await moduleBase.Context.Channel.SendMessageAsync(
-                        $"```{await TicTacZapController.RenderSegmentHealthAsync(segmentId)}```");
+                    await moduleBase.Context.Channel.SendMessageAsync($"```{await TicTacZapController.RenderSegmentHealthAsync(segmentId)}```");
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(overlay), overlay, null);
@@ -60,10 +60,7 @@ namespace StupifyConsoleApp.Commands
 
         public static async Task ShowTemplateAsync(this StupifyModuleBase moduleBase, int templateId)
         {
-            await TicTacZapController.SetUserTemplateSelection(
-                (await moduleBase.GetUserAsync()).UserId,
-                templateId,
-                moduleBase.Db);
+            await TicTacZapController.SetUserTemplateSelection((await moduleBase.GetUserAsync()).UserId, templateId);
 
             await moduleBase.Context.Channel.SendMessageAsync(
                 $"```{(await SegmentTemplates.GetAsync(templateId)).TextRender()}```");

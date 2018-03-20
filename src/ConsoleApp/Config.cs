@@ -1,6 +1,8 @@
 ﻿using System;
 using System.IO;
 using System.Reflection;
+using System.Runtime.InteropServices.WindowsRuntime;
+using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
@@ -8,6 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using StupifyConsoleApp.Client;
 using StupifyConsoleApp.DataModels;
+using StupifyConsoleApp.TicTacZapManagement;
 
 namespace StupifyConsoleApp
 {
@@ -41,11 +44,16 @@ namespace StupifyConsoleApp
                 var collection = new ServiceCollection()
                     .AddLogging()
                     .AddDbContext<BotContext>(options => options.UseSqlServer(DbConnectionString))
+                    .AddSingleton<IDiscordClient>(sp => new DiscordSocketClient(new DiscordSocketConfig{AlwaysDownloadUsers = true}))
                     .AddSingleton<IMessageHandler, MessageHandler>()
-                    .AddSingleton(sp => new DiscordSocketConfig{AlwaysDownloadUsers = true})
-                    .AddSingleton<DiscordSocketClient>()
-                    .AddSingleton(sp => new CommandService().AddModulesAsync(Assembly.GetEntryAssembly()).GetAwaiter().GetResult())
-                    ;
+                    .AddSingleton(sp =>
+                    {
+                        var commandService = new CommandService();
+                        commandService.AddModulesAsync(Assembly.GetEntryAssembly()).GetAwaiter().GetResult();
+                        return commandService;
+                    })
+                    .AddSingleton<ClientManager>()
+                    .AddSingleton<TicTacZapController>();
                 return collection.BuildServiceProvider();
             }
         }

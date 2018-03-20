@@ -12,11 +12,18 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
 {
     public class SegmentTemplate : StupifyModuleBase
     {
+        private readonly TicTacZapController _tacZapController;
+
+        public SegmentTemplate(BotContext db, TicTacZapController tacZapController) : base(db)
+        {
+            _tacZapController = tacZapController;
+        }
+
         [Command("SaveTemplate")]
         public async Task SaveTemplateCommand()
         {
             var user = await this.GetUserAsync();
-            var userSelection = TicTacZapController.GetUserSegmentSelection(user.UserId);
+            var userSelection = _tacZapController.GetUserSegmentSelection(user.UserId);
             if (userSelection == null)
             {
                 await ReplyAsync(Responses.SelectSegmentMessage);
@@ -70,8 +77,8 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
         public async Task ApplyTemplateCommand()
         {
             var user = await this.GetUserAsync();
-            var selectedSegment = TicTacZapController.GetUserSegmentSelection(user.UserId);
-            var selectedTemplate = TicTacZapController.GetUserTemplateSelection(user.UserId);
+            var selectedSegment = _tacZapController.GetUserSegmentSelection(user.UserId);
+            var selectedTemplate = _tacZapController.GetUserTemplateSelection(user.UserId);
 
             if (selectedSegment == null)
             {

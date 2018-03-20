@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Threading.Tasks;
+using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
@@ -9,12 +10,14 @@ namespace StupifyConsoleApp.Client
 {
     public class MessageHandler: IMessageHandler
     {
-        private readonly DiscordSocketClient _client;
+        private readonly BotContext _db;
+        private readonly IDiscordClient _client;
         private readonly CommandService _commandService;
         private readonly ILogger<MessageHandler> _logger;
 
-        MessageHandler(DiscordSocketClient client, CommandService commandService, ILogger<MessageHandler> logger)
+        public MessageHandler(BotContext db, IDiscordClient client, CommandService commandService, ILogger<MessageHandler> logger)
         {
+            _db = db;
             _client = client;
             _commandService = commandService;
             _logger = logger;
@@ -25,16 +28,13 @@ namespace StupifyConsoleApp.Client
             if (!(messageParam is SocketUserMessage message) || messageParam.Author.IsBot) return;
 
             var argPos = 0;
-            var context = new SocketCommandContext(_client, message);
-
-            using (var db = new BotContext())
+            var context = new CommandContext(_client, message);
+            
+            var serverUser = await _db.GetServerUserAsync(context.User.Id, context.Guild.Id, true);
+            if (serverUser.Muted)
             {
-                var serverUser = await db.GetServerUserAsync(context.User.Id, context.Guild.Id, true);
-                if (serverUser.Muted)
-                {
-                    await context.Message.DeleteAsync();
-                    return;
-                }
+                await context.Message.DeleteAsync();
+                return;
             }
 
             if (!(message.HasStringPrefix(Config.CommandPrefix + " ", ref argPos)
