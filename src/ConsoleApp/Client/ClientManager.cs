@@ -23,7 +23,6 @@ namespace StupifyConsoleApp.Client
 
             Client.Log += LogAsync;
             Client.MessageReceived += MessageHandler.Handle;
-            Client.ReactionAdded += ReactionHandler.HandleSegmentEdit;
         }
 
         public static DiscordSocketClient Client { get; }
@@ -42,11 +41,6 @@ namespace StupifyConsoleApp.Client
         public static async Task LogAsync(string message, bool requireDebug = false)
         {
             await Logger.Log(DateTime.Now.ToString("T") + " " + message, requireDebug);
-        }
-
-        public static void NewEditOwner(ulong messageID, ulong userID)
-        {
-            ReactionHandler.NewEditOwner(messageID, userID);
         }
 
         private static async Task LogAsync(LogMessage message)

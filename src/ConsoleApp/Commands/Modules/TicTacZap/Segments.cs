@@ -2,15 +2,23 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Discord;
 using Discord.Commands;
+using Discord.WebSocket;
+using StupifyConsoleApp.Client;
 using StupifyConsoleApp.TicTacZapManagement;
-using TicTacZap;
+using Direction = TicTacZap.Direction;
 using Segment = StupifyConsoleApp.DataModels.Segment;
 
 namespace StupifyConsoleApp.Commands.Modules.TicTacZap
 {
     public class Segments : StupifyModuleBase
     {
+        public Segments()
+        {
+            ClientManager.Client.ReactionAdded += ReactionHandler.Handle;
+        }
+
         [Command("Segments")]
         public async Task ListSegments()
         {
@@ -120,6 +128,21 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
                 await ReplyAsync($"segment {segmentId} was reset!");
             }
 
+            [Command("Edit")]
+            public async Task EditSegmentCommand(int segmentId)
+            {
+                if (!await this.UserHasSegmentAsync(segmentId))
+                {
+                    await ReplyAsync(Responses.SegmentOwnershipProblem);
+                    return;
+                }
+
+                var userID = Context.User.Id;
+                var msg = await ReplyAsync(
+                    $"```{TicTacZapController.RenderSegmentAsync(segmentId, Db, new Tuple<int, int>(0, 0))}```");
+                ReactionHandler.NewOwner(msg.Id, userID, segmentId);
+            }
+
             [Command("Delete")]
             public async Task DeleteSegmentCommand(int segmentId)
             {
@@ -214,5 +237,78 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
                 return await UniverseController.DeleteSegment(segmentId);
             }
         }
-    }
+
+        private static class ReactionHandler
+        {
+            private static readonly Dictionary<ulong, OwnerInfo> Owners = new Dictionary<ulong, OwnerInfo>();
+
+            public static async Task Handle(Cacheable<IUserMessage, ulong> message,
+                ISocketMessageChannel channel, SocketReaction reaction)
+            {
+                if (reaction.UserId != ClientManager.Client.CurrentUser.Id && Owners.ContainsKey(message.Value.Id))
+                {
+                    if (reaction.User.Value.Id != Owners[message.Id].UserID)
+                    {
+                        await message.Value.RemoveReactionAsync(reaction.Emote, reaction.User.Value);
+                        return;
+                    }
+
+                    if (reaction.Emote.Name == "❌")
+                    {
+                        await message.Value.RemoveAllReactionsAsync();
+                        Owners.Remove(message.Value.Id);
+                        return;
+                    }
+
+                    if (reaction.Emote.Name == "⬆")
+                    {
+                        var tmp1 = Owners[message.Id].Position.Item1;
+                        var tmp2 = Owners[message.Id].Position.Item2;
+                        if (tmp1 > 0) Owners[message.Id].Position = new Tuple<int, int>(--tmp1, tmp2);
+                    }
+                    else if (reaction.Emote.Name == "⬇")
+                    {
+                        var tmp1 = Owners[message.Id].Position.Item1;
+                        var tmp2 = Owners[message.Id].Position.Item2;
+                        if (tmp1 < 8) Owners[message.Id].Position = new Tuple<int, int>(++tmp1, tmp2);
+                    }
+                    else if (reaction.Emote.Name == "➡")
+                    {
+                        var tmp1 = Owners[message.Id].Position.Item1;
+                        var tmp2 = Owners[message.Id].Position.Item2;
+                        if (tmp2 < 8) Owners[message.Id].Position = new Tuple<int, int>(tmp1, ++tmp2);
+                    }
+                    else if (reaction.Emote.Name == "⬅")
+                    {
+                        var tmp1 = Owners[message.Id].Position.Item1;
+                        var tmp2 = Owners[message.Id].Position.Item2;
+                        if (tmp2 > 0) Owners[message.Id].Position = new Tuple<int, int>(tmp1, --tmp2);
+                    }
+
+                    var info = Owners[message.Id];
+                    //await TicTacZapController.RenderSegmentAsync(info.SegmentID, Db, info.Position);
+                    await message.Value.RemoveReactionAsync(reaction.Emote, reaction.User.Value);
+                }
+            }
+
+            internal static void NewOwner(ulong messageID, ulong userID, int segID)
+            {
+                Owners.Add(messageID, new OwnerInfo(userID, segID, new Tuple<int, int>(0, 0)));
+            }
+
+            private class OwnerInfo
+            {
+                public ulong UserID { get; }
+                public int SegmentID { get; }
+                public Tuple<int, int> Position { get; set; }
+
+                public OwnerInfo(ulong userID, int segID, Tuple<int, int> pos)
+                {
+                    UserID = userID;
+                    SegmentID = segID;
+                    Position = pos;
+                }
+            }
+        }
+    }   
 }
