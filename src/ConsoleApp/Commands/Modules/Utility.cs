@@ -40,7 +40,7 @@ namespace StupifyConsoleApp.Commands.Modules
             var modules = _commandService.Modules.Where(m => m.Name != "Debug" && m.Name != "AI");
             var message = "Modules:" + Environment.NewLine;
             foreach (var module in modules) message += module.Name + Environment.NewLine;
-            await ReplyAsync($"```{message}```{Environment.NewLine}Use `{Config.CommandPrefix} Help [moduleName]` Or `{Config.CommandPrefix} HelpAll` to find out more!");
+            await ReplyAsync($"```{message}```{Environment.NewLine}Use `{Config.CommandPrefix} Help [moduleName]` Or `{Config.CommandPrefix} HelpAll` to find out more!{Environment.NewLine}We love feedback, Positive or negative: https://discord.gg/nb5rUhd");
         }
 
         [Command("Help")]

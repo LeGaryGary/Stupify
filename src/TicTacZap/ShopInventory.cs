@@ -8,9 +8,9 @@ namespace TicTacZap
     {
         public ShopInventory()
         {
-            BlocksPrices.Add(BlockType.BasicEnergy, 100);
-            BlocksPrices.Add(BlockType.BasicBeamer, 100);
-            BlocksPrices.Add(BlockType.BasicWall, 20);
+            BlocksPrices.Add(BlockType.Energy, 100);
+            BlocksPrices.Add(BlockType.Beamer, 100);
+            BlocksPrices.Add(BlockType.Wall, 20);
         }
 
         private Dictionary<BlockType, decimal> BlocksPrices { get; } = new Dictionary<BlockType, decimal>();

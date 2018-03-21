@@ -43,13 +43,13 @@ namespace TicTacZap
                 case BlockType.Controller:
                     block = new SegmentControllerBlock();
                     break;
-                case BlockType.BasicEnergy:
+                case BlockType.Energy:
                     block = new BasicEnergyBlock();
                     break;
-                case BlockType.BasicWall:
+                case BlockType.Wall:
                     block = new BasicWall();
                     break;
-                case BlockType.BasicBeamer:
+                case BlockType.Beamer:
                     block = new BasicBeamer(x, y);
                     break;
                 default:

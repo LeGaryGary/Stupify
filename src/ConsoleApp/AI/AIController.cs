@@ -34,7 +34,7 @@ namespace StupifyConsoleApp.AI
 
         public async Task AddBlock(int x, int y)
         {
-            await Segments.AddBlockAsync(_dbSeg.SegmentId, x, y, BlockType.BasicEnergy);
+            await Segments.AddBlockAsync(_dbSeg.SegmentId, x, y, BlockType.Energy);
         }
 
         public async Task RemoveBlock(int x, int y)
