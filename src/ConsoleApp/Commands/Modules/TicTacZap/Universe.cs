@@ -7,11 +7,11 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
 {
     public class Universe : StupifyModuleBase
     {
-        private readonly TicTacZapController _tacZapController;
+        private readonly GameState _gameState;
 
-        public Universe(BotContext db, TicTacZapController tacZapController) : base(db)
+        public Universe(BotContext db, GameState gameState) : base(db)
         {
-            _tacZapController = tacZapController;
+            _gameState = gameState;
         }
 
         [Command("Universe")]
@@ -23,7 +23,7 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
         [Command("Universe")]
         public async Task ShowUniverseCommand(int scope)
         {
-            var userSelection = _tacZapController.GetUserSegmentSelection((await this.GetUserAsync()).UserId);
+            var userSelection = _gameState.GetUserSegmentSelection((await this.GetUserAsync()).UserId);
             if (!userSelection.HasValue)
             {
                 await ReplyAsync(Responses.SelectSegmentMessage);

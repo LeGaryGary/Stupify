@@ -61,9 +61,9 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
                 return;
             }
 
-            if (!_tacZapController.MakeTransaction(
+            if (!TicTacZapController.MakeTransaction(
                 await this.GetUserAsync(),
-                await _tacZapController.GetBankAsync(),
+                await Db.GetBankAsync(),
                 total.Value))
             {
                 await ReplyAsync(Responses.NotEnoughUnits(total.Value));
@@ -85,8 +85,8 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
                 return;
             }
 
-            if (!_tacZapController.MakeTransaction(
-                await _tacZapController.GetBankAsync(),
+            if (!TicTacZapController.MakeTransaction(
+                await Db.GetBankAsync(),
                 await this.GetUserAsync(),
                 total.Value))
             {

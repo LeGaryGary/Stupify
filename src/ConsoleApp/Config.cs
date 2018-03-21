@@ -66,7 +66,9 @@ namespace StupifyConsoleApp
                         return commandService;
                     })
                     .AddSingleton<ClientManager>()
-                    .AddSingleton<TicTacZapController>();
+                    .AddTransient<TicTacZapController>()
+                    .AddSingleton<GameState>()
+                    .AddSingleton<GameRunner>();
 
                 ConfigureLogging();
                 _serviceProvider = collection.BuildServiceProvider();

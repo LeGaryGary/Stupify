@@ -15,6 +15,8 @@ namespace StupifyConsoleApp.Commands.Modules
     public class AI : StupifyModuleBase
     {
         private readonly TicTacZapController _tacZapController;
+        private readonly GameState _gameState;
+
         private const decimal ConsiderationThreshold = 30;
         private const decimal RemoveThreshold = 20;
         private const double ExpansionChance = 0.1;
@@ -23,9 +25,10 @@ namespace StupifyConsoleApp.Commands.Modules
 
         private static readonly Dictionary<int, StupifyConsoleApp.AI.AI> AiInstances = new Dictionary<int, StupifyConsoleApp.AI.AI>();
 
-        public AI(BotContext db, TicTacZapController tacZapController) : base(db)
+        public AI(BotContext db, TicTacZapController tacZapController, GameState gameState) : base(db)
         {
             _tacZapController = tacZapController;
+            _gameState = gameState;
         }
 
         [Command(RunMode = RunMode.Async)]
@@ -62,7 +65,7 @@ namespace StupifyConsoleApp.Commands.Modules
             decimal rmvThr = RemoveThreshold, double exp = ExpansionChance, double rmv = RemoveChance, double brk = BreakChance)
         {
             var user = await this.GetUserAsync();
-            var id = _tacZapController.GetUserSegmentSelection(user.UserId);
+            var id = _gameState.GetUserSegmentSelection(user.UserId);
 
             if (id != null)
                 await Solve((int) id, addThr, rmvThr, exp, rmv, brk);

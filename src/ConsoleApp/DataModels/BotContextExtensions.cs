@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Discord;
 using Microsoft.EntityFrameworkCore;
 using TicTacZap;
 
@@ -9,6 +10,12 @@ namespace StupifyConsoleApp.DataModels
 {
     public static class BotContextExtensions
     {
+        public static async Task<User> GetDbUser(this BotContext context, IUser user)
+        {
+            var discordId = (long) user.Id;
+            return await context.Users.FirstAsync(u => u.DiscordUserId == discordId);
+        }
+
         public static async Task<ServerUser> GetServerUserAsync(this BotContext context, ulong discordUserId,
             ulong discordServerId, bool addIfNotFound = false)
         {
@@ -91,6 +98,19 @@ namespace StupifyConsoleApp.DataModels
             context.SegmentTemplates.Add(segmentTemplate);
             await context.SaveChangesAsync();
             return segmentTemplate.SegmentTemplateId;
+        }
+
+        public static async Task<User> GetBankAsync(this BotContext db)
+        {
+            var bankUser = await db.Users.FirstOrDefaultAsync(u => u.DiscordUserId == -1)
+                           ?? db.Users.Add(new User
+                           {
+                               Balance = 100000000000,
+                               DiscordUserId = -1,
+                           }).Entity;
+
+            await db.SaveChangesAsync();
+            return bankUser;
         }
     }
 }
