@@ -2,10 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Discord;
 using Discord.Commands;
+using StupifyConsoleApp.Client;
 using StupifyConsoleApp.DataModels;
 using StupifyConsoleApp.TicTacZapManagement;
 using TicTacZap;
+using Direction = TicTacZap.Direction;
 using Segment = StupifyConsoleApp.DataModels.Segment;
 
 namespace StupifyConsoleApp.Commands.Modules.TicTacZap
@@ -130,6 +133,25 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
                 await Db.SaveChangesAsync();
                 await this.UpdateDbSegmentOutput(segmentId);
                 await ReplyAsync($"segment {segmentId} was reset!");
+            }
+
+            [Command("Edit")]
+            public async Task EditSegmentCommand(int segmentId)
+            {
+                if (!await this.UserHasSegmentAsync(segmentId))
+                {
+                    await ReplyAsync(Responses.SegmentOwnershipProblem);
+                    return;
+                }
+
+                var str = await _tacZapController.RenderSegmentAsync(segmentId, new Tuple<int, int>(0, 0));
+                var msg = await ReplyAsync($"```{str}```");
+                await msg.AddReactionAsync(new Emoji("⬆"));
+                await msg.AddReactionAsync(new Emoji("⬇"));
+                await msg.AddReactionAsync(new Emoji("➡"));
+                await msg.AddReactionAsync(new Emoji("⬅"));
+                await msg.AddReactionAsync(new Emoji("❌"));
+                SegmentEditReactionHandler.NewOwner(msg.Id, segmentId, Context.User.Id);
             }
 
             [Command("Delete")]

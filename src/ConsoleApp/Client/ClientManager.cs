@@ -12,7 +12,7 @@ namespace StupifyConsoleApp.Client
     {
         private readonly IDiscordClient _client;
 
-        public ClientManager(IMessageHandler messageHandler, ILogger<ClientManager> logger, IDiscordClient client)
+        public ClientManager(IMessageHandler messageHandler, IReactionHandler segmentEditHandler, ILogger<ClientManager> logger, IDiscordClient client)
         {
             _client = client;
 
@@ -20,6 +20,7 @@ namespace StupifyConsoleApp.Client
             {
                 case DiscordSocketClient discordSocketClient:
                     discordSocketClient.MessageReceived += messageHandler.Handle;
+                    discordSocketClient.ReactionAdded += segmentEditHandler.Handle;
                     discordSocketClient.Log += logMessage =>
                     {
                         switch (logMessage.Severity)

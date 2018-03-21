@@ -59,6 +59,7 @@ namespace StupifyConsoleApp
                     .AddDbContext<BotContext>(options => options.UseSqlServer(DbConnectionString))
                     .AddSingleton<IDiscordClient>(sp => new DiscordSocketClient(new DiscordSocketConfig{AlwaysDownloadUsers = true}))
                     .AddSingleton<IMessageHandler, MessageHandler>()
+                    .AddSingleton<IReactionHandler, SegmentEditReactionHandler>()
                     .AddSingleton(sp =>
                     {
                         var commandService = new CommandService();
