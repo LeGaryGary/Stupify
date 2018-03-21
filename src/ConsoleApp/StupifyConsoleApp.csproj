@@ -5,16 +5,16 @@
     <UserSecretsId>Stupify</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Remove="Inventories\**"/>
-    <Compile Remove="Segments\**"/>
-    <EmbeddedResource Remove="Inventories\**"/>
-    <EmbeddedResource Remove="Segments\**"/>
-    <None Remove="Inventories\**"/>
-    <None Remove="Segments\**"/>
+    <Compile Remove="Inventories\**" />
+    <Compile Remove="Segments\**" />
+    <EmbeddedResource Remove="Inventories\**" />
+    <EmbeddedResource Remove="Segments\**" />
+    <None Remove="Inventories\**" />
+    <None Remove="Segments\**" />
   </ItemGroup>
   <ItemGroup>
-    <DotNetCliToolReference Include="Microsoft.EntityFrameworkCore.Tools.DotNet" Version="2.0.0"/>
-    <DotNetCliToolReference Include="Microsoft.Extensions.SecretManager.Tools" Version="2.0.0"/>
+    <DotNetCliToolReference Include="Microsoft.EntityFrameworkCore.Tools.DotNet" Version="2.0.0" />
+    <DotNetCliToolReference Include="Microsoft.Extensions.SecretManager.Tools" Version="2.0.0" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Discord.Net" Version="1.0.2" />
@@ -23,6 +23,9 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="2.0.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="2.0.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="2.0.0" />
+    <PackageReference Include="Serilog.Extensions.Logging" Version="2.0.2" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
+    <PackageReference Include="Serilog.Sinks.Literate" Version="3.0.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\TicTacZap\TicTacZap.csproj" />

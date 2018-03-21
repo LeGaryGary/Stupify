@@ -18,7 +18,8 @@ namespace StupifyConsoleApp.Commands
 
         public static async Task<User> GetUserAsync(this StupifyModuleBase moduleBase)
         {
-            return await moduleBase.Db.Users.FirstAsync(u => u.DiscordUserId == (long) moduleBase.Context.User.Id);
+            var userId = (long) moduleBase.Context.User.Id;
+            return await moduleBase.Db.Users.FirstAsync(u => u.DiscordUserId == userId);
         }
 
         public static async Task<IEnumerable<DataModels.Segment>> GetSegments(this StupifyModuleBase moduleBase)

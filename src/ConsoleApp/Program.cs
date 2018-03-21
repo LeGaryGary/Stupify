@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Discord;
 using Microsoft.Extensions.DependencyInjection;
+using Serilog;
 using StupifyConsoleApp.Client;
 using StupifyConsoleApp.TicTacZapManagement;
 

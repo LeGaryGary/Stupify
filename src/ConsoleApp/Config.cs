@@ -8,6 +8,9 @@ using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Serilog;
+using Serilog.Events;
 using StupifyConsoleApp.Client;
 using StupifyConsoleApp.DataModels;
 using StupifyConsoleApp.TicTacZapManagement;
@@ -16,6 +19,7 @@ namespace StupifyConsoleApp
 {
     public static class Config
     {
+
         private static readonly IConfigurationRoot Configuration;
 
         static Config()
@@ -37,11 +41,15 @@ namespace StupifyConsoleApp
         public static string DataDirectory => Configuration["DataDirectory"];
         public static string UniverseName => Configuration["UniverseName"];
 
+        private static IServiceProvider _serviceProvider;
         public static IServiceProvider ServiceProvider
         {
             get
             {
+                if (_serviceProvider != null) return _serviceProvider;
+
                 var collection = new ServiceCollection()
+                    .AddSingleton(new LoggerFactory().AddSerilog())
                     .AddLogging()
                     .AddDbContext<BotContext>(options => options.UseSqlServer(DbConnectionString))
                     .AddSingleton<IDiscordClient>(sp => new DiscordSocketClient(new DiscordSocketConfig{AlwaysDownloadUsers = true}))
@@ -54,7 +62,27 @@ namespace StupifyConsoleApp
                     })
                     .AddSingleton<ClientManager>()
                     .AddSingleton<TicTacZapController>();
-                return collection.BuildServiceProvider();
+
+                if (Debug)
+                {
+                    Log.Logger = new LoggerConfiguration()
+                        .WriteTo.LiterateConsole()
+                        .MinimumLevel.Debug()
+                        .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+                        .Enrich.FromLogContext()
+                        .CreateLogger();
+                }
+                else
+                {
+                    Log.Logger = new LoggerConfiguration()
+                        .WriteTo.LiterateConsole()
+                        .MinimumLevel.Information()
+                        .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+                        .Enrich.FromLogContext()
+                        .CreateLogger();
+                }
+                _serviceProvider = collection.BuildServiceProvider();
+                return _serviceProvider;
             }
         }
     }
