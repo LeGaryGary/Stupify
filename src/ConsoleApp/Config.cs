@@ -34,14 +34,19 @@ namespace StupifyConsoleApp
         public static string DbConnectionString => Configuration["DbConnectionString"];
         public static string DiscordBotUserToken => Configuration["DiscordBotUserToken"];
         public static bool Debug => bool.Parse(Configuration["Debug"]);
-        public static string LoggingDirectory => Configuration["LoggingDirectory"];
         public static string CommandPrefix => Configuration["CommandPrefix"];
         public static ulong DeveloperRole => ulong.Parse(Configuration["DeveloperRole"]);
 
         public static string DataDirectory => Configuration["DataDirectory"];
         public static string UniverseName => Configuration["UniverseName"];
 
+        public static bool UseSeq => bool.Parse(Configuration["Seq:Enabled"]);
+        public static Uri SeqUrl => new Uri(Configuration["Seq:Url"]);
+        public static string SeqKey => Configuration["Seq:ApiKey"];
+
         private static IServiceProvider _serviceProvider;
+
+
         public static IServiceProvider ServiceProvider
         {
             get
@@ -63,27 +68,24 @@ namespace StupifyConsoleApp
                     .AddSingleton<ClientManager>()
                     .AddSingleton<TicTacZapController>();
 
-                if (Debug)
-                {
-                    Log.Logger = new LoggerConfiguration()
-                        .WriteTo.LiterateConsole()
-                        .MinimumLevel.Debug()
-                        .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
-                        .Enrich.FromLogContext()
-                        .CreateLogger();
-                }
-                else
-                {
-                    Log.Logger = new LoggerConfiguration()
-                        .WriteTo.LiterateConsole()
-                        .MinimumLevel.Information()
-                        .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
-                        .Enrich.FromLogContext()
-                        .CreateLogger();
-                }
+                ConfigureLogging();
                 _serviceProvider = collection.BuildServiceProvider();
                 return _serviceProvider;
             }
+        }
+
+        private static void ConfigureLogging()
+        {
+            var config = new LoggerConfiguration()
+                    .WriteTo.LiterateConsole()
+                    .Enrich.FromLogContext()
+                    .MinimumLevel.Override("Microsoft", LogEventLevel.Warning);
+
+            if (UseSeq) config = config.WriteTo.Seq(SeqUrl.AbsoluteUri, apiKey: SeqKey);
+
+            config = Debug ? config.MinimumLevel.Verbose() : config.MinimumLevel.Information();
+
+            Log.Logger = config.CreateLogger();
         }
     }
 }
