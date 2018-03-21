@@ -5,7 +5,7 @@
 
         public BasicWall()
         {
-            BlockType = BlockType.BasicWall;
+            BlockType = BlockType.Wall;
             MaxHealth = 200;
             Health = MaxHealth;
             Upkeep = 0;

@@ -3,8 +3,8 @@
     public enum BlockType
     {
         Controller = 0,
-        BasicEnergy = 1,
-        BasicWall = 2,
-        BasicBeamer = 3
+        Energy = 1,
+        Wall = 2,
+        Beamer = 3
     }
 }

@@ -5,17 +5,24 @@ using System.Threading.Tasks;
 using Discord.Commands;
 using StupifyConsoleApp.Client;
 using StupifyConsoleApp.Commands.Conditions;
+using StupifyConsoleApp.DataModels;
 
 namespace StupifyConsoleApp.Commands.Modules
 {
     public class Utility : StupifyModuleBase
     {
+        private readonly CommandService _commandService;
         private readonly List<string> _seenModules = new List<string>();
+
+        public Utility(BotContext db, CommandService commandService) : base(db)
+        {
+            _commandService = commandService;
+        }
 
         [Command("HelpAll")]
         public async Task HelpAll()
         {
-            var modules = ClientManager.Commands.Modules;
+            var modules = _commandService.Modules;
             var message = string.Empty;
             foreach (var module in modules)
             {
@@ -30,16 +37,16 @@ namespace StupifyConsoleApp.Commands.Modules
         [Command("Help")]
         public async Task Help()
         {
-            var modules = ClientManager.Commands.Modules.Where(m => m.Name != "Debug" && m.Name != "AI");
-            var message = string.Empty;
+            var modules = _commandService.Modules.Where(m => m.Name != "Debug" && m.Name != "AI");
+            var message = "Modules:" + Environment.NewLine;
             foreach (var module in modules) message += module.Name + Environment.NewLine;
-            await ReplyAsync(message);
+            await ReplyAsync($"```{message}```{Environment.NewLine}Use `{Config.CommandPrefix} Help [moduleName]` Or `{Config.CommandPrefix} HelpAll` to find out more!{Environment.NewLine}We love feedback, Positive or negative: https://discord.gg/nb5rUhd");
         }
 
         [Command("Help")]
         public async Task Help(string moduleName)
         {
-            var module = ClientManager.Commands.Modules.FirstOrDefault(m =>
+            var module = _commandService.Modules.FirstOrDefault(m =>
                 string.Equals(m.Name, moduleName, StringComparison.OrdinalIgnoreCase));
             if (module == null)
             {

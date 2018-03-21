@@ -43,13 +43,13 @@ namespace TicTacZap
                 case BlockType.Controller:
                     block = new SegmentControllerBlock();
                     break;
-                case BlockType.BasicEnergy:
+                case BlockType.Energy:
                     block = new BasicEnergyBlock();
                     break;
-                case BlockType.BasicWall:
+                case BlockType.Wall:
                     block = new BasicWall();
                     break;
-                case BlockType.BasicBeamer:
+                case BlockType.Beamer:
                     block = new BasicBeamer(x, y);
                     break;
                 default:
@@ -57,6 +57,30 @@ namespace TicTacZap
             }
 
             return block;
+        }
+
+        public static Direction Opposite(this Direction direction)
+        {
+            Direction opposite;
+            switch (direction)
+            {
+                case Direction.Up:
+                    opposite = Direction.Down;
+                    break;
+                case Direction.Down:
+                    opposite = Direction.Up;
+                    break;
+                case Direction.Left:
+                    opposite = Direction.Right;
+                    break;
+                case Direction.Right:
+                    opposite = Direction.Left;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(direction), direction, null);
+            }
+
+            return opposite;
         }
 
         public static string GetUnicodeHealth(this IHealth healthObject)

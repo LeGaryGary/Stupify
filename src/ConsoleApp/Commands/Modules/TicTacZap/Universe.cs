@@ -1,11 +1,19 @@
 ﻿using System.Threading.Tasks;
 using Discord.Commands;
+using StupifyConsoleApp.DataModels;
 using StupifyConsoleApp.TicTacZapManagement;
 
 namespace StupifyConsoleApp.Commands.Modules.TicTacZap
 {
     public class Universe : StupifyModuleBase
     {
+        private readonly TicTacZapController _tacZapController;
+
+        public Universe(BotContext db, TicTacZapController tacZapController) : base(db)
+        {
+            _tacZapController = tacZapController;
+        }
+
         [Command("Universe")]
         public async Task ShowUniverseCommand()
         {
@@ -15,7 +23,7 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
         [Command("Universe")]
         public async Task ShowUniverseCommand(int scope)
         {
-            var userSelection = TicTacZapController.GetUserSegmentSelection((await this.GetUserAsync()).UserId);
+            var userSelection = _tacZapController.GetUserSegmentSelection((await this.GetUserAsync()).UserId);
             if (!userSelection.HasValue)
             {
                 await ReplyAsync(Responses.SelectSegmentMessage);

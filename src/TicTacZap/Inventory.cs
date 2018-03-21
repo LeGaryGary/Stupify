@@ -8,7 +8,7 @@ namespace TicTacZap
     {
         public Inventory(int startingBlocks)
         {
-            AddBlocks(BlockType.BasicEnergy, startingBlocks);
+            AddBlocks(BlockType.Energy, startingBlocks);
         }
 
         public Dictionary<BlockType, int> Blocks { get; set; } = new Dictionary<BlockType, int>();

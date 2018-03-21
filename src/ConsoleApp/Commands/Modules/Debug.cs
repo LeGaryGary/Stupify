@@ -3,6 +3,7 @@ using Discord;
 using Discord.Commands;
 
 using StupifyConsoleApp.Commands.Conditions;
+using StupifyConsoleApp.DataModels;
 using StupifyConsoleApp.TicTacZapManagement;
 
 namespace StupifyConsoleApp.Commands.Modules
@@ -11,6 +12,10 @@ namespace StupifyConsoleApp.Commands.Modules
     [DevOnly]
     public class Debug : StupifyModuleBase
     {
+        public Debug(BotContext db) : base(db)
+        {
+        }
+
         [Command("Motherlode")]
         public async Task DebugMotherlode()
         {

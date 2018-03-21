@@ -4,7 +4,7 @@
     {
         public BasicEnergyBlock()
         {
-            BlockType = BlockType.BasicEnergy;
+            BlockType = BlockType.Energy;
             Upkeep = 0;
             MaxHealth = 10;
             Health = MaxHealth;

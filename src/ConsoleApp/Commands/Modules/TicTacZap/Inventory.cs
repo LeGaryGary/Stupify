@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Discord.Commands;
+using StupifyConsoleApp.DataModels;
 using StupifyConsoleApp.TicTacZapManagement;
 using TicTacZap.Blocks;
 
@@ -8,6 +9,13 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
 {
     public class Inventory : StupifyModuleBase
     {
+        private readonly TicTacZapController _tacZapController;
+
+        public Inventory(BotContext db, TicTacZapController tacZapController) : base(db)
+        {
+            _tacZapController = tacZapController;
+        }
+
         [Command("Balance")]
         public async Task ShowBalance()
         {
@@ -25,7 +33,7 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
         public async Task ShowInventory()
         {
             var userId = (await this.GetUserAsync()).UserId;
-            var message = await TicTacZapController.RenderInventory(userId);
+            var message = await _tacZapController.RenderInventory(userId);
             if (message == string.Empty)
             {
                 await ReplyAsync("Your inventory is empty");
@@ -39,23 +47,23 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
         public async Task ShowShopInventory()
         {
             var message = "Buy: 105%\r\nSell: 95%\r\n";
-            message += TicTacZapController.Shop.TextRender();
+            message += _tacZapController.Shop.TextRender();
             await ReplyAsync(message);
         }
 
         [Command("Buy")]
         public async Task BuyFromShop(BlockType block, int quantity)
         {
-            var total = TicTacZapController.Shop.GetBuyTotal(block, quantity);
+            var total = _tacZapController.Shop.GetBuyTotal(block, quantity);
             if (!total.HasValue)
             {
                 await ReplyAsync("The shop doesn't sell this type of block.");
                 return;
             }
 
-            if (!TicTacZapController.MakeTransaction(
+            if (!_tacZapController.MakeTransaction(
                 await this.GetUserAsync(),
-                await TicTacZapController.GetBankAsync(Db),
+                await _tacZapController.GetBankAsync(),
                 total.Value))
             {
                 await ReplyAsync(Responses.NotEnoughUnits(total.Value));
@@ -70,15 +78,15 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
         [Command("Sell")]
         public async Task SellToShop(BlockType block, int quantity)
         {
-            var total = TicTacZapController.Shop.GetSellTotal(block, quantity);
+            var total = _tacZapController.Shop.GetSellTotal(block, quantity);
             if (!total.HasValue)
             {
                 await ReplyAsync("The shop doesn't buy this type of block.");
                 return;
             }
 
-            if (!TicTacZapController.MakeTransaction(
-                await TicTacZapController.GetBankAsync(Db),
+            if (!_tacZapController.MakeTransaction(
+                await _tacZapController.GetBankAsync(),
                 await this.GetUserAsync(),
                 total.Value))
             {

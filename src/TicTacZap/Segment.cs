@@ -227,13 +227,13 @@ namespace TicTacZap
                         case BlockType.Controller:
                             stringBuilder.Append(" C ");
                             break;
-                        case BlockType.BasicEnergy:
+                        case BlockType.Energy:
                             stringBuilder.Append(" B ");
                             break;
-                        case BlockType.BasicWall:
+                        case BlockType.Wall:
                             stringBuilder.Append(" W ");
                             break;
-                        case BlockType.BasicBeamer:
+                        case BlockType.Beamer:
                             stringBuilder.Append(" Q ");
                             break;
                         default:

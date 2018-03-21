@@ -2,21 +2,18 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Discord;
 using Discord.Commands;
-using Discord.WebSocket;
-using StupifyConsoleApp.Client;
+using StupifyConsoleApp.DataModels;
 using StupifyConsoleApp.TicTacZapManagement;
-using Direction = TicTacZap.Direction;
+using TicTacZap;
 using Segment = StupifyConsoleApp.DataModels.Segment;
 
 namespace StupifyConsoleApp.Commands.Modules.TicTacZap
 {
     public class Segments : StupifyModuleBase
     {
-        public Segments()
+        public Segments(BotContext db) : base(db)
         {
-            ClientManager.Client.ReactionAdded += ReactionHandler.Handle;
         }
 
         [Command("Segments")]
@@ -28,7 +25,7 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
                 await ReplyAsync(
                     $"You don't have any segments, buy your first one: `{Config.CommandPrefix} Segment Buy`");
             else
-                await ReplyAsync(renderSegmentList);
+                await ReplyAsync(renderSegmentList + Environment.NewLine + $"Use `{Config.CommandPrefix} Segment [segmentId]` to select and show a segment!");
         }
 
         private static string RenderSegmentList(IEnumerable<Segment> segments)
@@ -47,10 +44,17 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
         [Group("Segment")]
         public class SegmentModule : StupifyModuleBase
         {
+            private readonly TicTacZapController _tacZapController;
+
+            public SegmentModule(BotContext db, TicTacZapController tacZapController) : base(db)
+            {
+                _tacZapController = tacZapController;
+            }
+
             [Command]
             public async Task Segment()
             {
-                var segmentId = TicTacZapController.GetUserSegmentSelection((await this.GetUserAsync()).UserId);
+                var segmentId = _tacZapController.GetUserSegmentSelection((await this.GetUserAsync()).UserId);
                 if (!segmentId.HasValue)
                 {
                     await ReplyAsync(Responses.SelectSegmentMessage);
@@ -94,7 +98,7 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
                 //}
 
                 var price = SegmentPrice(await this.SegmentCountAsync());
-                if (!TicTacZapController.MakeTransaction(await this.GetUserAsync(), await TicTacZapController.GetBankAsync(Db), price))
+                if (!_tacZapController.MakeTransaction(await this.GetUserAsync(), await _tacZapController.GetBankAsync(), price))
                 {
                     await ReplyAsync(Responses.NotEnoughUnits(price));
                     return;
@@ -128,21 +132,6 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
                 await ReplyAsync($"segment {segmentId} was reset!");
             }
 
-            [Command("Edit")]
-            public async Task EditSegmentCommand(int segmentId)
-            {
-                if (!await this.UserHasSegmentAsync(segmentId))
-                {
-                    await ReplyAsync(Responses.SegmentOwnershipProblem);
-                    return;
-                }
-
-                var userID = Context.User.Id;
-                var msg = await ReplyAsync(
-                    $"```{TicTacZapController.RenderSegmentAsync(segmentId, Db, new Tuple<int, int>(0, 0))}```");
-                ReactionHandler.NewOwner(msg.Id, userID, segmentId);
-            }
-
             [Command("Delete")]
             public async Task DeleteSegmentCommand(int segmentId)
             {
@@ -165,14 +154,14 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
             [Command("Attack")]
             public async Task AttackSegmentCommand(Direction direction)
             {
-                var segment = TicTacZapController.GetUserSegmentSelection((await this.GetUserAsync()).UserId);
+                var segment = _tacZapController.GetUserSegmentSelection((await this.GetUserAsync()).UserId);
                 if (!segment.HasValue)
                 {
                     await ReplyAsync(Responses.SelectSegmentMessage);
                     return;
                 }
 
-                if (!await TicTacZapController.SegmentReadyForCombat(segment.Value))
+                if (!await _tacZapController.SegmentReadyForCombat(segment.Value))
                 {
                     await ReplyAsync("This segment isn't ready for combat (needs to have offensive blocks and not already be in combat)");
                     return;
@@ -181,30 +170,13 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
                 var defendingSegment = await UniverseController.GetAdjacentSegmentInDirection(segment.Value, direction);
                 if (defendingSegment.HasValue)
                 {
-                    Direction opposite;
-                    switch (direction)
-                    {
-                        case Direction.Up:
-                            opposite = Direction.Down;
-                            break;
-                        case Direction.Down:
-                            opposite = Direction.Up;
-                            break;
-                        case Direction.Left:
-                            opposite = Direction.Right;
-                            break;
-                        case Direction.Right:
-                            opposite = Direction.Left;
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException(nameof(direction), direction, null);
-                    }
+                    var opposite = direction.Opposite();
                     await ReplyAsync("Attacker:");
                     var attackMessage = await ReplyAsync("```Loading...```");
                     await ReplyAsync("Defender:");
                     var defenceMessage = await ReplyAsync("```Loading...```");
-                    TicTacZapController.CurrentWars.Add((segment.Value, defendingSegment.Value, direction, attackMessage, new Queue<string>()));
-                    TicTacZapController.CurrentWars.Add((defendingSegment.Value, segment.Value, opposite, defenceMessage, new Queue<string>()));
+                    _tacZapController.CurrentWars.Add((segment.Value, defendingSegment.Value, direction, attackMessage, new Queue<string>()));
+                    _tacZapController.CurrentWars.Add((defendingSegment.Value, segment.Value, opposite, defenceMessage, new Queue<string>()));
                     return;
                 }
 
@@ -237,78 +209,5 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
                 return await UniverseController.DeleteSegment(segmentId);
             }
         }
-
-        private static class ReactionHandler
-        {
-            private static readonly Dictionary<ulong, OwnerInfo> Owners = new Dictionary<ulong, OwnerInfo>();
-
-            public static async Task Handle(Cacheable<IUserMessage, ulong> message,
-                ISocketMessageChannel channel, SocketReaction reaction)
-            {
-                if (reaction.UserId != ClientManager.Client.CurrentUser.Id && Owners.ContainsKey(message.Value.Id))
-                {
-                    if (reaction.User.Value.Id != Owners[message.Id].UserID)
-                    {
-                        await message.Value.RemoveReactionAsync(reaction.Emote, reaction.User.Value);
-                        return;
-                    }
-
-                    if (reaction.Emote.Name == "❌")
-                    {
-                        await message.Value.RemoveAllReactionsAsync();
-                        Owners.Remove(message.Value.Id);
-                        return;
-                    }
-
-                    if (reaction.Emote.Name == "⬆")
-                    {
-                        var tmp1 = Owners[message.Id].Position.Item1;
-                        var tmp2 = Owners[message.Id].Position.Item2;
-                        if (tmp1 > 0) Owners[message.Id].Position = new Tuple<int, int>(--tmp1, tmp2);
-                    }
-                    else if (reaction.Emote.Name == "⬇")
-                    {
-                        var tmp1 = Owners[message.Id].Position.Item1;
-                        var tmp2 = Owners[message.Id].Position.Item2;
-                        if (tmp1 < 8) Owners[message.Id].Position = new Tuple<int, int>(++tmp1, tmp2);
-                    }
-                    else if (reaction.Emote.Name == "➡")
-                    {
-                        var tmp1 = Owners[message.Id].Position.Item1;
-                        var tmp2 = Owners[message.Id].Position.Item2;
-                        if (tmp2 < 8) Owners[message.Id].Position = new Tuple<int, int>(tmp1, ++tmp2);
-                    }
-                    else if (reaction.Emote.Name == "⬅")
-                    {
-                        var tmp1 = Owners[message.Id].Position.Item1;
-                        var tmp2 = Owners[message.Id].Position.Item2;
-                        if (tmp2 > 0) Owners[message.Id].Position = new Tuple<int, int>(tmp1, --tmp2);
-                    }
-
-                    var info = Owners[message.Id];
-                    //await TicTacZapController.RenderSegmentAsync(info.SegmentID, Db, info.Position);
-                    await message.Value.RemoveReactionAsync(reaction.Emote, reaction.User.Value);
-                }
-            }
-
-            internal static void NewOwner(ulong messageID, ulong userID, int segID)
-            {
-                Owners.Add(messageID, new OwnerInfo(userID, segID, new Tuple<int, int>(0, 0)));
-            }
-
-            private class OwnerInfo
-            {
-                public ulong UserID { get; }
-                public int SegmentID { get; }
-                public Tuple<int, int> Position { get; set; }
-
-                public OwnerInfo(ulong userID, int segID, Tuple<int, int> pos)
-                {
-                    UserID = userID;
-                    SegmentID = segID;
-                    Position = pos;
-                }
-            }
-        }
-    }   
+    }
 }

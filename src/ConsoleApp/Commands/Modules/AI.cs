@@ -14,6 +14,7 @@ namespace StupifyConsoleApp.Commands.Modules
     [Group("Solve")]
     public class AI : StupifyModuleBase
     {
+        private readonly TicTacZapController _tacZapController;
         private const decimal ConsiderationThreshold = 30;
         private const decimal RemoveThreshold = 20;
         private const double ExpansionChance = 0.1;
@@ -21,6 +22,11 @@ namespace StupifyConsoleApp.Commands.Modules
         private const double BreakChance = 0.2;
 
         private static readonly Dictionary<int, StupifyConsoleApp.AI.AI> AiInstances = new Dictionary<int, StupifyConsoleApp.AI.AI>();
+
+        public AI(BotContext db, TicTacZapController tacZapController) : base(db)
+        {
+            _tacZapController = tacZapController;
+        }
 
         [Command(RunMode = RunMode.Async)]
         public async Task Solve(int segmentId, decimal addThr = ConsiderationThreshold,
@@ -48,15 +54,15 @@ namespace StupifyConsoleApp.Commands.Modules
                 return;
             }
 
-            await RunAI(Db, segment, user, addThr, rmvThr, exp, rmv, brk);
+            await RunAI(segment, user, addThr, rmvThr, exp, rmv, brk);
         }
 
         [Command]
-        public async Task Solve(decimal addThr = ConsiderationThreshold, decimal rmvThr = RemoveThreshold,
-            double exp = ExpansionChance, double rmv = RemoveChance, double brk = BreakChance)
+        public async Task Solve(decimal addThr = ConsiderationThreshold,
+            decimal rmvThr = RemoveThreshold, double exp = ExpansionChance, double rmv = RemoveChance, double brk = BreakChance)
         {
             var user = await this.GetUserAsync();
-            var id = TicTacZapController.GetUserSegmentSelection(user.UserId);
+            var id = _tacZapController.GetUserSegmentSelection(user.UserId);
 
             if (id != null)
                 await Solve((int) id, addThr, rmvThr, exp, rmv, brk);
@@ -80,7 +86,7 @@ namespace StupifyConsoleApp.Commands.Modules
             await msg.ModifyAsync(message => message.Content = "stopped.");
         }
 
-        private async Task RunAI(BotContext db, Segment segment, User user, decimal addThr, decimal rmvThr, double exp,
+        private async Task RunAI(Segment segment, User user, decimal addThr, decimal rmvThr, double exp,
             double rmv, double brk)
         {
             var aiInstance = new StupifyConsoleApp.AI.AI(Db, segment, user);
@@ -100,7 +106,7 @@ namespace StupifyConsoleApp.Commands.Modules
 
         private async Task UpdateMsg(IUserMessage msg, Segment segment, StupifyConsoleApp.AI.AI.AIStatus status)
         {
-            var str = await TicTacZapController.RenderSegmentAsync(segment.SegmentId, Db) + "\n";
+            var str = await _tacZapController.RenderSegmentAsync(segment.SegmentId) + "\n";
             switch (status)
             {
                 case StupifyConsoleApp.AI.AI.AIStatus.Finished:
@@ -116,6 +122,5 @@ namespace StupifyConsoleApp.Commands.Modules
 
             await msg.ModifyAsync(message => message.Content = $"```{str}```");
         }
-
     }
 }
