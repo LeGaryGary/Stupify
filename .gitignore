@@ -260,4 +260,10 @@ paket-files/
 __pycache__/
 *.pyc
 *.txt
+
 /ConsoleApp/Segments
+/ConsoleApp/Inventories
+*.INV
+*.SEG
+/.vscode/launch.json
+/.vscode/tasks.json

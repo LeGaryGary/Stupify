@@ -1,0 +1,9 @@
+language: csharp
+solution: Stupify.sln
+mono: none
+dotnet: 2.1.4
+install:
+- dotnet restore
+script:
+- dotnet build
+- dotnet test tests/TicTacZapTests/TicTacZapTests.csproj
