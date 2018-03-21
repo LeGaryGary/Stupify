@@ -8,6 +8,11 @@ namespace StupifyConsoleApp.DataModels
         {
         }
 
+        public BotContext(): base(new DbContextOptionsBuilder().UseSqlServer(Config.DbConnectionString).Options)
+        {
+            
+        }
+
         public DbSet<Server> Servers { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<ServerUser> ServerUsers { get; set; }
