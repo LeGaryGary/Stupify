@@ -56,33 +56,13 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
         {
             var blockType = Enum.Parse<BlockType>(type);
             var userId = (await this.GetUserAsync()).UserId;
-            if (await Inventories.RemoveFromInventoryAsync(blockType, 1, userId))
-            {
-                if (!await TicTacZapManagement.Segments.AddBlockAsync(segmentId, x - 1, y - 1, blockType)) 
-                    await Inventories.AddToInventoryAsync(blockType, 1, userId);
-                await this.UpdateDbSegmentOutput(segmentId);
-                await this.ShowSegmentAsync(segmentId);
-                return;
-            }
-
-            await ReplyAsync(Responses.ShopAdvisoryMessage);
+            await this.AddBlock(segmentId, userId, x, y, blockType);
         }
 
         [Command("RemoveBlock")]
         public async Task RemoveBlockCommand(int segmentId, int x, int y)
         {
-            if (await this.UserHasSegmentAsync(segmentId))
-            {
-                var blockType = await TicTacZapManagement.Segments.DeleteBlockAsync(segmentId, x - 1, y - 1);
-
-                if (blockType != null)
-                    await Inventories.AddToInventoryAsync(blockType.Value, 1, (await this.GetUserAsync()).UserId);
-                await this.UpdateDbSegmentOutput(segmentId);
-                await this.ShowSegmentAsync(segmentId);
-                return;
-            }
-
-            await ReplyAsync(Responses.SegmentOwnershipProblem);
+            await this.RemoveBlock(segmentId, x, y);
         }
 
         [Command("RemoveBlock")]

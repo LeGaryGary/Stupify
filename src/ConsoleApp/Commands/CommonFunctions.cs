@@ -9,6 +9,7 @@ using StupifyConsoleApp.Commands.Modules.TicTacZap;
 using StupifyConsoleApp.DataModels;
 using StupifyConsoleApp.TicTacZapManagement;
 using TicTacZap;
+using TicTacZap.Blocks;
 using Segments = StupifyConsoleApp.TicTacZapManagement.Segments;
 
 namespace StupifyConsoleApp.Commands
@@ -88,6 +89,36 @@ namespace StupifyConsoleApp.Commands
                     await Inventories.AddToInventoryAsync(pair.Key, pair.Value, userId);
                 }
             }
+        }
+
+        public static async Task AddBlock(this StupifyModuleBase moduleBase, int segmentId, int userId, int x, int y, BlockType blockType, bool show = true)
+        {
+            if (await Inventories.RemoveFromInventoryAsync(blockType, 1, userId))
+            {
+                if (!await Segments.AddBlockAsync(segmentId, x - 1, y - 1, blockType))
+                    await Inventories.AddToInventoryAsync(blockType, 1, userId);
+                await UpdateDbSegmentOutput(moduleBase, segmentId);
+                if(show) await ShowSegmentAsync(moduleBase, segmentId);
+                return;
+            }
+
+            await moduleBase.Context.Channel.SendMessageAsync(Responses.ShopAdvisoryMessage);
+        }
+
+        public static async Task RemoveBlock(this StupifyModuleBase moduleBase, int segmentId, int x, int y, bool show = true)
+        {
+            if (await UserHasSegmentAsync(moduleBase, segmentId))
+            {
+                var blockType = await Segments.DeleteBlockAsync(segmentId, x - 1, y - 1);
+
+                if (blockType != null)
+                    await Inventories.AddToInventoryAsync(blockType.Value, 1, (await GetUserAsync(moduleBase)).UserId);
+                await UpdateDbSegmentOutput(moduleBase, segmentId);
+                if(show) await ShowSegmentAsync(moduleBase, segmentId);
+                return;
+            }
+
+            await moduleBase.Context.Channel.SendMessageAsync(Responses.SegmentOwnershipProblem);
         }
     }
 }
