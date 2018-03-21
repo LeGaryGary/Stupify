@@ -38,9 +38,9 @@ namespace StupifyConsoleApp.Commands.Modules
         public async Task Help()
         {
             var modules = _commandService.Modules.Where(m => m.Name != "Debug" && m.Name != "AI");
-            var message = string.Empty;
+            var message = "Modules:" + Environment.NewLine;
             foreach (var module in modules) message += module.Name + Environment.NewLine;
-            await ReplyAsync(message);
+            await ReplyAsync($"```{message}```{Environment.NewLine}Use `{Config.CommandPrefix} Help [moduleName]` Or `{Config.CommandPrefix} HelpAll` to find out more!");
         }
 
         [Command("Help")]

@@ -25,7 +25,7 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
                 await ReplyAsync(
                     $"You don't have any segments, buy your first one: `{Config.CommandPrefix} Segment Buy`");
             else
-                await ReplyAsync(renderSegmentList);
+                await ReplyAsync(renderSegmentList + Environment.NewLine + $"Use `{Config.CommandPrefix} Segment [segmentId]` to select and show a segment!");
         }
 
         private static string RenderSegmentList(IEnumerable<Segment> segments)

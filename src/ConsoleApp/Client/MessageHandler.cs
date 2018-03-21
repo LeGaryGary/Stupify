@@ -49,8 +49,9 @@ namespace StupifyConsoleApp.Client
             if (!result.IsSuccess)
                 switch (result.Error)
                 {
-                    case CommandError.UnknownCommand when Config.Debug:
-                        await context.Channel.SendMessageAsync("Command not found!");
+                    case CommandError.UnknownCommand:
+                        if (Config.Debug)await context.Channel.SendMessageAsync("Command not found!");
+                        else return;
                         break;
                     case CommandError.BadArgCount:
                     case CommandError.ParseFailed:
