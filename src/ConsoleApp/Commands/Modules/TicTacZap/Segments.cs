@@ -146,12 +146,7 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
 
                 var str = await _tacZapController.RenderSegmentAsync(segmentId, new Tuple<int, int>(0, 0));
                 var msg = await ReplyAsync($"```{str}```");
-                await msg.AddReactionAsync(new Emoji("⬆"));
-                await msg.AddReactionAsync(new Emoji("⬇"));
-                await msg.AddReactionAsync(new Emoji("➡"));
-                await msg.AddReactionAsync(new Emoji("⬅"));
-                await msg.AddReactionAsync(new Emoji("❌"));
-                SegmentEditReactionHandler.NewOwner(msg.Id, segmentId, Context.User.Id);
+                await SegmentEditReactionHandler.NewOwner(msg, segmentId, Context.User.Id);
             }
 
             [Command("Delete")]

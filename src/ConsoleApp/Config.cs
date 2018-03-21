@@ -57,7 +57,7 @@ namespace StupifyConsoleApp
                     .AddSingleton(new LoggerFactory().AddSerilog())
                     .AddLogging()
                     .AddDbContext<BotContext>(options => options.UseSqlServer(DbConnectionString))
-                    .AddSingleton<IDiscordClient>(sp => new DiscordSocketClient(new DiscordSocketConfig{AlwaysDownloadUsers = true}))
+                    .AddSingleton<IDiscordClient>(sp => new DiscordSocketClient(new DiscordSocketConfig{AlwaysDownloadUsers = true, MessageCacheSize = 100}))
                     .AddSingleton<IMessageHandler, MessageHandler>()
                     .AddSingleton<IReactionHandler, SegmentEditReactionHandler>()
                     .AddSingleton(sp =>
