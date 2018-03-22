@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
@@ -16,7 +14,7 @@ namespace StupifyConsoleApp.Client
 {
     public class SegmentEditReactionHandler : IReactionHandler
     {
-        private enum State { Move, Select}
+        private enum State {Move, Select}
 
         private static readonly Dictionary<ulong, OwnerInfo> Owners = new Dictionary<ulong, OwnerInfo>();
         private readonly IDiscordClient _client;

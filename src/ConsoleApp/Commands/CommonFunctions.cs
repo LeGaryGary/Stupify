@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Discord;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using StupifyConsoleApp.Commands.Modules.TicTacZap;
 using StupifyConsoleApp.DataModels;
 using StupifyConsoleApp.TicTacZapManagement;
 using TicTacZap;
-using TicTacZap.Blocks;
 using Segments = StupifyConsoleApp.TicTacZapManagement.Segments;
 
 namespace StupifyConsoleApp.Commands
