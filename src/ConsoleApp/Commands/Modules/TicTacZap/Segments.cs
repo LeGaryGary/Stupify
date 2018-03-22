@@ -48,22 +48,24 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
         public class SegmentModule : StupifyModuleBase
         {
             private readonly TicTacZapController _tacZapController;
+            private readonly GameState _gameState;
 
-            public SegmentModule(BotContext db, TicTacZapController tacZapController) : base(db)
+            public SegmentModule(BotContext db, TicTacZapController tacZapController, GameState gameState) : base(db)
             {
                 _tacZapController = tacZapController;
+                _gameState = gameState;
             }
 
             [Command]
             public async Task Segment()
             {
-                var segmentId = _tacZapController.GetUserSegmentSelection((await this.GetUserAsync()).UserId);
+                var segmentId = _gameState.GetUserSegmentSelection((await this.GetUserAsync()).UserId);
                 if (!segmentId.HasValue)
                 {
                     await ReplyAsync(Responses.SelectSegmentMessage);
                     return;
                 }
-                await this.ShowSegmentAsync(segmentId.Value);
+                await _tacZapController.ShowSegmentAsync(Context, segmentId.Value);
             }
 
             [Command]
@@ -71,7 +73,7 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
             {
                 if (await this.UserHasSegmentAsync(segmentId))
                 {
-                    await this.ShowSegmentAsync(segmentId);
+                    await _tacZapController.ShowSegmentAsync(Context, segmentId);
                     return;
                 }
 
@@ -83,7 +85,7 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
             {
                 if (await this.UserHasSegmentAsync(segmentId))
                 {
-                    await this.ShowSegmentAsync(segmentId, overlayType);
+                    await _tacZapController.ShowSegmentAsync(Context, segmentId, overlayType);
                     return;
                 }
 
@@ -101,7 +103,7 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
                 //}
 
                 var price = SegmentPrice(await this.SegmentCountAsync());
-                if (!_tacZapController.MakeTransaction(await this.GetUserAsync(), await _tacZapController.GetBankAsync(), price))
+                if (!TicTacZapController.MakeTransaction(await this.GetUserAsync(), await Db.GetBankAsync(), price))
                 {
                     await ReplyAsync(Responses.NotEnoughUnits(price));
                     return;
@@ -171,7 +173,7 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
             [Command("Attack")]
             public async Task AttackSegmentCommand(Direction direction)
             {
-                var segment = _tacZapController.GetUserSegmentSelection((await this.GetUserAsync()).UserId);
+                var segment = _gameState.GetUserSegmentSelection((await this.GetUserAsync()).UserId);
                 if (!segment.HasValue)
                 {
                     await ReplyAsync(Responses.SelectSegmentMessage);
@@ -192,8 +194,8 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
                     var attackMessage = await ReplyAsync("```Loading...```");
                     await ReplyAsync("Defender:");
                     var defenceMessage = await ReplyAsync("```Loading...```");
-                    _tacZapController.CurrentWars.Add((segment.Value, defendingSegment.Value, direction, attackMessage, new Queue<string>()));
-                    _tacZapController.CurrentWars.Add((defendingSegment.Value, segment.Value, opposite, defenceMessage, new Queue<string>()));
+                    _gameState.CurrentWars.Add((segment.Value, defendingSegment.Value, direction, attackMessage, new Queue<string>()));
+                    _gameState.CurrentWars.Add((defendingSegment.Value, segment.Value, opposite, defenceMessage, new Queue<string>()));
                     return;
                 }
 

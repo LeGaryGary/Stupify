@@ -13,7 +13,7 @@ namespace StupifyConsoleApp
         private static void Main(string[] args)
         {
             var startTask = Config.ServiceProvider.GetService<ClientManager>().Start();
-            var tickTacZapTask = Config.ServiceProvider.GetService<TicTacZapController>().Run();
+            var tickTacZapTask = Config.ServiceProvider.GetService<GameRunner>().Run();
             Task.Delay(-1).Wait();
         }
     }
