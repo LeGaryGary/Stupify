@@ -1,10 +1,9 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using TicTacZap;
 using TicTacZap.Blocks;
 
-namespace StupifyConsoleApp.TicTacZapManagement
+namespace Stupify.Data.FileSystem
 {
     internal static class Inventories
     {

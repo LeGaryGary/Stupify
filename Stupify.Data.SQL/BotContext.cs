@@ -1,16 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Stupify.Data.SQL.Models;
 
-namespace StupifyConsoleApp.DataModels
+namespace Stupify.Data.SQL
 {
-    public class BotContext : DbContext
+    internal class BotContext : DbContext
     {
         public BotContext(DbContextOptions<BotContext> options) : base(options)
         {
-        }
-
-        public BotContext(): base(new DbContextOptionsBuilder().UseSqlServer(Config.DbConnectionString).Options)
-        {
-            
         }
 
         public DbSet<Server> Servers { get; set; }
@@ -21,10 +17,5 @@ namespace StupifyConsoleApp.DataModels
         public DbSet<ServerStoryPart> ServerStoryParts { get; set; }
         public DbSet<Segment> Segments { get; set; }
         public DbSet<SegmentTemplate> SegmentTemplates { get; set; }
-
-        //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        //{
-        //    optionsBuilder.UseSqlServer(Config.DbConnectionString);
-        //}
     }
 }

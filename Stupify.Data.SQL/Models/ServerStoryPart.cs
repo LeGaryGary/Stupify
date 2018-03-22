@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace StupifyConsoleApp.DataModels
+namespace Stupify.Data.SQL.Models
 {
     public class ServerStoryPart
     {

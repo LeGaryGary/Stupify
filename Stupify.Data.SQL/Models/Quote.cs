@@ -1,4 +1,4 @@
-﻿namespace StupifyConsoleApp.DataModels
+﻿namespace Stupify.Data.SQL.Models
 {
     public class Quote
     {

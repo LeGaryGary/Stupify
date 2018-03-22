@@ -1,6 +1,6 @@
-﻿namespace StupifyConsoleApp.DataModels
+﻿namespace Stupify.Data.SQL.Models
 {
-    public class SegmentTemplate
+    internal class SegmentTemplate
     {
         public int SegmentTemplateId { get; set; }
         public virtual User User { get; set; }

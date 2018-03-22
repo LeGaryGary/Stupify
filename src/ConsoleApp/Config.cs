@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Events;
+using Stupify.Data;
 using StupifyConsoleApp.Client;
 using StupifyConsoleApp.DataModels;
 using StupifyConsoleApp.TicTacZapManagement;
@@ -56,7 +57,8 @@ namespace StupifyConsoleApp
                 var collection = new ServiceCollection()
                     .AddSingleton(new LoggerFactory().AddSerilog())
                     .AddLogging()
-                    .AddDbContext<BotContext>(options => options.UseSqlServer(DbConnectionString))
+                    .AddSqlDatabase(DbConnectionString)
+                    .AddRepositories(DataDirectory)
                     .AddSingleton<IDiscordClient>(sp => new DiscordSocketClient(new DiscordSocketConfig{AlwaysDownloadUsers = true}))
                     .AddSingleton<IMessageHandler, MessageHandler>()
                     .AddSingleton(sp =>

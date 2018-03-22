@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using TicTacZap;
 
-namespace StupifyConsoleApp.TicTacZapManagement
+namespace Stupify.Data.FileSystem
 {
     public static class SegmentTemplates
     {
@@ -19,12 +19,12 @@ namespace StupifyConsoleApp.TicTacZapManagement
         {
             if (!File.Exists(TemplatePath + $@"\{templateId + TemplateExtension}")) return null;
             var fileText = await File.ReadAllTextAsync(TemplatePath + $@"\{templateId + TemplateExtension}");
-            return Segments.DeserializeSegment(fileText);
+            return FileSegments.DeserializeSegment(fileText);
         }
 
         public static async Task SaveAsync(int templateId, Segment segment)
         {
-            var fileText = Segments.SerializeSegment(segment);
+            var fileText = FileSegments.SerializeSegment(segment);
             await File.WriteAllTextAsync(TemplatePath + $@"\{templateId + TemplateExtension}", fileText);
         }
     }

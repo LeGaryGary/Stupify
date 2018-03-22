@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace StupifyConsoleApp.DataModels
+namespace Stupify.Data.SQL.Models
 {
-    public class User
+    internal class User
     {
         public int UserId { get; set; }
 

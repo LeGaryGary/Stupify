@@ -2,11 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Discord;
 using Microsoft.EntityFrameworkCore;
-using TicTacZap;
 
-namespace StupifyConsoleApp.DataModels
+namespace Stupify.Data.SQL.Models
 {
     public static class BotContextExtensions
     {

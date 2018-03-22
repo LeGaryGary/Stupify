@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using StupifyConsoleApp.DataModels;
 using StupifyConsoleApp.TicTacZapManagement;
 using TicTacZap;
 using TicTacZap.Blocks;

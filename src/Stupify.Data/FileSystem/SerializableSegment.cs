@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using TicTacZap;
 using TicTacZap.Blocks;
 
-namespace StupifyConsoleApp.TicTacZapManagement
+namespace Stupify.Data.FileSystem
 {
     internal class SerializableSegment
     {

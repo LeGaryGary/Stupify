@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace StupifyConsoleApp.DataModels
+namespace Stupify.Data.SQL.Models
 {
-    public class ServerStory
+    internal class ServerStory
     {
         public int ServerStoryId { get; set; }
         public Server Server { get; set; }

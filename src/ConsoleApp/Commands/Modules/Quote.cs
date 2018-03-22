@@ -6,50 +6,47 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Stupify.Data;
+using Stupify.Data.Models;
 using StupifyConsoleApp.Client;
-using StupifyConsoleApp.DataModels;
 
 namespace StupifyConsoleApp.Commands.Modules
 {
-    public class Quote : StupifyModuleBase
+    public class Quotes : ModuleBase<CommandContext>
     {
         private readonly ILogger<Quote> _logger;
+        private readonly IQuoteRepository _quoteRepository;
 
-        public Quote(ILogger<Quote> logger, BotContext db): base(db)
+        public Quotes(ILogger<Quote> logger, IQuoteRepository quoteRepository)
         {
             _logger = logger;
+            _quoteRepository = quoteRepository;
         }
 
         [Command("AddQuote")]
-        public async Task AddQuoteAsync([Remainder] string quoteBody)
+        public async Task AddQuoteAsync(string quoteBody)
         {
-            await Db.Quotes.AddAsync(new DataModels.Quote
+            await _quoteRepository.AddQuoteAsync(new Quote
             {
-                QuoteBody = quoteBody,
-                ServerUser = await Db.GetServerUserAsync((long) Context.User.Id, (long) Context.Guild.Id)
+                Author = Context.User,
+                Content = quoteBody
             });
-            await Db.SaveChangesAsync();
-            _logger.LogInformation("The following quote has been added!: {quoteBody}", quoteBody);
+            _logger.LogInformation("Added quote from {User} in {Guild}", Context.User.Username, Context.Guild.Name);
             await ReplyAsync("Done!");
         }
 
         [Command("RandomQuote")]
         public async Task RandomQuoteAsync()
         {
-            var quote = await Db
-                .Quotes
-                .Include(q => q.ServerUser.User)
-                .Include(q => q.ServerUser.Server)
-                .Where(q => (ulong) q.ServerUser.Server.DiscordGuildId == Context.Guild.Id)
-                .OrderBy(r => Guid.NewGuid())
-                .FirstOrDefaultAsync();
+            var quote = await _quoteRepository.RandomQuote(Context.Guild);
+
             if (quote == null)
             {
                 await ReplyAsync("No quotes were found, try !addquote <quote>");
                 return;
             }
 
-            var message = quote.QuoteBody + " - " + Context.Client.UsernameFromServerUser(quote.ServerUser);
+            var message = $"{quote.Content} - {quote.Author.Username}";
             await ReplyAsync(message);
         }
     }

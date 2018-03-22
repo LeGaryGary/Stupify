@@ -1,128 +1,83 @@
 ﻿using System;
-using System.Linq;
 using System.Threading.Tasks;
+using Discord;
 using Discord.Commands;
-using Microsoft.EntityFrameworkCore;
-using StupifyConsoleApp.DataModels;
+using Stupify.Data;
 
 namespace StupifyConsoleApp.Commands.Modules
 {
-    public class Story : StupifyModuleBase
+    public class Story : ModuleBase<SocketCommandContext>
     {
-        public Story(BotContext db) : base(db)
+        private readonly IStoryRepository _storyRepository;
+
+        public Story(IStoryRepository storyRepository)
         {
+            _storyRepository = storyRepository;
         }
 
         [Command("BeginStory")]
-        public async Task StoryStart()
+        public async Task StoryStart(string line)
         {
-            var server = Db.Servers.First(s => (ulong) s.DiscordGuildId == Context.Guild.Id);
-            if (server.StoryInProgress)
-            {
-                await ReplyAsync("There's already a story in progress!!");
-                return;
-            }
-
-            server.StoryInProgress = true;
-            var serverStory = new ServerStory
-            {
-                Server = server,
-                StartTime = DateTime.Now,
-                StoryInitiatedBy = await Db.GetServerUserAsync(Context.User.Id, Context.Guild.Id)
-            };
-            Db.ServerStories.Add(serverStory);
-            Db.ServerStoryParts.Add(new ServerStoryPart
-            {
-                ServerStory = serverStory,
-                PartNumber = 0,
-                TimeOfAddition = DateTime.Now,
-                PartAuthor = await Db.GetServerUserAsync(Context.User.Id, Context.Guild.Id),
-                Part = ""
-            });
-            await Db.SaveChangesAsync();
-            await ReplyAsync(
-                $"The story begins here, who knows where it will go! Use the command {Config.CommandPrefix} andthen {{Your part of the story!}}" +
-                Environment.NewLine +
-                $"To end the story use {Config.CommandPrefix} theend, good luck!");
-        }
-
-        [Command("andthen")]
-        public async Task AddStoryPart([Remainder] string line)
-        {
-            var server = await Db.Servers.FirstAsync(s => (ulong) s.DiscordGuildId == Context.Guild.Id);
-
-            if (!server.StoryInProgress)
-            {
-                await ReplyAsync($"Theres no story in progress! try {Config.CommandPrefix} beginstory");
-                return;
-            }
-
-            var serverUser = await Db.GetServerUserAsync(Context.User.Id, Context.Guild.Id);
-            var story = await Db.GetLatestServerStoryAsync((long) Context.Guild.Id);
-            var lastPart = await Db.GetLastestServerStoryPartAsync(story);
-
-            var timeSpan = DateTime.Now - lastPart.TimeOfAddition;
-            if (lastPart.PartAuthor.ServerUserId == serverUser.ServerUserId &&
-                timeSpan < TimeSpan.FromMinutes(1))
+            if (Context.User is IGuildUser user && await _storyRepository.StartNewStoryAsync(user, line))
             {
                 await ReplyAsync(
-                    $"Please give other people a chance! Or at the very least, wait another {60 - timeSpan.Seconds} Seconds!");
-                return;
+                    $"The story begins here, who knows where it will go! Use the command {Config.CommandPrefix} AndThen [line]" +
+                    Environment.NewLine +
+                    $"To end the story use {Config.CommandPrefix} theend, good luck!");
             }
-
-            Db.ServerStoryParts.Add(new ServerStoryPart
+            else
             {
-                ServerStory = story,
-                Part = line,
-                PartAuthor = serverUser,
-                PartNumber = lastPart.PartNumber + 1,
-                TimeOfAddition = DateTime.Now
-            });
-            await Db.SaveChangesAsync();
-            await ReplyAsync("ADDED");
+                await ReplyAsync("Unable to start story");
+            }
+        }
+        
+        [Command("AndThen")]
+        public async Task AddStoryPart(string line)
+        {
+
+            if (Context.User is IGuildUser user && await _storyRepository.AddToCurrentStoryAsync(user, line))
+            {
+                await ReplyAsync("Your part has been added!");
+            }
+            else
+            {
+                // TODO: Make this get the current story and expand on why it is unable
+                await ReplyAsync("Unable to add your part");
+            }
         }
 
-        [Command("theend")]
+        [Command("TheEnd")]
         public async Task StoryEnd()
         {
-            var server = await Db.Servers.FirstAsync(s => (ulong) s.DiscordGuildId == Context.Guild.Id);
-
-            if (!server.StoryInProgress)
+            if (await _storyRepository.EndCurrentStoryAsync(Context.Guild))
             {
-                await ReplyAsync($"There's no story in progress! try {Config.CommandPrefix} beginstory");
-                return;
+                await ReplyAsync("The end!");
             }
-
-            var story = await Db.GetLatestServerStoryAsync((long) Context.Guild.Id);
-            var partsCount = await Db.ServerStoryParts
-                .CountAsync(ssp => ssp.ServerStory.ServerStoryId == story.ServerStoryId);
-            if (partsCount < 10)
+            else
             {
-                await ReplyAsync("This story is too short to end, please continue!");
-                return;
+                var story = await _storyRepository.GetCurrentStoryAsync(Context.Guild);
+                if (story == null)
+                {
+                    await ReplyAsync($"There's no story in progress! try {Config.CommandPrefix} BeginStory");
+                    return;
+                }
+                if (!story.AtLeastMinLength())
+                {
+                    await ReplyAsync("This story is too short to end, please continue!");
+                    return;
+                }
+                throw new InvalidOperationException();
             }
-
-            server.StoryInProgress = false;
-            await Db.SaveChangesAsync();
-            await ReplyAsync("The end!");
         }
 
-        [Command("tellmeastory")]
+        [Command("TellMeAStory")]
         public async Task ReplayStory()
         {
-            var serverStories = await Db.ServerStories
-                .Where(ss => ss.Server.DiscordGuildId == (long) Context.Guild.Id).ToListAsync();
-            var storyId = serverStories.OrderByDescending(r => Guid.NewGuid()).FirstOrDefault()?.ServerStoryId;
-
-            if (storyId != null)
+            var story = await _storyRepository.RandomStoryAsync(Context.Guild);
+            if (story != null)
             {
-                var parts = await Db.ServerStoryParts.Where(ssp => ssp.ServerStory.ServerStoryId == storyId)
-                    .ToListAsync();
-                var reply = string.Empty;
-                parts.ForEach(p => reply += p.Part + Environment.NewLine);
-                await ReplyAsync(reply);
+                await ReplyAsync(story.Content);
             }
-
             else
             {
                 await ReplyAsync(

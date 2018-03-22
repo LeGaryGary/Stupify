@@ -1,10 +1,9 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using TicTacZap;
 
-namespace StupifyConsoleApp.TicTacZapManagement
+namespace Stupify.Data.FileSystem
 {
     public static class UniverseController
     {
