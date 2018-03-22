@@ -48,11 +48,13 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
         public class SegmentModule : StupifyModuleBase
         {
             private readonly TicTacZapController _tacZapController;
+            private readonly SegmentEditReactionHandler _editReactionHandler;
             private readonly GameState _gameState;
 
-            public SegmentModule(BotContext db, TicTacZapController tacZapController, GameState gameState) : base(db)
+            public SegmentModule(BotContext db, TicTacZapController tacZapController, SegmentEditReactionHandler editReactionHandler, GameState gameState) : base(db)
             {
                 _tacZapController = tacZapController;
+                _editReactionHandler = editReactionHandler;
                 _gameState = gameState;
             }
 
@@ -146,9 +148,8 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
                     return;
                 }
 
-                var str = await _tacZapController.RenderSegmentAsync(segmentId, new Tuple<int, int>(0, 0));
-                var msg = await ReplyAsync($"```{str}```");
-                await SegmentEditReactionHandler.NewOwner(msg, segmentId, Context.User.Id);
+                var msg = await ReplyAsync($"```Hang on...```");
+                await _editReactionHandler.NewOwner(msg, segmentId, Context.User.Id, (await this.GetUserAsync()).UserId);
             }
 
             [Command("Delete")]

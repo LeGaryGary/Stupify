@@ -68,6 +68,7 @@ namespace StupifyConsoleApp
                     })
                     .AddSingleton<ClientManager>()
                     .AddTransient<TicTacZapController>()
+                    .AddSingleton<SegmentEditReactionHandler>()
                     .AddSingleton<GameState>()
                     .AddSingleton<GameRunner>();
 
