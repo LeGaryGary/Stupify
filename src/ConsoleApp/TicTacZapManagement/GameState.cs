@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Discord;
 using Microsoft.EntityFrameworkCore;
 using StupifyConsoleApp.DataModels;
-using TicTacZap;
-using TicTacZap.Blocks;
-using TicTacZap.Blocks.Offence;
 using Direction = TicTacZap.Direction;
 
 namespace StupifyConsoleApp.TicTacZapManagement

@@ -1,21 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
-using Discord;
 using Discord.Commands;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using StupifyConsoleApp.Client;
 using StupifyConsoleApp.Commands;
 using StupifyConsoleApp.Commands.Modules.TicTacZap;
 using StupifyConsoleApp.DataModels;
 using TicTacZap;
-using TicTacZap.Blocks;
 using TicTacZap.Blocks.Offence;
-using Direction = TicTacZap.Direction;
 
 namespace StupifyConsoleApp.TicTacZapManagement
 {
@@ -76,12 +69,20 @@ namespace StupifyConsoleApp.TicTacZapManagement
             return inventory.TextRender();
         }
 
-        public async Task<string> RenderSegmentAsync(int segmentId)
+        public async Task<string> RenderSegmentAsync(int segmentId, Tuple<int, int> selection = null)
         {
             var resourcesPerTick = await _db.GetSegmentResourcePerTickAsync(segmentId);
             var resources = await _db.GetSegmentResourcesAsync(segmentId);
             var segment = await Segments.GetAsync(segmentId);
             var text = segment.TextRender();
+
+            if (selection != null)
+            {
+                var i = selection.Item1 * 29 + selection.Item2 * 3 + 1;
+                var tmp = new StringBuilder(text) {[i] = '#'};
+                text = tmp.ToString();
+
+            }
 
             foreach (var resource in resourcesPerTick)
             {

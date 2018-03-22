@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord.Commands;
+using StupifyConsoleApp.Client;
 using StupifyConsoleApp.DataModels;
 using StupifyConsoleApp.TicTacZapManagement;
 using TicTacZap;
+using Direction = TicTacZap.Direction;
 using Segment = StupifyConsoleApp.DataModels.Segment;
 
 namespace StupifyConsoleApp.Commands.Modules.TicTacZap
@@ -45,11 +47,13 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
         public class SegmentModule : StupifyModuleBase
         {
             private readonly TicTacZapController _tacZapController;
+            private readonly SegmentEditReactionHandler _editReactionHandler;
             private readonly GameState _gameState;
 
-            public SegmentModule(BotContext db, TicTacZapController tacZapController, GameState gameState) : base(db)
+            public SegmentModule(BotContext db, TicTacZapController tacZapController, SegmentEditReactionHandler editReactionHandler, GameState gameState) : base(db)
             {
                 _tacZapController = tacZapController;
+                _editReactionHandler = editReactionHandler;
                 _gameState = gameState;
             }
 
@@ -132,6 +136,19 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
                 await Db.SaveChangesAsync();
                 await this.UpdateDbSegmentOutput(segmentId);
                 await ReplyAsync($"segment {segmentId} was reset!");
+            }
+
+            [Command("Edit")]
+            public async Task EditSegmentCommand(int segmentId)
+            {
+                if (!await this.UserHasSegmentAsync(segmentId))
+                {
+                    await ReplyAsync(Responses.SegmentOwnershipProblem);
+                    return;
+                }
+
+                var msg = await ReplyAsync($"```Hang on...```");
+                await _editReactionHandler.NewOwner(msg, segmentId, Context.User.Id, (await this.GetUserAsync()).UserId);
             }
 
             [Command("Delete")]

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Reflection;
-using System.Runtime.InteropServices.WindowsRuntime;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -57,8 +56,9 @@ namespace StupifyConsoleApp
                     .AddSingleton(new LoggerFactory().AddSerilog())
                     .AddLogging()
                     .AddDbContext<BotContext>(options => options.UseSqlServer(DbConnectionString))
-                    .AddSingleton<IDiscordClient>(sp => new DiscordSocketClient(new DiscordSocketConfig{AlwaysDownloadUsers = true}))
+                    .AddSingleton<IDiscordClient>(sp => new DiscordSocketClient(new DiscordSocketConfig{AlwaysDownloadUsers = true, MessageCacheSize = 100}))
                     .AddSingleton<IMessageHandler, MessageHandler>()
+                    .AddSingleton<IReactionHandler, SegmentEditReactionHandler>()
                     .AddSingleton(sp =>
                     {
                         var commandService = new CommandService();
@@ -67,6 +67,7 @@ namespace StupifyConsoleApp
                     })
                     .AddSingleton<ClientManager>()
                     .AddTransient<TicTacZapController>()
+                    .AddSingleton<SegmentEditReactionHandler>()
                     .AddSingleton<GameState>()
                     .AddSingleton<GameRunner>();
 
