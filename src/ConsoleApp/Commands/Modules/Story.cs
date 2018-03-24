@@ -27,6 +27,7 @@ namespace StupifyConsoleApp.Commands.Modules
             }
             else
             {
+                // TODO: Make this get the current story and expand on why it is unable
                 await ReplyAsync("Unable to start story");
             }
         }
