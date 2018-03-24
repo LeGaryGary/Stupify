@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Stupify.Data;
+using Stupify.Data.Repositories;
 
 namespace StupifyConsoleApp.Commands.Modules
 {
@@ -74,7 +75,7 @@ namespace StupifyConsoleApp.Commands.Modules
         [Command("TellMeAStory")]
         public async Task ReplayStory()
         {
-            var story = await _storyRepository.RandomStoryAsync(Context.Guild);
+            var story = await _storyRepository.RandomStoryAsync(Context.Guild, Context.Client);
             if (story != null)
             {
                 await ReplyAsync(story.Content);

@@ -1,43 +1,42 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using Discord;
 using Discord.Commands;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using StupifyConsoleApp.Client;
+using Stupify.Data;
+using Stupify.Data.Repositories;
 using StupifyConsoleApp.Commands;
 using StupifyConsoleApp.Commands.Modules.TicTacZap;
-using StupifyConsoleApp.DataModels;
 using TicTacZap;
-using TicTacZap.Blocks;
 using TicTacZap.Blocks.Offence;
-using Direction = TicTacZap.Direction;
 
 namespace StupifyConsoleApp.TicTacZapManagement
 {
     public class TicTacZapController
     {
         private readonly ILogger<TicTacZapController> _logger;
-        private readonly BotContext _db;
         private readonly GameState _gameState;
+        private readonly IUserRepository _userRepository;
+        private readonly ISegmentRepository _segmentRepository;
+        private readonly ITemplateRepository _templateRepository;
 
-        public TicTacZapController(ILogger<TicTacZapController> logger, BotContext db, GameState gameState)
+        public TicTacZapController(ILogger<TicTacZapController> logger, GameState gameState, IUserRepository userRepository, ISegmentRepository segmentRepository, ITemplateRepository templateRepository)
         {
             _logger = logger;
-            _db = db;
             _gameState = gameState;
+            _userRepository = userRepository;
+            _segmentRepository = segmentRepository;
+            _templateRepository = templateRepository;
         }
 
         public ShopInventory Shop { get; } = new ShopInventory();
 
         public async Task ShowSegmentAsync(ICommandContext context, int segmentId)
         {
-            if (await _gameState.SetUserSegmentSelection((await _db.GetDbUser(context.User)).UserId, segmentId, _db))
+            var userId = await _userRepository.GetUserId(context.User);
+            if (await _segmentRepository.UserHasSegmentAsync(context.User, segmentId))
             {
+                _gameState.SetUserSegmentSelection(userId, segmentId);
                 await context.Channel.SendMessageAsync(
                     $"```{await RenderSegmentAsync(segmentId)}```");
             }
@@ -46,8 +45,10 @@ namespace StupifyConsoleApp.TicTacZapManagement
 
         public async Task ShowSegmentAsync(ICommandContext context, int segmentId, Overlay overlay)
         {
-            if (await _gameState.SetUserSegmentSelection((await _db.GetDbUser(context.User)).UserId, segmentId, _db))
+            var userId = await _userRepository.GetUserId(context.User);
+            if (await _segmentRepository.UserHasSegmentAsync(context.User, segmentId))
             {
+                _gameState.SetUserSegmentSelection(userId, segmentId);
                 switch (overlay)
                 {
                     case Overlay.Health:
@@ -62,25 +63,20 @@ namespace StupifyConsoleApp.TicTacZapManagement
 
         public async Task ShowTemplateAsync(ICommandContext context, int templateId)
         {
-            if (await _gameState.SetUserTemplateSelection((await _db.GetDbUser(context.User)).UserId, templateId, _db))
+            var userId = await _userRepository.GetUserId(context.User);
+            if (await _templateRepository.UserHasTemplateAsync(context.User, templateId))
             {
-                await context.Channel.SendMessageAsync(
-                    $"```{(await SegmentTemplates.GetAsync(templateId)).TextRender()}```");
+                _gameState.SetUserTemplateSelection(userId, templateId);
+                await context.Channel.SendMessageAsync($"```{(await _templateRepository.GetTemplateAsync(templateId)).TextRender()}```");
             }
             else await context.Channel.SendMessageAsync(Responses.TemplateOwnershipProblem);
         }
 
-        public async Task<string> RenderInventory(int userId)
-        {
-            var inventory = await Inventories.GetInventoryAsync(userId);
-            return inventory.TextRender();
-        }
-
         public async Task<string> RenderSegmentAsync(int segmentId)
         {
-            var resourcesPerTick = await _db.GetSegmentResourcePerTickAsync(segmentId);
-            var resources = await _db.GetSegmentResourcesAsync(segmentId);
-            var segment = await Segments.GetAsync(segmentId);
+            var resourcesPerTick = await _segmentRepository.GetSegmentResourcePerTickAsync(segmentId);
+            var resources = await _segmentRepository.GetSegmentResourcesAsync(segmentId);
+            var segment = await _segmentRepository.GetSegmentAsync(segmentId);
             var text = segment.TextRender();
 
             foreach (var resource in resourcesPerTick)
@@ -100,19 +96,19 @@ namespace StupifyConsoleApp.TicTacZapManagement
 
         public async Task<string> RenderSegmentHealthAsync(int segmentId)
         {
-            var segment = await Segments.GetAsync(segmentId);
+            var segment = await _segmentRepository.GetSegmentAsync(segmentId);
             return segment.HealthTextRender();
         }
 
         public async Task<bool> SegmentReadyForCombat(int segmentId)
         {
             return _gameState.CurrentWars.All(w => w.attackingSegment != segmentId) && 
-                   (await Segments.GetAsync(segmentId)).Blocks.OfType<IOffenceBlock>().Any();
+                   (await _segmentRepository.GetSegmentAsync(segmentId)).Blocks.OfType<IOffenceBlock>().Any();
         }
 
-        public async Task<string> RenderBlockInfoAsync(int segmentSelectionId, int x, int y)
+        public async Task<string> RenderBlockInfoAsync(int segmentId, int x, int y)
         {
-            var segment = await Segments.GetAsync(segmentSelectionId);
+            var segment = await _segmentRepository.GetSegmentAsync(segmentId);
 
             if (x < 0 || y < 0 ||
                 x >= segment.Blocks.GetLength(0) ||
@@ -131,16 +127,6 @@ namespace StupifyConsoleApp.TicTacZapManagement
             str += $"Health: {info.Health}/{info.MaxHealth}";
 
             return str;
-        }
-
-        public static bool MakeTransaction(User fromUser, User toUser, decimal amount)
-        {
-            if (fromUser.Balance < amount) return false;
-
-            fromUser.Balance -= amount;
-            toUser.Balance += amount;
-
-            return true;
         }
     }
 }

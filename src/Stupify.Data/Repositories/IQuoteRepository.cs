@@ -2,7 +2,7 @@
 using Discord;
 using Stupify.Data.Models;
 
-namespace Stupify.Data
+namespace Stupify.Data.Repositories
 {
     public interface IQuoteRepository
     {

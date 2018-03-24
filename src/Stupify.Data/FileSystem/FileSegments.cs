@@ -102,8 +102,6 @@ namespace Stupify.Data.FileSystem
             return blocks;
         }
 
-        
-
         public static string SerializeSegment(Segment segment)
         {
             var serSeg = new SerializableSegment();

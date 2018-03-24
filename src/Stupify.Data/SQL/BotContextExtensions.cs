@@ -4,9 +4,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Microsoft.EntityFrameworkCore;
+using Stupify.Data.SQL.Models;
 using TicTacZap;
 
-namespace Stupify.Data.SQL.Models
+namespace Stupify.Data.SQL
 {
     internal static class BotContextExtensions
     {
@@ -14,41 +15,6 @@ namespace Stupify.Data.SQL.Models
         {
             var discordId = (long) user.Id;
             return await context.Users.FirstAsync(u => u.DiscordUserId == discordId);
-        }
-
-        public static async Task<ServerUser> GetServerUserAsync(this BotContext context, ulong discordUserId,
-            ulong discordServerId, bool addIfNotFound = false)
-        {
-            return await context.GetServerUserAsync((long) discordUserId, (long) discordServerId, addIfNotFound);
-        }
-
-        public static async Task<ServerUser> GetServerUserAsync(this BotContext context, long discordUserId,
-            long discordServerId, bool addIfNotFound = false)
-        {
-            var serverUser = await context.ServerUsers.FirstOrDefaultAsync(
-                x => x.Server.DiscordGuildId == discordServerId && x.User.DiscordUserId == discordUserId);
-
-            if (serverUser != null || !addIfNotFound) return serverUser;
-
-            //No ServerUser Exists => create one
-
-            var userTask = context.Users.FirstOrDefaultAsync(
-                x => x.DiscordUserId == discordUserId);
-
-            var serverTask = context.Servers.FirstOrDefaultAsync(
-                x => x.DiscordGuildId == discordServerId);
-
-            await context.ServerUsers.AddAsync(new ServerUser
-            {
-                User = await userTask ?? new User {DiscordUserId = discordUserId, Balance = 1000},
-                Server = await serverTask ?? new Server {DiscordGuildId = discordServerId}
-            });
-            await context.SaveChangesAsync();
-
-            return await context.ServerUsers.FirstOrDefaultAsync(
-                       su => su.Server.DiscordGuildId == discordServerId &&
-                             su.User.DiscordUserId == discordUserId)
-                   ?? throw new InvalidOperationException("Newly added serveruser not found!");
         }
 
         public static async Task<ServerStory> GetLatestServerStoryAsync(this BotContext context, long serverId)

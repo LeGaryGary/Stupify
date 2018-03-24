@@ -1,39 +1,60 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Discord.Commands;
-using StupifyConsoleApp.DataModels;
+using Microsoft.Extensions.Logging;
+using Stupify.Data;
+using Stupify.Data.Repositories;
 using StupifyConsoleApp.TicTacZapManagement;
 using TicTacZap;
-using Segment = StupifyConsoleApp.DataModels.Segment;
 
 namespace StupifyConsoleApp.Commands.Modules.TicTacZap
 {
-    public class Segments : StupifyModuleBase
+    public class Segments : ModuleBase<CommandContext>
     {
-        public Segments(BotContext db) : base(db)
+        private readonly ILogger<Segments> _logger;
+        private readonly ISegmentRepository _segmentRepository;
+        private readonly IUniverseRepository _universeRepository;
+
+        public Segments(ILogger<Segments> logger, ISegmentRepository segmentRepository, IUniverseRepository universeRepository)
         {
+            _logger = logger;
+            _segmentRepository = segmentRepository;
+            _universeRepository = universeRepository;
         }
 
         [Command("Segments")]
         public async Task ListSegments()
         {
-            var segments = await this.GetSegments();
-            var renderSegmentList = RenderSegmentList(segments);
+            var segments = await _segmentRepository.GetSegmentIds(Context.User);
+            var renderSegmentList = await RenderSegmentListAsync(segments);
             if (renderSegmentList == string.Empty)
-                await ReplyAsync(
-                    $"You don't have any segments, buy your first one: `{Config.CommandPrefix} Segment Buy`");
+                await ReplyAsync($"You don't have any segments, buy your first one: `{Config.CommandPrefix} Segment Buy`");
             else
                 await ReplyAsync(renderSegmentList + Environment.NewLine + $"Use `{Config.CommandPrefix} Segment [segmentId]` to select and show a segment!");
         }
 
-        private static string RenderSegmentList(IEnumerable<Segment> segments)
+        private async Task<string> RenderSegmentListAsync(IEnumerable<int> segmentIds)
         {
-            return segments.Aggregate(
-                string.Empty,
-                (current, segment) => 
-                    current + ($"Segment Id: {segment.SegmentId} Output: {segment.UnitsPerTick}" + Environment.NewLine));
+            var render = string.Empty;
+
+            foreach (var segmentId in segmentIds)
+            {
+                var location = await _universeRepository.FindAsync(segmentId);
+                var x = "~";
+                var y = "~";
+                if (location.HasValue)
+                {
+                    x = location.Value.x.ToString();
+                    y = location.Value.y.ToString();
+                }
+                
+                render += $"Segment Id: {segmentId} Location: {x}, {y}" + Environment.NewLine;
+            }
+
+            return render;
         }
 
         private static decimal SegmentPrice(int segmentCount)
@@ -42,21 +63,30 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
         }
 
         [Group("Segment")]
-        public class SegmentModule : StupifyModuleBase
+        public class SegmentModule : ModuleBase<CommandContext>
         {
             private readonly TicTacZapController _tacZapController;
             private readonly GameState _gameState;
+            private readonly IUserRepository _userRepository;
+            private readonly ISegmentRepository _segmentRepository;
+            private readonly IInventoryRepository _inventoryRepository;
+            private readonly IUniverseRepository _universeRepository;
 
-            public SegmentModule(BotContext db, TicTacZapController tacZapController, GameState gameState) : base(db)
+            public SegmentModule(TicTacZapController tacZapController, GameState gameState, IUserRepository userRepository, ISegmentRepository segmentRepository, IInventoryRepository inventoryRepository, IUniverseRepository universeRepository)
             {
                 _tacZapController = tacZapController;
                 _gameState = gameState;
+                _userRepository = userRepository;
+                _segmentRepository = segmentRepository;
+                _inventoryRepository = inventoryRepository;
+                _universeRepository = universeRepository;
             }
 
             [Command]
             public async Task Segment()
             {
-                var segmentId = _gameState.GetUserSegmentSelection((await this.GetUserAsync()).UserId);
+                var userId = await _userRepository.GetUserId(Context.User);
+                var segmentId = _gameState.GetUserSegmentSelection(userId);
                 if (!segmentId.HasValue)
                 {
                     await ReplyAsync(Responses.SelectSegmentMessage);
@@ -68,7 +98,7 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
             [Command]
             public async Task Segment(int segmentId)
             {
-                if (await this.UserHasSegmentAsync(segmentId))
+                if (await _segmentRepository.UserHasSegmentAsync(Context.User, segmentId))
                 {
                     await _tacZapController.ShowSegmentAsync(Context, segmentId);
                     return;
@@ -80,7 +110,7 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
             [Command]
             public async Task Segment(int segmentId, Overlay overlayType)
             {
-                if (await this.UserHasSegmentAsync(segmentId))
+                if (await _segmentRepository.UserHasSegmentAsync(Context.User, segmentId))
                 {
                     await _tacZapController.ShowSegmentAsync(Context, segmentId, overlayType);
                     return;
@@ -92,58 +122,50 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
             [Command("Buy")]
             public async Task BuySegment()
             {
-                var user = await this.GetUserAsync();
-
-                //if (await Db.Segments.Where(s => s.User.UserId == user.UserId).CountAsync() >= 50)
-                //{
-                //    await ReplyAsync("You have reached the maximum number of segments, unable to add more");
-                //}
-
-                var price = SegmentPrice(await this.SegmentCountAsync());
-                if (!TicTacZapController.MakeTransaction(await this.GetUserAsync(), await Db.GetBankAsync(), price))
+                var price = SegmentPrice(await _segmentRepository.SegmentCountAsync(Context.User));
+                if (!await _userRepository.UserToBankTransferAsync(Context.User, price))
                 {
                     await ReplyAsync(Responses.NotEnoughUnits(price));
                     return;
                 }
-                await Db.SaveChangesAsync();
 
-                var segment = await NewSegment(user.UserId);
+                var segment = await _segmentRepository.NewSegmentAsync(Context.User);
 
-                await ReplyAsync(
-                    $"You have purchased a segment!\r\nId: {segment.segmentId}\r\nCoordinates: {segment.coords.Value.x+1}, {segment.coords.Value.y+1}");
+                await ReplyAsync($"You have purchased a segment!\r\nId: {segment.segmentId}\r\nCoordinates: {segment.coords.Value.x+1}, {segment.coords.Value.y+1}");
             }
 
             [Command("Reset")]
-            public async Task ResetSegment(int segmentId)
+            public async Task ResetSegment()
             {
-                if (!await this.UserHasSegmentAsync(segmentId))
+                var userId = await _userRepository.GetUserId(Context.User);
+                var segmentId = _gameState.GetUserSegmentSelection(userId);
+                if (!segmentId.HasValue)
                 {
-                    await ReplyAsync(Responses.SegmentOwnershipProblem);
+                    await ReplyAsync(Responses.SelectSegmentMessage);
                     return;
                 }
 
-                var user = await this.GetUserAsync();
-                var blocks = await TicTacZapManagement.Segments.ResetSegmentAsync(segmentId);
+                var blocks = await _segmentRepository.ResetSegmentAsync(segmentId.Value);
 
                 foreach (var type in blocks)
                     if (type.Value > 0)
-                        await Inventories.AddToInventoryAsync(type.Key, type.Value, user.UserId);
-
-                await Db.SaveChangesAsync();
-                await this.UpdateDbSegmentOutput(segmentId);
+                        await _inventoryRepository.AddToInventoryAsync(type.Key, type.Value, Context.User);
+                
                 await ReplyAsync($"segment {segmentId} was reset!");
             }
 
             [Command("Delete")]
-            public async Task DeleteSegmentCommand(int segmentId)
+            public async Task DeleteSegmentCommand()
             {
-                if (!await this.UserHasSegmentAsync(segmentId))
+                var userId = await _userRepository.GetUserId(Context.User);
+                var segmentId = _gameState.GetUserSegmentSelection(userId);
+                if (!segmentId.HasValue)
                 {
-                    await ReplyAsync(Responses.SegmentOwnershipProblem);
+                    await ReplyAsync(Responses.SelectSegmentMessage);
                     return;
                 }
 
-                var locationNullable = await DeleteSegment(segmentId);
+                var locationNullable = await _segmentRepository.DeleteSegmentAsync(segmentId.Value);
                 if (locationNullable.HasValue)
                 {
                     await ReplyAsync($"It's gone...\r\nId: {segmentId}\r\nCoordinates: {locationNullable.Value.x + 1}, {locationNullable.Value.y + 1}");
@@ -156,7 +178,8 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
             [Command("Attack")]
             public async Task AttackSegmentCommand(Direction direction)
             {
-                var segment = _gameState.GetUserSegmentSelection((await this.GetUserAsync()).UserId);
+                var userId = await _userRepository.GetUserId(Context.User);
+                var segment = _gameState.GetUserSegmentSelection(userId);
                 if (!segment.HasValue)
                 {
                     await ReplyAsync(Responses.SelectSegmentMessage);
@@ -169,7 +192,7 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
                     return;
                 }
 
-                var defendingSegment = await UniverseController.GetAdjacentSegmentInDirection(segment.Value, direction);
+                var defendingSegment = await _universeRepository.GetAdjacentSegmentInDirectionAsync(segment.Value, direction);
                 if (defendingSegment.HasValue)
                 {
                     var opposite = direction.Opposite();
@@ -183,32 +206,6 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
                 }
 
                 await ReplyAsync("Good luck fighting... empty space? Try attacking something more interesting please");
-            }
-
-            private async Task<(int segmentId, (int x, int y)? coords)> NewSegment(int userId)
-            {
-                var user = Db.Users.First(u => u.UserId == userId);
-                var segment = new Segment
-                {
-                    UnitsPerTick = 0,
-                    EnergyPerTick = 0,
-                    User = user
-                };
-                await Db.Segments.AddAsync(segment);
-                await Db.SaveChangesAsync();
-                await TicTacZapManagement.Segments.NewSegmentAsync(segment.SegmentId);
-                await this.UpdateDbSegmentOutput(segment.SegmentId);
-                var coords = await UniverseController.NewSegment(segment.SegmentId);
-                return (segment.SegmentId, coords);
-            }
-
-            private async Task<(int x, int y)?> DeleteSegment(int segmentId)
-            {
-                var dbSegment = Db.Segments.First(s => s.SegmentId == segmentId);
-                Db.Segments.Remove(dbSegment);
-                await Db.SaveChangesAsync();
-                await TicTacZapManagement.Segments.DeleteSegmentAsync(segmentId);
-                return await UniverseController.DeleteSegment(segmentId);
             }
         }
     }

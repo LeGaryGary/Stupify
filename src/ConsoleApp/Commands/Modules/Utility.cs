@@ -3,18 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord.Commands;
-using StupifyConsoleApp.Client;
-using StupifyConsoleApp.Commands.Conditions;
-using StupifyConsoleApp.DataModels;
 
 namespace StupifyConsoleApp.Commands.Modules
 {
-    public class Utility : StupifyModuleBase
+    public class Utility : ModuleBase<CommandContext>
     {
         private readonly CommandService _commandService;
         private readonly List<string> _seenModules = new List<string>();
 
-        public Utility(BotContext db, CommandService commandService) : base(db)
+        public Utility(CommandService commandService)
         {
             _commandService = commandService;
         }

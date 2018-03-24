@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Stupify.Data;
 using Stupify.Data.Models;
+using Stupify.Data.Repositories;
 using StupifyConsoleApp.Client;
 
 namespace StupifyConsoleApp.Commands.Modules

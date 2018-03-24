@@ -1,27 +1,31 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using TicTacZap;
 using TicTacZap.Blocks;
 
 namespace Stupify.Data.FileSystem
 {
-    internal static class Inventories
+    internal class Inventories
     {
         private const string InventoryExtension = ".INV";
-        private static readonly string InventoriesPath;
+        private readonly string _inventoriesPath;
 
-        static Inventories()
+        public Inventories(string dataDirectory)
         {
-            InventoriesPath = Config.DataDirectory + @"\Inventories";
-            Directory.CreateDirectory(InventoriesPath);
+            _inventoriesPath = dataDirectory + @"\Inventories";
+            Directory.CreateDirectory(_inventoriesPath);
         }
 
-        public static async Task<Inventory> GetInventoryAsync(int userId)
+        public async Task<Inventory> GetInventoryAsync(int userId)
         {
-            if (File.Exists(InventoriesPath + $@"\{userId + InventoryExtension}"))
+            if (File.Exists(_inventoriesPath + $@"\{userId + InventoryExtension}"))
             {
-                var fileText = await File.ReadAllTextAsync(InventoriesPath + $@"\{userId + InventoryExtension}");
-                return JsonConvert.DeserializeObject<Inventory>(fileText);
+                using (var stream = File.OpenText(_inventoriesPath + $@"\{userId + InventoryExtension}"))
+                {
+                    var fileText = await stream.ReadToEndAsync();
+                    return JsonConvert.DeserializeObject<Inventory>(fileText);
+                }
             }
 
             var inventory = new Inventory(5);
@@ -29,20 +33,23 @@ namespace Stupify.Data.FileSystem
             return inventory;
         }
 
-        public static async Task SaveInventoryAsync(int userId, Inventory inventory)
+        public async Task SaveInventoryAsync(int userId, Inventory inventory)
         {
             var fileText = JsonConvert.SerializeObject(inventory);
-            await File.WriteAllTextAsync(InventoriesPath + $@"\{userId + InventoryExtension}", fileText);
+            using (var stream = File.CreateText(_inventoriesPath + $@"\{userId + InventoryExtension}"))
+            {
+                await stream.WriteAsync(fileText);
+            }
         }
 
-        public static async Task AddToInventoryAsync(BlockType blockType, int quantity, int userId)
+        public async Task AddToInventoryAsync(BlockType blockType, int quantity, int userId)
         {
             var inventory = await GetInventoryAsync(userId);
             inventory.AddBlocks(blockType, quantity);
             await SaveInventoryAsync(userId, inventory);
         }
 
-        public static async Task<bool> RemoveFromInventoryAsync(BlockType blockType, int quantity, int userId)
+        public async Task<bool> RemoveFromInventoryAsync(BlockType blockType, int quantity, int userId)
         {
             var inventory = await GetInventoryAsync(userId);
             if (!inventory.RemoveBlocks(blockType, quantity)) return false;
@@ -50,7 +57,7 @@ namespace Stupify.Data.FileSystem
             return true;
         }
 
-        public static async Task ResetInventory(int userId)
+        public async Task ResetInventory(int userId)
         {
             var inventory = await GetInventoryAsync(userId);
             inventory.Reset();

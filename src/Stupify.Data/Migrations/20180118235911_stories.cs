@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace StupifyConsoleApp.Migrations
+namespace Stupify.Data.Migrations
 {
     public partial class stories : Migration
     {

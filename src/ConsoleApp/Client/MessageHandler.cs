@@ -4,23 +4,24 @@ using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
-using StupifyConsoleApp.DataModels;
+using Stupify.Data;
+using Stupify.Data.Repositories;
 
 namespace StupifyConsoleApp.Client
 {
     public class MessageHandler: IMessageHandler
     {
-        private readonly BotContext _db;
         private readonly IDiscordClient _client;
         private readonly CommandService _commandService;
         private readonly ILogger<MessageHandler> _logger;
+        private readonly IUserRepository _userRepository;
 
-        public MessageHandler(BotContext db, IDiscordClient client, CommandService commandService, ILogger<MessageHandler> logger)
+        public MessageHandler(IDiscordClient client, CommandService commandService, ILogger<MessageHandler> logger, IUserRepository userRepository)
         {
-            _db = db;
             _client = client;
             _commandService = commandService;
             _logger = logger;
+            _userRepository = userRepository;
         }
 
         public async Task Handle(SocketMessage messageParam)
@@ -29,9 +30,8 @@ namespace StupifyConsoleApp.Client
 
             var argPos = 0;
             var context = new CommandContext(_client, message);
-            
-            var serverUser = await _db.GetServerUserAsync(context.User.Id, context.Guild.Id, true);
-            if (serverUser.Muted)
+
+            if (context.User is IGuildUser guildUser && await _userRepository.IsMutedAsync(guildUser))
             {
                 await context.Message.DeleteAsync();
                 return;

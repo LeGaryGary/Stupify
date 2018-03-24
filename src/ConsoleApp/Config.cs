@@ -1,11 +1,10 @@
 ﻿using System;
 using System.IO;
 using System.Reflection;
-using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -13,7 +12,6 @@ using Serilog;
 using Serilog.Events;
 using Stupify.Data;
 using StupifyConsoleApp.Client;
-using StupifyConsoleApp.DataModels;
 using StupifyConsoleApp.TicTacZapManagement;
 
 namespace StupifyConsoleApp
@@ -65,6 +63,12 @@ namespace StupifyConsoleApp
                     {
                         var commandService = new CommandService();
                         commandService.AddModulesAsync(Assembly.GetEntryAssembly()).GetAwaiter().GetResult();
+                        var logger = sp.GetService<ILogger<MessageHandler>>();
+                        commandService.Log += message =>
+                        {
+                            logger.LogError(message.Exception, "Unhandled exception in command service");
+                            return Task.CompletedTask;
+                        };
                         return commandService;
                     })
                     .AddSingleton<ClientManager>()

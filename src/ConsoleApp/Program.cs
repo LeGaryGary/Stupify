@@ -10,11 +10,15 @@ namespace StupifyConsoleApp
 {
     internal class Program
     {
-        private static void Main(string[] args)
+        private static void Main() => MainAsync().GetAwaiter().GetResult();
+
+        private static async Task MainAsync()
         {
             var startTask = Config.ServiceProvider.GetService<ClientManager>().Start();
-            var tickTacZapTask = Config.ServiceProvider.GetService<GameRunner>().Run();
-            Task.Delay(-1).Wait();
+            while (true)
+            {
+                await Config.ServiceProvider.GetService<GameRunner>().Run();
+            }
         }
     }
 }

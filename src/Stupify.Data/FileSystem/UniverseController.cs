@@ -1,61 +1,72 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using TicTacZap;
 
 namespace Stupify.Data.FileSystem
 {
-    public static class UniverseController
+    internal class UniverseController
     {
         private const string UniverseExtension = ".UNI";
-        private static readonly string UniversePath;
+        private readonly string _universePath;
+        private string _universeDirectory;
 
-        private static readonly Universe Universe;
+        private Universe _universe;
 
-        static UniverseController()
+        public UniverseController(string dataDirectory, string universeName)
         {
-            UniversePath = Config.DataDirectory + @"\Universes";
-            Directory.CreateDirectory(UniversePath);
-            if (File.Exists(UniversePath + @"\" + Config.UniverseName + UniverseExtension))
+            _universeDirectory = $"{dataDirectory}/Universes";
+            _universePath = $"{dataDirectory}/Universes/{universeName}{UniverseExtension}";
+        }
+
+        public async Task Start()
+        {
+            Directory.CreateDirectory(_universeDirectory);
+            if (File.Exists(_universePath))
             {
-                Universe = LoadUniverseFile();
+                _universe = await LoadUniverseFile();
             }
             else
             {
-                Universe = new Universe(999);
-                SaveUniverseFileAsync().GetAwaiter().GetResult();
+                _universe = new Universe(999);
+                await SaveUniverseFileAsync();
             }
         }
 
-        public static string RenderRelativeToSegment(int segmentId, int scope)
+        public async Task<(int x, int y)?> FindAsync(int segmentId)
         {
-            if (scope > 12) return null;
-            var locationNullable = Universe.FindSegment(segmentId);
-            if (!locationNullable.HasValue) return null;
-            return Universe.RenderRelative(locationNullable.Value, scope);
+            return await _universe.FindSegmentAsync(segmentId);
         }
 
-        public static async Task<(int, int)?> NewSegment(int segmentId)
+        public async Task<string> RenderRelativeToSegmentAsync(int segmentId, int scope)
         {
-            var newSegmentCoords = Universe.NewSegment(segmentId);
+            if (scope > 12) return null;
+            var locationNullable = await _universe.FindSegmentAsync(segmentId);
+            return locationNullable.HasValue ? _universe.RenderRelative(locationNullable.Value, scope) : null;
+        }
+
+        public async Task<(int, int)?> NewSegmentAsync(int segmentId)
+        {
+            var newSegmentCoords = await _universe.NewSegmentAsync(segmentId);
             await SaveUniverseFileAsync();
             return newSegmentCoords;
         }
 
-        public static async Task<(int, int)?> DeleteSegment(int segmentId)
+        public async Task<(int, int)?> DeleteSegment(int segmentId)
         {
-            var coords = Universe.FindSegment(segmentId);
+            var coords = await _universe.FindSegmentAsync(segmentId);
             if (!coords.HasValue) return null;
-            Universe.DeleteSegment(((int x,int y))coords);
+            _universe.DeleteSegment(((int x,int y))coords);
             await SaveUniverseFileAsync();
             return coords;
         }
 
-        public static async Task<int?> GetAdjacentSegmentInDirection(int originalSegment, Direction direction)
+        public async Task<int?> GetAdjacentSegmentInDirectionAsync(int originalSegment, Direction direction)
         {
-            var locationNullable = Universe.FindSegment(originalSegment);
+            var locationNullable = await _universe.FindSegmentAsync(originalSegment);
             if (!locationNullable.HasValue) return null;
-            var location = ((int x, int y))locationNullable;
+            var location = ((int x, int y)) locationNullable;
 
             switch (direction)
             {
@@ -75,27 +86,33 @@ namespace Stupify.Data.FileSystem
                     throw new ArgumentOutOfRangeException(nameof(direction), direction, null);
             }
 
-            if (location.x >= Universe.Segments.GetLength(0) ||
+            if (location.x >= _universe.Segments.GetLength(0) ||
                 location.x < 0 ||
-                location.y >= Universe.Segments.GetLength(1) ||
+                location.y >= _universe.Segments.GetLength(1) ||
                 location.y < 0)
             {
                 return null;
             }
 
-            return Universe.Segments[location.x, location.y];
+            return _universe.Segments[location.x, location.y];
         }
 
-        private static Universe LoadUniverseFile()
+        private async Task<Universe> LoadUniverseFile()
         {
-            var fileText = File.ReadAllText(UniversePath + @"\" + Config.UniverseName + UniverseExtension);
-            return JsonConvert.DeserializeObject<Universe>(fileText);
+            using (var stream = File.OpenText(_universePath))
+            {
+                var fileText = await stream.ReadToEndAsync();
+                return JsonConvert.DeserializeObject<Universe>(fileText);
+            }
         }
 
-        private static async Task SaveUniverseFileAsync()
+        private async Task SaveUniverseFileAsync()
         {
-            var fileText = JsonConvert.SerializeObject(Universe);
-            await File.WriteAllTextAsync(UniversePath + @"\" + Config.UniverseName + UniverseExtension, fileText);
+            var fileText = JsonConvert.SerializeObject(_universe);
+            using (var stream = File.CreateText(_universePath))
+            {
+                await stream.WriteAsync(fileText);
+            };
         }
     }
 }

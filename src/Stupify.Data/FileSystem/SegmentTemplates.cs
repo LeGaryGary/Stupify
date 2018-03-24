@@ -4,28 +4,35 @@ using TicTacZap;
 
 namespace Stupify.Data.FileSystem
 {
-    public static class SegmentTemplates
+    internal class SegmentTemplates
     {
         private const string TemplateExtension = ".TEMPLATE";
-        private static readonly string TemplatePath;
+        private readonly string TemplatePath;
 
-        static SegmentTemplates()
+        public SegmentTemplates(string dataDirectory)
         {
-            TemplatePath = Config.DataDirectory + @"\Inventories";
+            TemplatePath = dataDirectory + @"\Inventories";
             Directory.CreateDirectory(TemplatePath);
         }
 
-        public static async Task<Segment> GetAsync(int templateId)
+        public async Task<Segment> GetAsync(int templateId)
         {
             if (!File.Exists(TemplatePath + $@"\{templateId + TemplateExtension}")) return null;
-            var fileText = await File.ReadAllTextAsync(TemplatePath + $@"\{templateId + TemplateExtension}");
-            return FileSegments.DeserializeSegment(fileText);
+            
+            using (var stream = File.OpenText(TemplatePath + $@"\{templateId + TemplateExtension}"))
+            {
+                var fileText = await stream.ReadToEndAsync();
+                return FileSegments.DeserializeSegment(fileText);
+            }
         }
 
-        public static async Task SaveAsync(int templateId, Segment segment)
+        public async Task SaveAsync(int templateId, Segment segment)
         {
             var fileText = FileSegments.SerializeSegment(segment);
-            await File.WriteAllTextAsync(TemplatePath + $@"\{templateId + TemplateExtension}", fileText);
+            using (var stream = File.CreateText(TemplatePath + $@"\{templateId + TemplateExtension}"))
+            {
+                await stream.WriteAsync(fileText);
+            }
         }
     }
 }
