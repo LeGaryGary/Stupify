@@ -3,21 +3,21 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using StupifyConsoleApp.DataModels;
+using Stupify.Data;
+using Stupify.Data.Repositories;
 
 namespace StupifyConsoleApp.Client
 {
     public class MessageHandler: IMessageHandler
     {
-        private readonly BotContext _db;
         private readonly IDiscordClient _client;
         private readonly CommandService _commandService;
         private readonly ILogger<MessageHandler> _logger;
 
-        public MessageHandler(BotContext db, IDiscordClient client, CommandService commandService, ILogger<MessageHandler> logger)
+        public MessageHandler(IDiscordClient client, CommandService commandService, ILogger<MessageHandler> logger)
         {
-            _db = db;
             _client = client;
             _commandService = commandService;
             _logger = logger;
@@ -30,8 +30,7 @@ namespace StupifyConsoleApp.Client
             var argPos = 0;
             var context = new CommandContext(_client, message);
             
-            var serverUser = await _db.GetServerUserAsync(context.User.Id, context.Guild.Id, true);
-            if (serverUser.Muted)
+            if (context.User is IGuildUser guildUser && await Config.ServiceProvider.GetService<IUserRepository>().IsMutedAsync(guildUser))
             {
                 await context.Message.DeleteAsync();
                 return;
@@ -68,9 +67,9 @@ namespace StupifyConsoleApp.Client
                 }
             sw.Stop();
 
-            _logger.LogTrace("Command {Message} in {Guild} took {ElapsedMilliseconds}ms", context.Message, context.Guild.Name, sw.ElapsedMilliseconds);
+            _logger.LogInformation("Command {Message} in {Guild} took {ElapsedMilliseconds}ms", context.Message, context.Guild.Name, sw.ElapsedMilliseconds);
             
-            await context.Message.DeleteAsync();
+            if (Config.DeleteCommands) await context.Message.DeleteAsync();
         }
     }
 

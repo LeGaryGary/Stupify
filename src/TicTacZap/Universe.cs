@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace TicTacZap
 {
@@ -40,9 +41,9 @@ namespace TicTacZap
             return str.ToString();
         }
 
-        public (int x, int y)? NewSegment(int segmentId)
+        public async Task<(int x, int y)?> NewSegmentAsync(int segmentId)
         {
-            var locationNullable = GetFirstEmptySegment();
+            var locationNullable = await GetFirstEmptySegment();
             if (!locationNullable.HasValue) return null;
             (var x, int y) = ((int, int)) locationNullable;
             Segments[x, y] = segmentId;
@@ -54,75 +55,96 @@ namespace TicTacZap
             Segments[coords.x, coords.y] = null;
         }
 
-        private (int x, int y)? GetFirstEmptySegment()
+        private async Task<(int x, int y)?> GetFirstEmptySegment()
         {
-            return FindSegment(null);
+            return await FindSegmentAsync(null);
         }
 
-        public (int x, int y)? FindSegment(int? segmentId)
+        public async Task<(int x, int y)?> FindSegmentAsync(int? segmentId)
         {
-            var x = Center.x;
-            var y = Center.y;
-            var layer = 0;
-            var direction = Direction.Up;
-            while (true)
+            (int x, int y)? FindSegment()
             {
-                if (Segments[x, y] == segmentId) break;
-
-                switch (direction)
+                var x = Center.x;
+                var y = Center.y;
+                var layer = 0;
+                var direction = Direction.Up;
+                try
                 {
-                    case Direction.Up:
-                        if (Math.Abs(y - Center.y) == layer)
-                        {
-                            y++;
-                            layer++;
-                            direction = Direction.Right;
-                        }
-                        else
-                        {
-                            y++;
-                        }
-                        break;
+                    while (true)
+                {
+                    if (Segments[x, y] == segmentId) break;
 
-                    case Direction.Down:
-                        if (Math.Abs(y - Center.y) == layer)
-                        {
-                            direction = Direction.Left;
-                            x--;
-                        }
-                        else
-                        {
-                            y--;
-                        }
-                        break;
+                    switch (direction)
+                    {
+                        case Direction.Up:
+                            if (Math.Abs(y - Center.y) == layer)
+                            {
+                                y++;
+                                layer++;
+                                direction = Direction.Right;
+                            }
+                            else
+                            {
+                                y++;
+                            }
 
-                    case Direction.Left:
-                        if (Math.Abs(x - Center.x) == layer)
-                        {
-                            direction = Direction.Up;
-                            y++;
-                        }
-                        else
-                        {
-                            x--;
-                        }
-                        break;
+                            break;
 
-                    case Direction.Right:
-                        if (Math.Abs(x - Center.x) == layer)
-                        {
-                            direction = Direction.Down;
-                            y--;
-                        }
-                        else
-                        {
-                            x++;
-                        }
-                        break;
+                        case Direction.Down:
+                            if (Math.Abs(y - Center.y) == layer)
+                            {
+                                direction = Direction.Left;
+                                x--;
+                            }
+                            else
+                            {
+                                y--;
+                            }
+
+                            break;
+
+                        case Direction.Left:
+                            if (Math.Abs(x - Center.x) == layer)
+                            {
+                                direction = Direction.Up;
+                                y++;
+                            }
+                            else
+                            {
+                                x--;
+                            }
+
+                            break;
+
+                        case Direction.Right:
+                            if (Math.Abs(x - Center.x) == layer)
+                            {
+                                direction = Direction.Down;
+                                y--;
+                            }
+                            else
+                            {
+                                x++;
+                            }
+
+                            break;
+                    }
                 }
+                }
+                catch (Exception e)
+                {
+                    if (e is IndexOutOfRangeException)
+                    {
+                        return null;
+                    }
+
+                    throw;
+                }
+
+                return (x, y);
             }
 
-            return (x, y);
+            return await Task.Run(() => FindSegment());
         }
     }
 }

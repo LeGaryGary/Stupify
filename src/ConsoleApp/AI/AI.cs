@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using StupifyConsoleApp.DataModels;
+using Stupify.Data;
+using Stupify.Data.Repositories;
 using TicTacZap.Blocks;
 
 namespace StupifyConsoleApp.AI
@@ -30,9 +31,9 @@ namespace StupifyConsoleApp.AI
 
         private Random _rnd;
 
-        public AI(BotContext db, Segment segment, User user)
+        public AI(ISegmentRepository segmentRepository, int segmentId)
         {
-            _controller = new AIController(db, segment, user);
+            _controller = new AIController(segmentRepository, segmentId);
         }
 
         private void ResetProperties(double exp, double rmv, decimal addThr, decimal rmvThr, double brk)
@@ -73,7 +74,6 @@ namespace StupifyConsoleApp.AI
                 _placedBlocks.AddLast(choice);
                 _mark[choice.Item1, choice.Item2] = true;
                 _blocks = _controller.Blocks;
-                await _controller.UpdateDb();
             }
         }
 

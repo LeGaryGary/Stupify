@@ -1,17 +1,22 @@
 ﻿using System.Threading.Tasks;
 using Discord.Commands;
-using StupifyConsoleApp.DataModels;
+using Stupify.Data;
+using Stupify.Data.Repositories;
 using StupifyConsoleApp.TicTacZapManagement;
 
 namespace StupifyConsoleApp.Commands.Modules.TicTacZap
 {
-    public class Universe : StupifyModuleBase
+    public class Universe : ModuleBase<CommandContext>
     {
         private readonly GameState _gameState;
+        private readonly IUserRepository _userRepository;
+        private readonly IUniverseRepository _universeRepository;
 
-        public Universe(BotContext db, GameState gameState) : base(db)
+        public Universe(GameState gameState, IUserRepository userRepository, IUniverseRepository universeRepository)
         {
             _gameState = gameState;
+            _userRepository = userRepository;
+            _universeRepository = universeRepository;
         }
 
         [Command("Universe")]
@@ -23,14 +28,15 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
         [Command("Universe")]
         public async Task ShowUniverseCommand(int scope)
         {
-            var userSelection = _gameState.GetUserSegmentSelection((await this.GetUserAsync()).UserId);
+            var userId = await _userRepository.GetUserId(Context.User);
+            var userSelection = _gameState.GetUserSegmentSelection(userId);
             if (!userSelection.HasValue)
             {
                 await ReplyAsync(Responses.SelectSegmentMessage);
                 return;
             }
 
-            var renderRelativeToSegment = UniverseController.RenderRelativeToSegment(userSelection.Value, scope);
+            var renderRelativeToSegment = await _universeRepository.RenderRelativeToSegmentAsync(userSelection.Value, scope);
             if (string.IsNullOrEmpty(renderRelativeToSegment))
             {
                 await ReplyAsync("There's nothing to show! (or you felt like a smart cookie and tried a scope bigger than 12!)");

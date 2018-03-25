@@ -26,22 +26,22 @@ namespace StupifyConsoleApp.Client
                         switch (logMessage.Severity)
                         {
                             case LogSeverity.Critical:
-                                logger.LogCritical(logMessage.Message);
+                                logger.LogCritical(logMessage.Exception, logMessage.Message);
                                 break;
                             case LogSeverity.Error:
-                                logger.LogError(logMessage.Message);
+                                logger.LogError(logMessage.Exception, logMessage.Message);
                                 break;
                             case LogSeverity.Warning:
-                                logger.LogWarning(logMessage.Message);
+                                logger.LogWarning(logMessage.Exception, logMessage.Message);
                                 break;
                             case LogSeverity.Info:
-                                logger.LogInformation(logMessage.Message);
+                                logger.LogInformation(logMessage.Exception, logMessage.Message);
                                 break;
                             case LogSeverity.Verbose:
-                                logger.LogDebug(logMessage.Message);
+                                logger.LogDebug(logMessage.Exception, logMessage.Message);
                                 break;
                             case LogSeverity.Debug:
-                                logger.LogTrace(logMessage.Message);
+                                logger.LogTrace(logMessage.Exception, logMessage.Message);
                                 break;
                             default:
                                 throw new ArgumentOutOfRangeException();
