@@ -73,12 +73,6 @@ namespace StupifyConsoleApp.TicTacZapManagement
             else await context.Channel.SendMessageAsync(Responses.TemplateOwnershipProblem);
         }
 
-        public async Task<string> RenderInventory(int userId)
-        {
-            var inventory = await Inventories.GetInventoryAsync(userId);
-            return inventory.TextRender();
-        }
-
         public async Task<string> RenderSegmentAsync(int segmentId, Tuple<int, int> selection = null)
         {
             var resourcesPerTick = await _segmentRepository.GetSegmentResourcePerTickAsync(segmentId);

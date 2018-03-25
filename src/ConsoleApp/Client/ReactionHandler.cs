@@ -4,8 +4,8 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
+using Stupify.Data.Repositories;
 using StupifyConsoleApp.Commands;
-using StupifyConsoleApp.DataModels;
 using StupifyConsoleApp.TicTacZapManagement;
 using TicTacZap;
 using TicTacZap.Blocks;
@@ -18,14 +18,16 @@ namespace StupifyConsoleApp.Client
 
         private static readonly Dictionary<ulong, OwnerInfo> Owners = new Dictionary<ulong, OwnerInfo>();
         private readonly IDiscordClient _client;
-        private readonly BotContext _db;
         private readonly TicTacZapController _ticTacZapController;
+        private readonly ISegmentRepository _segmentRepository;
+        private readonly IInventoryRepository _inventoryRepository;
 
-        public SegmentEditReactionHandler(IDiscordClient client, BotContext db, TicTacZapController ticTacZapController)
+        public SegmentEditReactionHandler(IDiscordClient client, TicTacZapController ticTacZapController, ISegmentRepository segmentRepository, IInventoryRepository inventoryRepository)
         {
             _client = client;
-            _db = db;
             _ticTacZapController = ticTacZapController;
+            _segmentRepository = segmentRepository;
+            _inventoryRepository = inventoryRepository;
         }
 
         public async Task Handle(Cacheable<IUserMessage, ulong> message, ISocketMessageChannel channel, SocketReaction reaction)
@@ -144,32 +146,21 @@ namespace StupifyConsoleApp.Client
 
         private async Task<string> AddBlock(OwnerInfo owner, BlockType type)
         {
-            if (!await Inventories.RemoveFromInventoryAsync(type, 1, owner.DbUserId)) return Responses.ShopAdvisoryMessage;
+            var user = await _client.GetUserAsync(owner.UserId);
+            if (!await _inventoryRepository.RemoveFromInventoryAsync(type, 1, user)) return Responses.ShopAdvisoryMessage;
             await RemoveBlock(owner);
-            await Segments.AddBlockAsync(owner.SegmentId, owner.Position.Item2, 8-owner.Position.Item1, type);
-            await SaveChangesToDb(owner);
+            await _segmentRepository.AddBlockAsync(owner.SegmentId, owner.Position.Item2, 8-owner.Position.Item1, type);
             return "";
         }
 
         private async Task RemoveBlock(OwnerInfo owner)
         {
-            var blockType = await Segments.DeleteBlockAsync(owner.SegmentId, owner.Position.Item2, 8-owner.Position.Item1);
+            var blockType = await _segmentRepository.DeleteBlockAsync(owner.SegmentId, owner.Position.Item2, 8-owner.Position.Item1);
             if (blockType != null)
             {
-                await Inventories.AddToInventoryAsync(blockType.Value, 1, owner.DbUserId);
-                await SaveChangesToDb(owner);
+                var user = await _client.GetUserAsync(owner.UserId);
+                await _inventoryRepository.AddToInventoryAsync(blockType.Value, 1, user);
             }
-        }
-
-        private async Task SaveChangesToDb(OwnerInfo owner)
-        {
-            var dbSegment = await _db.Segments.FirstAsync(s => s.SegmentId == owner.SegmentId);
-            var outputs = await Segments.GetOutput(owner.SegmentId);
-
-            dbSegment.EnergyPerTick = outputs[Resource.Energy];
-            dbSegment.UnitsPerTick = outputs[Resource.Unit];
-
-            await _db.SaveChangesAsync();
         }
 
         public async Task NewOwner(IUserMessage message, int segmentId, ulong userId, int dbUserId)

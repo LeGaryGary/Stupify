@@ -143,6 +143,7 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
                 return;
             }
 
+            var segment = await _segmentRepository.GetSegmentAsync(segmentId);
             for (var y = 0; y < template.Blocks.GetLength(1); y++)
             for (var x = 0; x < template.Blocks.GetLength(0); x++) 
             {
@@ -150,10 +151,12 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
                 if (block == null || block.BlockType == BlockType.Controller) continue;
 
                 inventory.RemoveBlocks(block.BlockType, 1);
-                await _segmentRepository.AddBlockAsync(segmentId, x, y, block.BlockType);
+                segment.AddBlock(x, y, block.BlockType);
             }
 
+            await _segmentRepository.SetSegmentAsync(segmentId, segment);
             await _inventoryRepository.SaveInventoryAsync(Context.User, inventory);
+            await _tacZapController.ShowSegmentAsync(Context, segmentId);
         }
     }
 }

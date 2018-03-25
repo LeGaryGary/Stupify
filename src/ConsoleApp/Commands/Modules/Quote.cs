@@ -1,13 +1,10 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using Discord;
 using Discord.Commands;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Stupify.Data;
+
 using Stupify.Data.Models;
 using Stupify.Data.Repositories;
-using StupifyConsoleApp.Client;
 
 namespace StupifyConsoleApp.Commands.Modules
 {

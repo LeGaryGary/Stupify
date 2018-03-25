@@ -7,6 +7,7 @@ using Discord.Commands;
 using Microsoft.Extensions.Logging;
 using Stupify.Data;
 using Stupify.Data.Repositories;
+using StupifyConsoleApp.Client;
 using StupifyConsoleApp.TicTacZapManagement;
 using TicTacZap;
 
@@ -72,9 +73,8 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
             private readonly ISegmentRepository _segmentRepository;
             private readonly IInventoryRepository _inventoryRepository;
             private readonly IUniverseRepository _universeRepository;
-
-            public SegmentModule(BotContext db, TicTacZapController tacZapController, SegmentEditReactionHandler editReactionHandler, GameState gameState) : base(db)
-            public SegmentModule(TicTacZapController tacZapController, GameState gameState, IUserRepository userRepository, ISegmentRepository segmentRepository, IInventoryRepository inventoryRepository, IUniverseRepository universeRepository)
+            
+            public SegmentModule(TicTacZapController tacZapController, SegmentEditReactionHandler editReactionHandler, GameState gameState, IUserRepository userRepository, ISegmentRepository segmentRepository, IInventoryRepository inventoryRepository, IUniverseRepository universeRepository)
             {
                 _tacZapController = tacZapController;
                 _editReactionHandler = editReactionHandler;
@@ -160,14 +160,14 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
             [Command("Edit")]
             public async Task EditSegmentCommand(int segmentId)
             {
-                if (!await this.UserHasSegmentAsync(segmentId))
+                if (!await _segmentRepository.UserHasSegmentAsync(Context.User, segmentId))
                 {
                     await ReplyAsync(Responses.SegmentOwnershipProblem);
                     return;
                 }
 
                 var msg = await ReplyAsync($"```Hang on...```");
-                await _editReactionHandler.NewOwner(msg, segmentId, Context.User.Id, (await this.GetUserAsync()).UserId);
+                await _editReactionHandler.NewOwner(msg, segmentId, Context.User.Id, await _userRepository.GetUserId(Context.User));
             }
 
             [Command("Delete")]

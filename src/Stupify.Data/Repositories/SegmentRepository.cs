@@ -53,6 +53,11 @@ namespace Stupify.Data.Repositories
         public async Task SetSegmentAsync(int segmentId, Segment segment)
         {
             await _segments.SetAsync(segmentId, segment);
+
+            var dBSegment = await _botContext.Segments.FirstAsync(s => s.SegmentId == segmentId);
+            dBSegment.EnergyPerTick = segment.ResourcePerTick(Resource.Energy);
+            dBSegment.UnitsPerTick = segment.ResourcePerTick(Resource.Unit);
+            await _botContext.SaveChangesAsync();
         }
 
         public async Task<(int x, int y)?> DeleteSegmentAsync(int segmentId)
