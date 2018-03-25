@@ -21,7 +21,7 @@ namespace StupifyConsoleApp.Commands.Modules.Moderation
         public async Task MuteAsync(IGuildUser user)
         {
             await _userRepository.MuteAsync(user);
-            await ReplyAsync($"{user.Nickname} is now muted");
+            await ReplyAsync($"{user.Username} is now muted");
         }
 
         [Command("Unmute")]
