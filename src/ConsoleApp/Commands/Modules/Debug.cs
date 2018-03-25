@@ -24,7 +24,7 @@ namespace StupifyConsoleApp.Commands.Modules
         public async Task DebugMotherlode()
         {
             await _userRepository.BankToUserTransferAsync(Context.User, 1000000);
-            await ReplyAsync($"You filthy cheater! Fine. I updated the balance. (balance: {_userRepository.BalanceAsync(Context.User)})");
+            await ReplyAsync($"You filthy cheater! Fine. I updated the balance. (balance: {await _userRepository.BalanceAsync(Context.User)})");
         }
 
         [Command("InvReset")]

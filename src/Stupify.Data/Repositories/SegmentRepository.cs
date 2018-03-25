@@ -73,16 +73,35 @@ namespace Stupify.Data.Repositories
         public async Task<bool> AddBlockAsync(int segmentId, int x, int y, BlockType blockType)
         {
             var segment = await _segments.GetAsync(segmentId);
+
             var addBlockResult = segment.AddBlock(x, y, blockType);
-            if (addBlockResult) await _segments.SetAsync(segmentId, segment);
-            return addBlockResult;
+
+            if (!addBlockResult) return false;
+
+            var dBSegment = await _botContext.Segments.FirstAsync(s => s.SegmentId == segmentId);
+            dBSegment.EnergyPerTick = segment.ResourcePerTick(Resource.Energy);
+            dBSegment.UnitsPerTick = segment.ResourcePerTick(Resource.Unit);
+            await _botContext.SaveChangesAsync();
+
+            await _segments.SetAsync(segmentId, segment);
+
+            return true;
         }
 
         public async Task<BlockType?> DeleteBlockAsync(int segmentId, int x, int y)
         {
             var segment = await _segments.GetAsync(segmentId);
             var deleteBlockResult = segment.DeleteBlock(x, y);
-            if (deleteBlockResult.HasValue) await _segments.SetAsync(segmentId, segment);
+
+            if (!deleteBlockResult.HasValue) return null;
+
+            await _segments.SetAsync(segmentId, segment);
+
+            var dBSegment = await _botContext.Segments.FirstAsync(s => s.SegmentId == segmentId);
+            dBSegment.EnergyPerTick = segment.ResourcePerTick(Resource.Energy);
+            dBSegment.UnitsPerTick = segment.ResourcePerTick(Resource.Unit);
+            await _botContext.SaveChangesAsync();
+
             return deleteBlockResult;
         }
 
@@ -133,7 +152,7 @@ namespace Stupify.Data.Repositories
 
             foreach (var dbSegment in await _botContext.Segments.Include(s => s.User).ToArrayAsync())
             {
-                var amount = bank.Balance / 100000000000m + dbSegment.UnitsPerTick;
+                var amount = bank.Balance / 100000000m + dbSegment.UnitsPerTick;
                 dbSegment.User.Balance += amount;
                 bank.Balance -= amount;
             }

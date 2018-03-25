@@ -96,7 +96,6 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
                 await _inventoryRepository.AddToInventoryAsync(blockType.Value, 1, Context.User);
             }
             await _tacZapController.ShowSegmentAsync(Context, segmentId);
-            await ReplyAsync(Responses.SegmentOwnershipProblem);
         }
     }
 }

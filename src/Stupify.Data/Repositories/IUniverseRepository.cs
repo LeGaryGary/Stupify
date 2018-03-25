@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using TicTacZap;
 
 namespace Stupify.Data.Repositories
@@ -10,5 +11,6 @@ namespace Stupify.Data.Repositories
         Task<(int x, int y)?> DeleteSegmentAsync(int segmentId);
         Task<int?> GetAdjacentSegmentInDirectionAsync(int segmentValue, Direction direction);
         Task<string>  RenderRelativeToSegmentAsync(int segmentId, int scope);
+        IEnumerable<int> UniverseSegments();
     }
 }

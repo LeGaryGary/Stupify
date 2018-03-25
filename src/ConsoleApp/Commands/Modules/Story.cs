@@ -7,7 +7,7 @@ using Stupify.Data.Repositories;
 
 namespace StupifyConsoleApp.Commands.Modules
 {
-    public class Story : ModuleBase<SocketCommandContext>
+    public class Story : ModuleBase<CommandContext>
     {
         private readonly IStoryRepository _storyRepository;
 
@@ -75,7 +75,7 @@ namespace StupifyConsoleApp.Commands.Modules
         [Command("TellMeAStory")]
         public async Task ReplayStory()
         {
-            var story = await _storyRepository.RandomStoryAsync(Context.Guild, Context.Client);
+            var story = await _storyRepository.RandomStoryAsync(Context.Guild);
             if (story != null)
             {
                 await ReplyAsync(story.Content);

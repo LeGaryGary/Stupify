@@ -27,6 +27,7 @@ namespace Stupify.Data
                 {
                     var ctrl = new UniverseController(dataDirectory, "Alpha");
                     ctrl.Start().GetAwaiter().GetResult();
+                    
                     return ctrl;
                 })
                 .AddSingleton(sp => new SegmentTemplates(dataDirectory))
@@ -36,7 +37,8 @@ namespace Stupify.Data
                 .AddTransient<IInventoryRepository, InventoryRepository>()
                 .AddTransient<IUniverseRepository, UniverseRepository>()
                 .AddTransient<ITemplateRepository, TemplateRepository>()
-                .AddTransient<IQuoteRepository, QuoteRepository>();
+                .AddTransient<IQuoteRepository, QuoteRepository>()
+                .AddTransient<IStoryRepository, StoryRepository>();
 
             return collection;
         }

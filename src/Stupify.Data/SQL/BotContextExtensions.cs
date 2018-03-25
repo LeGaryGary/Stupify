@@ -71,7 +71,7 @@ namespace Stupify.Data.SQL
             var bankUser = await db.Users.FirstOrDefaultAsync(u => u.DiscordUserId == -1)
                            ?? db.Users.Add(new User
                            {
-                               Balance = 100000000000,
+                               Balance = 100000000,
                                DiscordUserId = -1,
                            }).Entity;
 

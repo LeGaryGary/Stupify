@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using TicTacZap;
@@ -32,6 +34,11 @@ namespace Stupify.Data.FileSystem
                 _universe = new Universe(999);
                 await SaveUniverseFileAsync();
             }
+        }
+
+        public IEnumerable<int> UniverseSegments()
+        {
+            return from int? segment in _universe.Segments where segment.HasValue select segment.Value;
         }
 
         public async Task<(int x, int y)?> FindAsync(int segmentId)

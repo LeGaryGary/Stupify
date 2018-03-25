@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Stupify.Data.FileSystem;
 using TicTacZap;
 
@@ -36,6 +37,11 @@ namespace Stupify.Data.Repositories
         public async Task<string> RenderRelativeToSegmentAsync(int segmentId, int scope)
         {
             return await _universeController.RenderRelativeToSegmentAsync(segmentId, scope);
+        }
+
+        public IEnumerable<int> UniverseSegments()
+        {
+            return _universeController.UniverseSegments();
         }
     }
 }

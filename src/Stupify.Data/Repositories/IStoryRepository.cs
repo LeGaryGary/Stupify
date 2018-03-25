@@ -6,7 +6,7 @@ namespace Stupify.Data.Repositories
 {
     public interface IStoryRepository
     {
-        Task<Story> RandomStoryAsync(IGuild guild, IDiscordClient client);
+        Task<Story> RandomStoryAsync(IGuild guild);
         Task<Story> GetCurrentStoryAsync(IGuild guild);
         Task<bool> EndCurrentStoryAsync(IGuild guild);
         Task<bool> AddToCurrentStoryAsync(IGuildUser user, string line);
