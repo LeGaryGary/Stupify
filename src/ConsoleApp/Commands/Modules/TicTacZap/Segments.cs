@@ -66,15 +66,18 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
         public class SegmentModule : ModuleBase<CommandContext>
         {
             private readonly TicTacZapController _tacZapController;
+            private readonly SegmentEditReactionHandler _editReactionHandler;
             private readonly GameState _gameState;
             private readonly IUserRepository _userRepository;
             private readonly ISegmentRepository _segmentRepository;
             private readonly IInventoryRepository _inventoryRepository;
             private readonly IUniverseRepository _universeRepository;
 
+            public SegmentModule(BotContext db, TicTacZapController tacZapController, SegmentEditReactionHandler editReactionHandler, GameState gameState) : base(db)
             public SegmentModule(TicTacZapController tacZapController, GameState gameState, IUserRepository userRepository, ISegmentRepository segmentRepository, IInventoryRepository inventoryRepository, IUniverseRepository universeRepository)
             {
                 _tacZapController = tacZapController;
+                _editReactionHandler = editReactionHandler;
                 _gameState = gameState;
                 _userRepository = userRepository;
                 _segmentRepository = segmentRepository;
@@ -152,6 +155,19 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
                         await _inventoryRepository.AddToInventoryAsync(type.Key, type.Value, Context.User);
                 
                 await ReplyAsync($"segment {segmentId} was reset!");
+            }
+
+            [Command("Edit")]
+            public async Task EditSegmentCommand(int segmentId)
+            {
+                if (!await this.UserHasSegmentAsync(segmentId))
+                {
+                    await ReplyAsync(Responses.SegmentOwnershipProblem);
+                    return;
+                }
+
+                var msg = await ReplyAsync($"```Hang on...```");
+                await _editReactionHandler.NewOwner(msg, segmentId, Context.User.Id, (await this.GetUserAsync()).UserId);
             }
 
             [Command("Delete")]

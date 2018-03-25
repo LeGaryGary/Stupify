@@ -1,8 +1,5 @@
-﻿using System;
-using System.Threading.Tasks;
-using Discord;
+﻿using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using Serilog;
 using Stupify.Data.Repositories;
 using StupifyConsoleApp.Client;
 using StupifyConsoleApp.TicTacZapManagement;
