@@ -27,13 +27,16 @@ namespace StupifyConsoleApp.Commands.Modules
         [Command("AddQuote")]
         public async Task AddQuoteAsync(string quoteBody)
         {
-            await _quoteRepository.AddQuoteAsync(new Quote
+            if (Context.User is IGuildUser guildUser)
             {
-                Author = Context.User,
-                Content = quoteBody
-            });
-            _logger.LogInformation("Added quote from {User} in {Guild}", Context.User.Username, Context.Guild.Name);
-            await ReplyAsync("Done!");
+                await _quoteRepository.AddQuoteAsync(new Quote
+                {
+                    Author = guildUser,
+                    Content = quoteBody
+                }, Context.Guild);
+                _logger.LogInformation("Added quote from {User} in {Guild}", Context.User.Username, Context.Guild.Name);
+                await ReplyAsync("Done!");
+            }
         }
 
         [Command("RandomQuote")]

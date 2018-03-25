@@ -18,7 +18,8 @@ namespace Stupify.Data.Repositories
 
         public async Task<bool> IsMutedAsync(IGuildUser user)
         {
-            return (await GetServerUserAsync(user)).Muted;
+            var serverUser = (await GetServerUserAsync(user));
+            return serverUser.Muted;
         }
 
         public async Task MuteAsync(IGuildUser user)

@@ -83,7 +83,7 @@ namespace StupifyConsoleApp
                     .AddSingleton<ClientManager>()
                     .AddTransient<TicTacZapController>()
                     .AddSingleton<GameState>()
-                    .AddSingleton<GameRunner>()
+                    .AddTransient<GameRunner>()
                     .AddSingleton<AudioService>()
                     .AddTransient(sp => new YoutubeDL($"{Directory.GetCurrentDirectory()}/youtube-dl.exe"));
 

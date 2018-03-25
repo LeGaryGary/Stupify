@@ -10,8 +10,6 @@ namespace Stupify.Data.Repositories
         Task<Quote> RandomQuote(IGuild guild);
         Task<Quote> RandomQuote(IUser user);
 
-        Task AddQuoteAsync(Quote quote);
-
-        Task<bool> DeleteQuote(Quote quote);
+        Task AddQuoteAsync(Quote quote, IGuild guild);
     }
 }

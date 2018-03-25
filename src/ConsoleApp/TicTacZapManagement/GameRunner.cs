@@ -47,7 +47,6 @@ namespace StupifyConsoleApp.TicTacZapManagement
             catch (Exception e)
             {
                 _logger.LogCritical(e, "Critical exception thrown!");
-                throw;
             }
         }
 
@@ -137,11 +136,6 @@ namespace StupifyConsoleApp.TicTacZapManagement
             {
                 _gameState.CurrentWars.Remove(war);
             }
-        }
-
-        private async Task UpdateBalances()
-        {
-            
         }
     }
 }

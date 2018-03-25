@@ -28,7 +28,8 @@ namespace StupifyConsoleApp.Commands.Modules
         [Command("AirHorn", RunMode = RunMode.Async)]
         public async Task PlayAirHorn()
         {
-            await _audioService.QueueFile(Context.Guild, (Context.User as IVoiceState).VoiceChannel, Directory.GetCurrentDirectory() + "\\AirHorn.mp3");
+            if (Context.User is IVoiceState state && state.VoiceChannel != null)
+                await _audioService.QueueFile(Context.Guild, state.VoiceChannel, Directory.GetCurrentDirectory() + "\\AirHorn.mp3");
         }
 
         [Command("play", RunMode = RunMode.Async)]
@@ -70,7 +71,8 @@ namespace StupifyConsoleApp.Commands.Modules
                 }
             }
 
-            await _audioService.QueueFile(Context.Guild, (Context.User as IVoiceState).VoiceChannel, output);
+            if (Context.User is IVoiceState state && state.VoiceChannel != null)
+                await _audioService.QueueFile(Context.Guild, state.VoiceChannel, output);
         }
 
         private async Task<double> VideoLength(string id)

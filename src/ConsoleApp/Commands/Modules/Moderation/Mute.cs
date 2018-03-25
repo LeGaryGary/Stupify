@@ -28,8 +28,8 @@ namespace StupifyConsoleApp.Commands.Modules.Moderation
         public async Task UnMuteAsync(IGuildUser user)
         {
             var message = await _userRepository.UnMuteAsync(user)
-                ? await ReplyAsync($"{user.Nickname} is no longer muted!")
-                : await ReplyAsync($"{user.Nickname} isn't muted!");
+                ? await ReplyAsync($"{user.Username} is no longer muted!")
+                : await ReplyAsync($"{user.Username} isn't muted!");
         }
     }
 }

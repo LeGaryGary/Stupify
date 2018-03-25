@@ -35,7 +35,8 @@ namespace Stupify.Data
                 .AddTransient<ISegmentRepository, SegmentRepository>()
                 .AddTransient<IInventoryRepository, InventoryRepository>()
                 .AddTransient<IUniverseRepository, UniverseRepository>()
-                .AddTransient<ITemplateRepository, TemplateRepository>();
+                .AddTransient<ITemplateRepository, TemplateRepository>()
+                .AddTransient<IQuoteRepository, QuoteRepository>();
 
             return collection;
         }
