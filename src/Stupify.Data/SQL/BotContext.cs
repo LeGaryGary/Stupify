@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Design;
 using Stupify.Data.SQL.Models;
 
 namespace Stupify.Data.SQL
@@ -17,5 +18,13 @@ namespace Stupify.Data.SQL
         public DbSet<ServerStoryPart> ServerStoryParts { get; set; }
         public DbSet<Segment> Segments { get; set; }
         public DbSet<SegmentTemplate> SegmentTemplates { get; set; }
+    }
+
+    internal class BotContextDesign : IDesignTimeDbContextFactory<BotContext>
+    {
+        public BotContext CreateDbContext(string[] args)
+        {
+            return new BotContext(new DbContextOptionsBuilder<BotContext>().UseSqlServer("connectionstring").Options);
+        }
     }
 }

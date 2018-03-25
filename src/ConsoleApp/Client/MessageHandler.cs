@@ -70,7 +70,7 @@ namespace StupifyConsoleApp.Client
 
             _logger.LogInformation("Command {Message} in {Guild} took {ElapsedMilliseconds}ms", context.Message, context.Guild.Name, sw.ElapsedMilliseconds);
             
-            await context.Message.DeleteAsync();
+            if (Config.DeleteCommands) await context.Message.DeleteAsync();
         }
     }
 

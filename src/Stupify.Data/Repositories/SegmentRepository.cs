@@ -129,7 +129,7 @@ namespace Stupify.Data.Repositories
 
         public async Task UpdateBalancesAsync()
         {
-            var bank = await _botContext.Users.FirstAsync(u => u.DiscordUserId == -1);
+            var bank = await _botContext.GetBankAsync();
 
             foreach (var dbSegment in await _botContext.Segments.Include(s => s.User).ToArrayAsync())
             {

@@ -19,7 +19,10 @@ namespace StupifyConsoleApp.Commands.Modules
         [Command("HelpAll")]
         public async Task HelpAll()
         {
-            var modules = _commandService.Modules;
+            var modules = _commandService.Modules
+                .Where(m => m.Name != "Debug" && m.Name != "AI" && m.Name != "Solve")
+                .OrderBy(m => m.Name);
+
             var message = string.Empty;
             foreach (var module in modules)
             {
@@ -34,7 +37,10 @@ namespace StupifyConsoleApp.Commands.Modules
         [Command("Help")]
         public async Task Help()
         {
-            var modules = _commandService.Modules.Where(m => m.Name != "Debug" && m.Name != "AI");
+            var modules = _commandService.Modules
+                .Where(m => m.Name != "Debug" && m.Name != "AI" && m.Name != "Solve")
+                .OrderBy(m => m.Name);
+
             var message = "Modules:" + Environment.NewLine;
             foreach (var module in modules) message += module.Name + Environment.NewLine;
             await ReplyAsync($"```{message}```{Environment.NewLine}Use `{Config.CommandPrefix} Help [moduleName]` Or `{Config.CommandPrefix} HelpAll` to find out more!{Environment.NewLine}We love feedback, Positive or negative: https://discord.gg/nb5rUhd");
@@ -43,8 +49,10 @@ namespace StupifyConsoleApp.Commands.Modules
         [Command("Help")]
         public async Task Help(string moduleName)
         {
-            var module = _commandService.Modules.FirstOrDefault(m =>
-                string.Equals(m.Name, moduleName, StringComparison.OrdinalIgnoreCase));
+            var module = _commandService.Modules
+                .Where(m => m.Name != "Debug" && m.Name != "AI" && m.Name != "Solve")
+                .FirstOrDefault(m => string.Equals(m.Name, moduleName, StringComparison.OrdinalIgnoreCase));
+
             if (module == null)
             {
                 await ReplyAsync(

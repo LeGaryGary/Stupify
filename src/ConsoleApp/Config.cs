@@ -5,9 +5,12 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using Google.Apis.Services;
+using Google.Apis.YouTube.v3;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using NYoutubeDL;
 using Serilog;
 using Serilog.Events;
 using Stupify.Data;
@@ -32,9 +35,11 @@ namespace StupifyConsoleApp
 
         public static string DbConnectionString => Configuration["DbConnectionString"];
         public static string DiscordBotUserToken => Configuration["DiscordBotUserToken"];
+        public static string YoutubeApiKey => Configuration["YoutubeApiKey"];
         public static bool Debug => bool.Parse(Configuration["Debug"]);
         public static string CommandPrefix => Configuration["CommandPrefix"];
         public static ulong DeveloperRole => ulong.Parse(Configuration["DeveloperRole"]);
+        public static bool DeleteCommands => bool.Parse(Configuration["DeleteCommands"]);
 
         public static string DataDirectory => Configuration["DataDirectory"];
         public static string UniverseName => Configuration["UniverseName"];
@@ -71,10 +76,16 @@ namespace StupifyConsoleApp
                         };
                         return commandService;
                     })
+                    .AddTransient(sp => new YouTubeService(new BaseClientService.Initializer
+                        {
+                            ApiKey = YoutubeApiKey
+                        }))
                     .AddSingleton<ClientManager>()
                     .AddTransient<TicTacZapController>()
                     .AddSingleton<GameState>()
-                    .AddSingleton<GameRunner>();
+                    .AddSingleton<GameRunner>()
+                    .AddSingleton<AudioService>()
+                    .AddTransient(sp => new YoutubeDL($"{Directory.GetCurrentDirectory()}/youtube-dl.exe"));
 
                 ConfigureLogging();
                 _serviceProvider = collection.BuildServiceProvider();
