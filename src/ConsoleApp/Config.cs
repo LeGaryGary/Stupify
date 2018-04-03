@@ -64,7 +64,8 @@ namespace StupifyConsoleApp
                     .AddRepositories(DataDirectory)
                     .AddSingleton<IDiscordClient>(sp => new DiscordSocketClient(new DiscordSocketConfig{AlwaysDownloadUsers = true, MessageCacheSize = 1000}))
                     .AddSingleton<IMessageHandler, MessageHandler>()
-                    .AddSingleton<IReactionHandler, SegmentEditReactionHandler>()
+                    .AddTransient<SegmentEditReactionHandler>()
+                    .AddTransient<IHotKeyHandler, HotKeyHandler>()
                     .AddSingleton(sp =>
                     {
                         var commandService = new CommandService();
@@ -83,7 +84,6 @@ namespace StupifyConsoleApp
                         }))
                     .AddSingleton<ClientManager>()
                     .AddTransient<TicTacZapController>()
-                    .AddSingleton<SegmentEditReactionHandler>()
                     .AddSingleton<GameState>()
                     .AddTransient<GameRunner>()
                     .AddSingleton<AudioService>()

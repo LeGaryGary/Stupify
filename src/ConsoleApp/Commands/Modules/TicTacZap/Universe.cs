@@ -1,6 +1,5 @@
 ﻿using System.Threading.Tasks;
 using Discord.Commands;
-using Stupify.Data;
 using Stupify.Data.Repositories;
 using StupifyConsoleApp.TicTacZapManagement;
 

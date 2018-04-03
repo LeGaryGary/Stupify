@@ -1,7 +1,5 @@
 ﻿using System.Collections.Generic;
-using System.Threading.Tasks;
 using Discord;
-using Microsoft.EntityFrameworkCore;
 using Direction = TicTacZap.Direction;
 
 namespace StupifyConsoleApp.TicTacZapManagement

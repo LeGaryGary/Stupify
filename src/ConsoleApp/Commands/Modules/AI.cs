@@ -2,11 +2,9 @@
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
-using Stupify.Data;
 using Stupify.Data.Repositories;
 using StupifyConsoleApp.Commands.Conditions;
 using StupifyConsoleApp.TicTacZapManagement;
-using TicTacZap;
 
 namespace StupifyConsoleApp.Commands.Modules
 {

@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Reflection;
 using System.Threading.Tasks;
 using Discord;
-using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
 
@@ -12,7 +10,7 @@ namespace StupifyConsoleApp.Client
     {
         private readonly IDiscordClient _client;
 
-        public ClientManager(IMessageHandler messageHandler, IReactionHandler segmentEditHandler, ILogger<ClientManager> logger, IDiscordClient client)
+        public ClientManager(IMessageHandler messageHandler, SegmentEditReactionHandler segmentEditHandler, ILogger<ClientManager> logger, IDiscordClient client)
         {
             _client = client;
 

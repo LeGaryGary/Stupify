@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Discord.Commands;
 using Microsoft.Extensions.Logging;
-using Stupify.Data;
 using Stupify.Data.Repositories;
 using StupifyConsoleApp.Client;
 using StupifyConsoleApp.TicTacZapManagement;

@@ -5,7 +5,6 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Stupify.Data;
 using Stupify.Data.Repositories;
 
 namespace StupifyConsoleApp.Client
@@ -15,12 +14,14 @@ namespace StupifyConsoleApp.Client
         private readonly IDiscordClient _client;
         private readonly CommandService _commandService;
         private readonly ILogger<MessageHandler> _logger;
+        private readonly IHotKeyHandler _hotKeyHandler;
 
-        public MessageHandler(IDiscordClient client, CommandService commandService, ILogger<MessageHandler> logger)
+        public MessageHandler(IDiscordClient client, CommandService commandService, ILogger<MessageHandler> logger, IHotKeyHandler hotKeyHandler)
         {
             _client = client;
             _commandService = commandService;
             _logger = logger;
+            _hotKeyHandler = hotKeyHandler;
         }
 
         public async Task Handle(SocketMessage messageParam)
@@ -30,16 +31,24 @@ namespace StupifyConsoleApp.Client
             var argPos = 0;
             var context = new CommandContext(_client, message);
             
+            //Handle mutes
             if (context.User is IGuildUser guildUser && await Config.ServiceProvider.GetService<IUserRepository>().IsMutedAsync(guildUser))
             {
                 await context.Message.DeleteAsync();
                 return;
             }
 
+            //Handle hotkeys
+            if (context.Message.Content.Length == 1)
+            {
+                await _hotKeyHandler.Handle(context);
+            }
+
+            //Check prefix and set the argPos for the command
             if (!(message.HasStringPrefix(Config.CommandPrefix + " ", ref argPos)
                   || message.HasMentionPrefix(_client.CurrentUser, ref argPos)))
             {
-                return;
+                return;      
             }
 
             var sw = new Stopwatch();

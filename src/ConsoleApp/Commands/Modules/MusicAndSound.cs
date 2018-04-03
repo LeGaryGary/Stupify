@@ -6,7 +6,6 @@ using System.Web;
 using System.Xml;
 using Discord;
 using Discord.Commands;
-using Google.Apis.Services;
 using NYoutubeDL;
 using Google.Apis.YouTube.v3;
 
