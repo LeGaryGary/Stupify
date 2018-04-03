@@ -1,0 +1,108 @@
+﻿using System.Linq;
+using System.Threading.Tasks;
+using Discord;
+using Discord.Commands;
+using StupifyConsoleApp.Client;
+
+namespace StupifyConsoleApp.Commands.Hotkeys
+{
+    internal class MoveSelectorUpHotKey : IHotkey
+    {
+        private readonly SegmentEditReactionHandler _segmentEditReactionHandler;
+
+        public MoveSelectorUpHotKey(SegmentEditReactionHandler segmentEditReactionHandler)
+        {
+            _segmentEditReactionHandler = segmentEditReactionHandler;
+        }
+
+        public char Key => 'w';
+
+        public async Task ExecuteAsync(ICommandContext context)
+        {
+            var messageOwnerInfo =  SegmentEditReactionHandler.Owners.FirstOrDefault(o => o.Value.UserId == context.User.Id);
+
+            if (messageOwnerInfo.Value == null) return;
+
+            var position = messageOwnerInfo.Value.Position;
+            position.y--;
+            messageOwnerInfo.Value.Position = position;
+
+            await _segmentEditReactionHandler.UpdateMsg((IUserMessage)await context.Channel.GetMessageAsync(messageOwnerInfo.Key));
+        }
+    }
+
+    internal class MoveSelectorDownHotKey : IHotkey
+    {
+        private readonly SegmentEditReactionHandler _segmentEditReactionHandler;
+
+        public MoveSelectorDownHotKey(SegmentEditReactionHandler segmentEditReactionHandler)
+        {
+            _segmentEditReactionHandler = segmentEditReactionHandler;
+        }
+
+        public char Key => 's';
+
+        public async Task ExecuteAsync(ICommandContext context)
+        {
+            var messageOwnerInfo =  SegmentEditReactionHandler.Owners.FirstOrDefault(o => o.Value.UserId == context.User.Id);
+
+            if (messageOwnerInfo.Value == null) return;
+
+            var position = messageOwnerInfo.Value.Position;
+            position.y++;
+            messageOwnerInfo.Value.Position = position;
+
+            await _segmentEditReactionHandler.UpdateMsg((IUserMessage)await context.Channel.GetMessageAsync(messageOwnerInfo.Key));
+        }
+    }
+
+    internal class MoveSelectorLeftHotKey : IHotkey
+    {
+        private readonly SegmentEditReactionHandler _segmentEditReactionHandler;
+
+        public MoveSelectorLeftHotKey(SegmentEditReactionHandler segmentEditReactionHandler)
+        {
+            _segmentEditReactionHandler = segmentEditReactionHandler;
+        }
+
+        public char Key => 'a';
+
+        public async Task ExecuteAsync(ICommandContext context)
+        {
+            var messageOwnerInfo =  SegmentEditReactionHandler.Owners.FirstOrDefault(o => o.Value.UserId == context.User.Id);
+
+            if (messageOwnerInfo.Value == null) return;
+
+            var position = messageOwnerInfo.Value.Position;
+            position.x--;
+            messageOwnerInfo.Value.Position = position;
+
+            await _segmentEditReactionHandler.UpdateMsg((IUserMessage)await context.Channel.GetMessageAsync(messageOwnerInfo.Key));
+        }
+    }
+
+    internal class MoveSelectorRightHotKey : IHotkey
+    {
+        private readonly SegmentEditReactionHandler _segmentEditReactionHandler;
+
+        public MoveSelectorRightHotKey(SegmentEditReactionHandler segmentEditReactionHandler)
+        {
+            _segmentEditReactionHandler = segmentEditReactionHandler;
+        }
+
+        public char Key => 'd';
+
+        public async Task ExecuteAsync(ICommandContext context)
+        {
+            var messageOwnerInfo =  SegmentEditReactionHandler.Owners.FirstOrDefault(o => o.Value.UserId == context.User.Id);
+
+            if (messageOwnerInfo.Value == null) return;
+
+            var position = messageOwnerInfo.Value.Position;
+            position.x++;
+            messageOwnerInfo.Value.Position = position;
+
+            await _segmentEditReactionHandler.UpdateMsg((IUserMessage)await context.Channel.GetMessageAsync(messageOwnerInfo.Key));
+        }
+    }
+}

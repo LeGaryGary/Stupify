@@ -4,7 +4,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Discord.Commands;
 using Microsoft.Extensions.Logging;
-using Stupify.Data;
 using Stupify.Data.Repositories;
 using StupifyConsoleApp.Commands;
 using StupifyConsoleApp.Commands.Modules.TicTacZap;
@@ -73,7 +72,7 @@ namespace StupifyConsoleApp.TicTacZapManagement
             else await context.Channel.SendMessageAsync(Responses.TemplateOwnershipProblem);
         }
 
-        public async Task<string> RenderSegmentAsync(int segmentId, Tuple<int, int> selection = null)
+        public async Task<string> RenderSegmentAsync(int segmentId, (int x, int y)? selection = null)
         {
             var resourcesPerTick = await _segmentRepository.GetSegmentResourcePerTickAsync(segmentId);
             var resources = await _segmentRepository.GetSegmentResourcesAsync(segmentId);
@@ -82,7 +81,7 @@ namespace StupifyConsoleApp.TicTacZapManagement
 
             if (selection != null)
             {
-                var i = selection.Item1 * 29 + selection.Item2 * 3 + 1;
+                var i = selection.Value.y * 29 + selection.Value.x * 3 + 1;
                 var tmp = new StringBuilder(text) {[i] = '#'};
                 text = tmp.ToString();
 
