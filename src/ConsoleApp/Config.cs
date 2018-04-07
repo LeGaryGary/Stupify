@@ -15,6 +15,7 @@ using Serilog;
 using Serilog.Events;
 using Stupify.Data;
 using StupifyConsoleApp.Client;
+using StupifyConsoleApp.Client.CustomTypeReaders;
 using StupifyConsoleApp.TicTacZapManagement;
 
 namespace StupifyConsoleApp
@@ -69,13 +70,17 @@ namespace StupifyConsoleApp
                     .AddSingleton(sp =>
                     {
                         var commandService = new CommandService();
+
+                        commandService.AddTypeReader<Uri>(new UriTypeReader());
                         commandService.AddModulesAsync(Assembly.GetEntryAssembly()).GetAwaiter().GetResult();
+
                         var logger = sp.GetService<ILogger<MessageHandler>>();
                         commandService.Log += message =>
                         {
                             logger.LogError(message.Exception, "Unhandled exception in command service");
                             return Task.CompletedTask;
                         };
+
                         return commandService;
                     })
                     .AddTransient(sp => new YouTubeService(new BaseClientService.Initializer
@@ -87,6 +92,7 @@ namespace StupifyConsoleApp
                     .AddSingleton<GameState>()
                     .AddTransient<GameRunner>()
                     .AddSingleton<AudioService>()
+                    .AddSingleton<MusicSearches>()
                     .AddTransient(sp => new YoutubeDL($"{Directory.GetCurrentDirectory()}/youtube-dl.exe"));
 
                 ConfigureLogging();

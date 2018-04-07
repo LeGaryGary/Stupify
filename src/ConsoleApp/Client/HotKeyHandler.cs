@@ -44,17 +44,15 @@ namespace StupifyConsoleApp.Client
                 if (executorType == null) return;
 
                 var keyExecutor = MakeExecutor(executorType);
-                await keyExecutor.ExecuteAsync(context);
+                if (await keyExecutor.ExecuteAsync(context))
+                {
+                    await context.Message.DeleteAsync();
+                };
             }
             catch (Exception e)
             {
                 _logger.LogError(e, "Unhandled exception in HotKeyHandler");
                 throw;
-            }
-            finally
-            {
-                //Delete message
-                await context.Message.DeleteAsync();
             }
         }
 

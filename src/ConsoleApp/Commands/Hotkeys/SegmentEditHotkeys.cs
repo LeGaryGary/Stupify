@@ -17,17 +17,18 @@ namespace StupifyConsoleApp.Commands.Hotkeys
 
         public char Key => 'w';
 
-        public async Task ExecuteAsync(ICommandContext context)
+        public async Task<bool> ExecuteAsync(ICommandContext context)
         {
             var messageOwnerInfo =  SegmentEditReactionHandler.Owners.FirstOrDefault(o => o.Value.UserId == context.User.Id);
 
-            if (messageOwnerInfo.Value == null) return;
+            if (messageOwnerInfo.Value == null) return false;
 
             var position = messageOwnerInfo.Value.Position;
             position.y--;
             messageOwnerInfo.Value.Position = position;
 
             await _segmentEditReactionHandler.UpdateMsg((IUserMessage)await context.Channel.GetMessageAsync(messageOwnerInfo.Key));
+            return true;
         }
     }
 
@@ -42,17 +43,18 @@ namespace StupifyConsoleApp.Commands.Hotkeys
 
         public char Key => 's';
 
-        public async Task ExecuteAsync(ICommandContext context)
+        public async Task<bool> ExecuteAsync(ICommandContext context)
         {
             var messageOwnerInfo =  SegmentEditReactionHandler.Owners.FirstOrDefault(o => o.Value.UserId == context.User.Id);
 
-            if (messageOwnerInfo.Value == null) return;
+            if (messageOwnerInfo.Value == null) return false;
 
             var position = messageOwnerInfo.Value.Position;
             position.y++;
             messageOwnerInfo.Value.Position = position;
 
             await _segmentEditReactionHandler.UpdateMsg((IUserMessage)await context.Channel.GetMessageAsync(messageOwnerInfo.Key));
+            return true;
         }
     }
 
@@ -67,17 +69,18 @@ namespace StupifyConsoleApp.Commands.Hotkeys
 
         public char Key => 'a';
 
-        public async Task ExecuteAsync(ICommandContext context)
+        public async Task<bool> ExecuteAsync(ICommandContext context)
         {
             var messageOwnerInfo =  SegmentEditReactionHandler.Owners.FirstOrDefault(o => o.Value.UserId == context.User.Id);
 
-            if (messageOwnerInfo.Value == null) return;
+            if (messageOwnerInfo.Value == null) return false;
 
             var position = messageOwnerInfo.Value.Position;
             position.x--;
             messageOwnerInfo.Value.Position = position;
 
             await _segmentEditReactionHandler.UpdateMsg((IUserMessage)await context.Channel.GetMessageAsync(messageOwnerInfo.Key));
+            return true;
         }
     }
 
@@ -92,17 +95,18 @@ namespace StupifyConsoleApp.Commands.Hotkeys
 
         public char Key => 'd';
 
-        public async Task ExecuteAsync(ICommandContext context)
+        public async Task<bool> ExecuteAsync(ICommandContext context)
         {
             var messageOwnerInfo =  SegmentEditReactionHandler.Owners.FirstOrDefault(o => o.Value.UserId == context.User.Id);
 
-            if (messageOwnerInfo.Value == null) return;
+            if (messageOwnerInfo.Value == null) return false;
 
             var position = messageOwnerInfo.Value.Position;
             position.x++;
             messageOwnerInfo.Value.Position = position;
 
             await _segmentEditReactionHandler.UpdateMsg((IUserMessage)await context.Channel.GetMessageAsync(messageOwnerInfo.Key));
+            return true;
         }
     }
 }

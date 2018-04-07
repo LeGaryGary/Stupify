@@ -6,6 +6,6 @@ namespace StupifyConsoleApp.Commands.Hotkeys
     internal interface IHotkey
     {
         char Key { get; }
-        Task ExecuteAsync(ICommandContext context);
+        Task<bool> ExecuteAsync(ICommandContext context);
     }
 }
