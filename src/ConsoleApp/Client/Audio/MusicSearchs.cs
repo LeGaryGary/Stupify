@@ -6,14 +6,13 @@ namespace StupifyConsoleApp.Client.Audio
 {
     public class MusicSearches
     {
-        private ConcurrentDictionary<IGuildUser, MusicSearch> _musicSearches;
+        private readonly ConcurrentDictionary<IGuildUser, MusicSearch> _musicSearches;
 
         public MusicSearches()
         {
             _musicSearches = new ConcurrentDictionary<IGuildUser, MusicSearch>();
         }
-
-        public bool this[IGuildUser user] => _musicSearches.ContainsKey(user);
+    
         public Uri this[IGuildUser user, int selection]
         {
             get
@@ -22,6 +21,8 @@ namespace StupifyConsoleApp.Client.Audio
                 return musicSearch.GetUrl(selection);
             }
         }
+
+        public bool UserHasSearch(IGuildUser user) => _musicSearches.ContainsKey(user);
 
         public void AddSearch(IGuildUser user, Uri[] optionResults)
         {

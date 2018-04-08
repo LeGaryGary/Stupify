@@ -82,14 +82,11 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
             [Command]
             public async Task SegmentAsync()
             {
-                var userId = await _userRepository.GetUserId(Context.User).ConfigureAwait(false);
-                var segmentId = _gameState.GetUserSegmentSelection(userId);
-                if (!segmentId.HasValue)
+                var segmentId = await GetSegmentSelectionAsync().ConfigureAwait(false);
+                if (segmentId.HasValue)
                 {
-                    await ReplyAsync(Responses.SelectSegmentMessage).ConfigureAwait(false);
-                    return;
+                    await _tacZapController.ShowSegmentAsync(Context, segmentId.Value).ConfigureAwait(false);
                 }
-                await _tacZapController.ShowSegmentAsync(Context, segmentId.Value).ConfigureAwait(false);
             }
 
             [Command]
@@ -135,21 +132,17 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
             [Command("Reset")]
             public async Task ResetSegmentAsync()
             {
-                var userId = await _userRepository.GetUserId(Context.User).ConfigureAwait(false);
-                var segmentId = _gameState.GetUserSegmentSelection(userId);
-                if (!segmentId.HasValue)
+                var segmentId = await GetSegmentSelectionAsync().ConfigureAwait(false);
+                if (segmentId.HasValue)
                 {
-                    await ReplyAsync(Responses.SelectSegmentMessage).ConfigureAwait(false);
-                    return;
-                }
+                    var blocks = await _segmentRepository.ResetSegmentAsync(segmentId.Value).ConfigureAwait(false);
 
-                var blocks = await _segmentRepository.ResetSegmentAsync(segmentId.Value).ConfigureAwait(false);
-
-                foreach (var type in blocks)
-                    if (type.Value > 0)
-                        await _inventoryRepository.AddToInventoryAsync(type.Key, type.Value, Context.User).ConfigureAwait(false);
+                    foreach (var type in blocks)
+                        if (type.Value > 0)
+                            await _inventoryRepository.AddToInventoryAsync(type.Key, type.Value, Context.User).ConfigureAwait(false);
                 
-                await ReplyAsync($"segment {segmentId} was reset!").ConfigureAwait(false);
+                    await ReplyAsync($"segment {segmentId} was reset!").ConfigureAwait(false);
+                }
             }
 
             [Command("Edit")]
@@ -169,55 +162,59 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
             [Command("Delete")]
             public async Task DeleteSegmentCommandAsync()
             {
-                var userId = await _userRepository.GetUserId(Context.User).ConfigureAwait(false);
-                var segmentId = _gameState.GetUserSegmentSelection(userId);
-                if (!segmentId.HasValue)
+                var segmentId = await GetSegmentSelectionAsync().ConfigureAwait(false);
+                if (segmentId.HasValue)
                 {
-                    await ReplyAsync(Responses.SelectSegmentMessage).ConfigureAwait(false);
-                    return;
-                }
+                    var locationNullable = await _segmentRepository.DeleteSegmentAsync(segmentId.Value).ConfigureAwait(false);
+                    if (locationNullable.HasValue)
+                    {
+                        await ReplyAsync($"It's gone...\r\nId: {segmentId}\r\nCoordinates: {locationNullable.Value.x + 1}, {locationNullable.Value.y + 1}").ConfigureAwait(false);
+                        return;
+                    }
 
-                var locationNullable = await _segmentRepository.DeleteSegmentAsync(segmentId.Value).ConfigureAwait(false);
-                if (locationNullable.HasValue)
-                {
-                    await ReplyAsync($"It's gone...\r\nId: {segmentId}\r\nCoordinates: {locationNullable.Value.x + 1}, {locationNullable.Value.y + 1}").ConfigureAwait(false);
-                    return;
+                    await ReplyAsync("Something went wrong, we couldn't find your segment in the universe, how odd").ConfigureAwait(false);
                 }
-
-                await ReplyAsync("Something went wrong, we couldn't find your segment in the universe, how odd").ConfigureAwait(false);
             }
 
             [Command("Attack")]
             public async Task AttackSegmentCommandAsync(Direction direction)
             {
+                var segmentId = await GetSegmentSelectionAsync().ConfigureAwait(false);
+                if (segmentId.HasValue)
+                {
+                    if (!await _tacZapController.SegmentReadyForCombatAsync(segmentId.Value).ConfigureAwait(false))
+                    {
+                        await ReplyAsync("This segment isn't ready for combat (needs to have offensive blocks and not already be in combat)").ConfigureAwait(false);
+                        return;
+                    }
+
+                    var defendingSegment = await _universeRepository.GetAdjacentSegmentInDirectionAsync(segmentId.Value, direction).ConfigureAwait(false);
+                    if (defendingSegment.HasValue)
+                    {
+                        var opposite = direction.Opposite();
+                        await ReplyAsync("Attacker:").ConfigureAwait(false);
+                        var attackMessage = await ReplyAsync("```Loading...```").ConfigureAwait(false);
+                        await ReplyAsync("Defender:").ConfigureAwait(false);
+                        var defenceMessage = await ReplyAsync("```Loading...```").ConfigureAwait(false);
+                        _gameState.CurrentWars.Add((segmentId.Value, defendingSegment.Value, direction, attackMessage, new Queue<string>()));
+                        _gameState.CurrentWars.Add((defendingSegment.Value, segmentId.Value, opposite, defenceMessage, new Queue<string>()));
+                        return;
+                    }
+
+                    await ReplyAsync("Good luck fighting... empty space? Try attacking something more interesting please").ConfigureAwait(false);
+                }
+            }
+
+            private async Task<int?> GetSegmentSelectionAsync()
+            {
                 var userId = await _userRepository.GetUserId(Context.User).ConfigureAwait(false);
-                var segment = _gameState.GetUserSegmentSelection(userId);
-                if (!segment.HasValue)
-                {
-                    await ReplyAsync(Responses.SelectSegmentMessage).ConfigureAwait(false);
-                    return;
-                }
+                var segmentId = _gameState.GetUserSegmentSelection(userId);
 
-                if (!await _tacZapController.SegmentReadyForCombatAsync(segment.Value).ConfigureAwait(false))
-                {
-                    await ReplyAsync("This segment isn't ready for combat (needs to have offensive blocks and not already be in combat)").ConfigureAwait(false);
-                    return;
-                }
+                if (segmentId.HasValue) return segmentId;
 
-                var defendingSegment = await _universeRepository.GetAdjacentSegmentInDirectionAsync(segment.Value, direction).ConfigureAwait(false);
-                if (defendingSegment.HasValue)
-                {
-                    var opposite = direction.Opposite();
-                    await ReplyAsync("Attacker:").ConfigureAwait(false);
-                    var attackMessage = await ReplyAsync("```Loading...```").ConfigureAwait(false);
-                    await ReplyAsync("Defender:").ConfigureAwait(false);
-                    var defenceMessage = await ReplyAsync("```Loading...```").ConfigureAwait(false);
-                    _gameState.CurrentWars.Add((segment.Value, defendingSegment.Value, direction, attackMessage, new Queue<string>()));
-                    _gameState.CurrentWars.Add((defendingSegment.Value, segment.Value, opposite, defenceMessage, new Queue<string>()));
-                    return;
-                }
+                await ReplyAsync(Responses.SelectSegmentMessage).ConfigureAwait(false);
+                return null;
 
-                await ReplyAsync("Good luck fighting... empty space? Try attacking something more interesting please").ConfigureAwait(false);
             }
         }
     }

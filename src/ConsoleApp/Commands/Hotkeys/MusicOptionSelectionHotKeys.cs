@@ -20,7 +20,7 @@ namespace StupifyConsoleApp.Commands.Hotkeys
 
         public async Task<bool> ExecuteAsync(ICommandContext context)
         {
-            if (!(context.User is IGuildUser user) || !_musicSearches[user]) return false;
+            if (!(context.User is IGuildUser user) || !_musicSearches.UserHasSearch(user)) return false;
 
             await _commandService.ExecuteAsync(context, $"play {_musicSearches[user, 0]}", Config.ServiceProvider).ConfigureAwait(false);
             return true;
@@ -42,7 +42,7 @@ namespace StupifyConsoleApp.Commands.Hotkeys
 
         public async Task<bool> ExecuteAsync(ICommandContext context)
         {
-            if (!(context.User is IGuildUser user) || !_musicSearches[user]) return false;
+            if (!(context.User is IGuildUser user) || !_musicSearches.UserHasSearch(user)) return false;
 
             await _commandService.ExecuteAsync(context, $"play {_musicSearches[user, 1]}", Config.ServiceProvider).ConfigureAwait(false);
             return true;
@@ -64,7 +64,7 @@ namespace StupifyConsoleApp.Commands.Hotkeys
 
         public async Task<bool> ExecuteAsync(ICommandContext context)
         {
-            if (!(context.User is IGuildUser user) || !_musicSearches[user]) return false;
+            if (!(context.User is IGuildUser user) || !_musicSearches.UserHasSearch(user)) return false;
 
             await _commandService.ExecuteAsync(context, $"play {_musicSearches[user, 2]}", Config.ServiceProvider).ConfigureAwait(false);
             return true;
@@ -86,7 +86,7 @@ namespace StupifyConsoleApp.Commands.Hotkeys
 
         public async Task<bool> ExecuteAsync(ICommandContext context)
         {
-            if (!(context.User is IGuildUser user) || !_musicSearches[user]) return false;
+            if (!(context.User is IGuildUser user) || !_musicSearches.UserHasSearch(user)) return false;
 
             await _commandService.ExecuteAsync(context, $"play {_musicSearches[user, 3]}", Config.ServiceProvider).ConfigureAwait(false);
             return true;
@@ -108,7 +108,7 @@ namespace StupifyConsoleApp.Commands.Hotkeys
 
         public async Task<bool> ExecuteAsync(ICommandContext context)
         {
-            if (!(context.User is IGuildUser user) || !_musicSearches[user]) return false;
+            if (!(context.User is IGuildUser user) || !_musicSearches.UserHasSearch(user)) return false;
 
             await _commandService.ExecuteAsync(context, $"play {_musicSearches[user, 4]}", Config.ServiceProvider).ConfigureAwait(false);
             return true;

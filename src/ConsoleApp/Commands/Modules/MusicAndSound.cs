@@ -86,28 +86,28 @@ namespace StupifyConsoleApp.Commands.Modules
             var response = await request.ExecuteAsync().ConfigureAwait(false);
 
             var options = new List<Uri>();
-            var optionsMessage = string.Empty;
+            var optionsMessage = new StringBuilder();
 
             foreach (var searchResult in response.Items)
             {
                 if (searchResult.Id.Kind == "youtube#video")
                 {
-                    optionsMessage +=
+                    optionsMessage.Append(
                         $"{response.Items.IndexOf(searchResult) + 1} - `{searchResult.Snippet.Title}` (Video)" +
-                        Environment.NewLine;
+                        Environment.NewLine);
                     options.Add(new Uri("https://www.youtube.com/watch?v=" + searchResult.Id.VideoId));
                 }
                 else if (searchResult.Id.Kind == "youtube#playlist")
                 {
-                    optionsMessage +=
+                    optionsMessage.Append(
                         $"{response.Items.IndexOf(searchResult) + 1} - `{searchResult.Snippet.Title}` (Playlist)" +
-                        Environment.NewLine;
+                        Environment.NewLine);
                     options.Add(new Uri("https://www.youtube.com/watch?list=" + searchResult.Id.PlaylistId));
                 }
             }
 
             _musicSearches.AddSearch(user, options.ToArray());
-            await ReplyAsync(optionsMessage).ConfigureAwait(false);
+            await ReplyAsync(optionsMessage.ToString()).ConfigureAwait(false);
         }
         
         [Command("queue")]
