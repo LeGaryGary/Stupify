@@ -15,6 +15,7 @@ using Serilog;
 using Serilog.Events;
 using Stupify.Data;
 using StupifyConsoleApp.Client;
+using StupifyConsoleApp.Client.Audio;
 using StupifyConsoleApp.Client.CustomTypeReaders;
 using StupifyConsoleApp.TicTacZapManagement;
 

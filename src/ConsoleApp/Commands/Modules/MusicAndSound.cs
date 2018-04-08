@@ -11,6 +11,7 @@ using Discord.Commands;
 using NYoutubeDL;
 using Google.Apis.YouTube.v3;
 using StupifyConsoleApp.Client;
+using StupifyConsoleApp.Client.Audio;
 
 namespace StupifyConsoleApp.Commands.Modules
 {
@@ -33,7 +34,7 @@ namespace StupifyConsoleApp.Commands.Modules
         public async Task PlayAirHorn()
         {
             if (Context.User is IVoiceState state && state.VoiceChannel != null)
-                await _audioService.QueueFile(Context.Guild, state.VoiceChannel, Directory.GetCurrentDirectory() + "\\AirHorn.mp3");
+                await _audioService.QueueFile(Context.Channel as ITextChannel, state.VoiceChannel, Directory.GetCurrentDirectory() + "\\AirHorn.mp3");
         }
 
         [Command("play", RunMode = RunMode.Async), Priority(1)]
@@ -107,6 +108,81 @@ namespace StupifyConsoleApp.Commands.Modules
             _musicSearches.AddSearch(user, options.ToArray());
             await ReplyAsync(optionsMessage);
         }
+        
+        [Command("queue")]
+        public async Task DisplayQueue()
+        {
+            var fileNames = _audioService.GetQueuedFiles(Context.Guild)?
+                .Select(Path.GetFileNameWithoutExtension)
+                .ToArray();
+
+            if (fileNames == null)
+            {
+                await ReplyAsync("The queue is empty");
+                return;
+            }
+
+            var titles = (await TryGetYoutubeTitles(fileNames)).ToArray();
+
+            var message = string.Empty;
+
+            for (var i = 0; i < fileNames.Length; i++)
+            {
+                var addition = $"{i} - *{titles[i] ?? fileNames[i]}*" + Environment.NewLine;
+                if ((message + addition).Length > 1997)
+                {
+                    message += "...";
+                    break;
+                }
+                message += addition;
+            }
+
+            if (string.IsNullOrWhiteSpace(message)) await ReplyAsync("The queue is empty");
+            else await ReplyAsync($"{message}");
+        }
+
+        [Command("Dequeue")]
+        public async Task Dequeue(int position)
+        {
+            _audioService.Dequeue(Context.Guild, position);
+        }
+
+        [Command("Skip")]
+        public async Task Skip()
+        {
+            _audioService.Skip(Context.Guild);
+        }
+
+        [Command("KillQueue")]
+        public async Task StopGuildAudio()
+        {
+            await _audioService.LeaveAudio(Context.Guild);
+        }
+
+        private async Task<string> TryGetYoutubeTitle(string name)
+        {
+            var request = _youTubeService.Videos.List("id,snippet");
+            request.Id = name;
+            var response = await request.ExecuteAsync();
+            return response.Items.Count == 1 ? response.Items.Single().Snippet.Title : null;
+        }
+
+        private async Task<IEnumerable<string>> TryGetYoutubeTitles(IEnumerable<string> names)
+        {
+            var namesArray = names.ToArray();
+            var request = _youTubeService.Videos.List("id,snippet");
+            request.Id = string.Join(',', namesArray);
+            var response = await request.ExecuteAsync();
+
+            var videoTitles = new string[namesArray.Length];
+            for (var i = 0; i < namesArray.Length; i++)
+            {
+                var video = response.Items.FirstOrDefault(item => item.Id == namesArray[i]);
+                videoTitles[i] = video?.Snippet.Title;
+            }
+
+            return videoTitles;
+        }
 
         private async Task<IEnumerable<string>> GetVideoIdsAsync(string playlistId)
         {
@@ -148,7 +224,7 @@ namespace StupifyConsoleApp.Commands.Modules
             }
 
             if (Context.User is IVoiceState state && state.VoiceChannel != null)
-                await _audioService.QueueFile(Context.Guild, state.VoiceChannel, output);
+                await _audioService.QueueFile(Context.Channel as ITextChannel, state.VoiceChannel, output);
         }
     }
 }

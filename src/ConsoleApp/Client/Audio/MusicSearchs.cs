@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using Discord;
-using Discord.Commands;
 
-namespace StupifyConsoleApp.Client
+namespace StupifyConsoleApp.Client.Audio
 {
     public class MusicSearches
     {
@@ -28,6 +25,7 @@ namespace StupifyConsoleApp.Client
 
         public void AddSearch(IGuildUser user, Uri[] optionResults)
         {
+            _musicSearches.TryRemove(user, out var value);
             _musicSearches.TryAdd(user, new MusicSearch(optionResults));
         }
     }

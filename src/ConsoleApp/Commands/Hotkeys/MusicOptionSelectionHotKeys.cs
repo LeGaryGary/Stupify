@@ -7,6 +7,7 @@ using System.Web;
 using Discord;
 using Discord.Commands;
 using StupifyConsoleApp.Client;
+using StupifyConsoleApp.Client.Audio;
 
 namespace StupifyConsoleApp.Commands.Hotkeys
 {
