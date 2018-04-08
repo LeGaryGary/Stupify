@@ -1,48 +1,44 @@
 ﻿using System.Threading.Tasks;
 using Discord.Commands;
-
+using Stupify.Data.Repositories;
 using StupifyConsoleApp.Commands.Conditions;
-using StupifyConsoleApp.DataModels;
-using StupifyConsoleApp.TicTacZapManagement;
 
 namespace StupifyConsoleApp.Commands.Modules
 {
     [Debug]
     [DevOnly]
-    public class Debug : StupifyModuleBase
+    public class Debug : ModuleBase<CommandContext>
     {
-        public Debug(BotContext db) : base(db)
+        private readonly IUserRepository _userRepository;
+        private readonly IInventoryRepository _inventoryRepository;
+
+        public Debug(IUserRepository userRepository, IInventoryRepository inventoryRepository)
         {
+            _userRepository = userRepository;
+            _inventoryRepository = inventoryRepository;
         }
 
         [Command("Motherlode")]
         public async Task DebugMotherlode()
         {
-            var user = await this.GetUserAsync();
-
-            user.Balance += 1000000;
-
-            await Db.SaveChangesAsync();
-            await ReplyAsync($"You filthy cheater! Fine. I updated the balance. (balance: {user.Balance})");
+            await _userRepository.BankToUserTransferAsync(Context.User, 1000000);
+            await ReplyAsync($"You filthy cheater! Fine. I updated the balance. (balance: {await _userRepository.BalanceAsync(Context.User)})");
         }
 
         [Command("InvReset")]
         public async Task DebugInvReset()
         {
-            var user = this.GetUserAsync();
-            await Inventories.ResetInventory(user.Id);
+            await _inventoryRepository.ResetInventory(Context.User);
             await ReplyAsync("inventory reset!");
         }
 
         [Command("BalReset")]
         public async Task DebugBalReset()
         {
-            var user = await this.GetUserAsync();
+            var amount = await _userRepository.BalanceAsync(Context.User) - 500;
 
-            user.Balance = 500;
-
-            await Db.SaveChangesAsync();
-            await ReplyAsync($"balance reset! (balance: {user.Balance})");
+            await _userRepository.UserToBankTransferAsync(Context.User, amount);
+            await ReplyAsync($"balance reset! (balance: {_userRepository.BalanceAsync(Context.User)})");
         }
     }
 }

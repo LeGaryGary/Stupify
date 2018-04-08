@@ -1,39 +1,36 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Discord.Commands;
-using StupifyConsoleApp.DataModels;
+using Stupify.Data.Repositories;
 using StupifyConsoleApp.TicTacZapManagement;
 using TicTacZap.Blocks;
 
 namespace StupifyConsoleApp.Commands.Modules.TicTacZap
 {
-    public class Inventory : StupifyModuleBase
+    public class Inventory : ModuleBase<CommandContext>
     {
         private readonly TicTacZapController _tacZapController;
+        private readonly IUserRepository _userRepository;
+        private readonly IInventoryRepository _inventoryRepository;
 
-        public Inventory(BotContext db, TicTacZapController tacZapController) : base(db)
+        public Inventory(TicTacZapController tacZapController, IUserRepository userRepository, IInventoryRepository inventoryRepository)
         {
             _tacZapController = tacZapController;
+            _userRepository = userRepository;
+            _inventoryRepository = inventoryRepository;
         }
 
         [Command("Balance")]
         public async Task ShowBalance()
         {
-            var balance = await Balance();
-            await ReplyAsync($"Your balance is: {balance}");
-        }
-
-        private async Task<decimal> Balance()
-        {
-            var user = await this.GetUserAsync();
-            return user.Balance;
+            await ReplyAsync($"Your balance is: {await _userRepository.BalanceAsync(Context.User)}");
         }
 
         [Command("Inventory")]
         public async Task ShowInventory()
         {
-            var userId = (await this.GetUserAsync()).UserId;
-            var message = await _tacZapController.RenderInventory(userId);
+            var inventory = await _inventoryRepository.GetInventoryAsync(Context.User);
+            var message = inventory.TextRender();
             if (message == string.Empty)
             {
                 await ReplyAsync("Your inventory is empty");
@@ -60,18 +57,14 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
                 await ReplyAsync("The shop doesn't sell this type of block.");
                 return;
             }
-
-            if (!TicTacZapController.MakeTransaction(
-                await this.GetUserAsync(),
-                await Db.GetBankAsync(),
-                total.Value))
+            
+            if (!await _userRepository.UserToBankTransferAsync(Context.User, total.Value))
             {
                 await ReplyAsync(Responses.NotEnoughUnits(total.Value));
                 return;
             }
 
-            await Db.SaveChangesAsync();
-            await Inventories.AddToInventoryAsync(block, quantity, (await this.GetUserAsync()).UserId);
+            await _inventoryRepository.AddToInventoryAsync(block, quantity, Context.User);
             await ShowInventory();
         }
 
@@ -84,19 +77,16 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
                 await ReplyAsync("The shop doesn't buy this type of block.");
                 return;
             }
-
-            if (!TicTacZapController.MakeTransaction(
-                await Db.GetBankAsync(),
-                await this.GetUserAsync(),
-                total.Value))
+            
+            if (!await _userRepository.BankToUserTransferAsync(Context.User, total.Value))
             {
                 await ReplyAsync(Responses.NotEnoughUnits(total.Value));
                 return;
             }
 
-            if (await Inventories.RemoveFromInventoryAsync(block, quantity, (await this.GetUserAsync()).UserId)) await Db.SaveChangesAsync();
-            else
+            if (!await _inventoryRepository.RemoveFromInventoryAsync(block, quantity, Context.User))
             {
+                await _userRepository.UserToBankTransferAsync(Context.User, total.Value);
                 await ReplyAsync("You don't have the required blocks...");
             }
             await ShowInventory();

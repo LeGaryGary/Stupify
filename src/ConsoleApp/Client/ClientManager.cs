@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Reflection;
 using System.Threading.Tasks;
 using Discord;
-using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
 
@@ -10,38 +8,40 @@ namespace StupifyConsoleApp.Client
 {
     public class ClientManager
     {
+        private readonly ILogger<ClientManager> _logger;
         private readonly IDiscordClient _client;
 
-        public ClientManager(IMessageHandler messageHandler, IReactionHandler segmentEditHandler, ILogger<ClientManager> logger, IDiscordClient client)
+        public ClientManager(IMessageHandler messageHandler, SegmentEditReactionHandler segmentEditHandler, ILogger<ClientManager> logger, IDiscordClient client)
         {
+            _logger = logger;
             _client = client;
 
             switch (_client)
             {
                 case DiscordSocketClient discordSocketClient:
-                    discordSocketClient.MessageReceived += messageHandler.Handle;
+                    discordSocketClient.MessageReceived += messageHandler.HandleAsync;
                     discordSocketClient.ReactionAdded += segmentEditHandler.Handle;
                     discordSocketClient.Log += logMessage =>
                     {
                         switch (logMessage.Severity)
                         {
                             case LogSeverity.Critical:
-                                logger.LogCritical(logMessage.Message);
+                                _logger.LogCritical(logMessage.Exception, logMessage.Message);
                                 break;
                             case LogSeverity.Error:
-                                logger.LogError(logMessage.Message);
+                                _logger.LogError(logMessage.Exception, logMessage.Message);
                                 break;
                             case LogSeverity.Warning:
-                                logger.LogWarning(logMessage.Message);
+                                _logger.LogWarning(logMessage.Exception, logMessage.Message);
                                 break;
                             case LogSeverity.Info:
-                                logger.LogInformation(logMessage.Message);
+                                _logger.LogInformation(logMessage.Exception, logMessage.Message);
                                 break;
                             case LogSeverity.Verbose:
-                                logger.LogDebug(logMessage.Message);
+                                _logger.LogDebug(logMessage.Exception, logMessage.Message);
                                 break;
                             case LogSeverity.Debug:
-                                logger.LogTrace(logMessage.Message);
+                                _logger.LogTrace(logMessage.Exception, logMessage.Message);
                                 break;
                             default:
                                 throw new ArgumentOutOfRangeException();
@@ -52,31 +52,40 @@ namespace StupifyConsoleApp.Client
             }
         }
 
-        public async Task Start()
+        public async Task StartAsync()
         {
             switch (_client)
             {
                 case DiscordSocketClient discordSocketClient:
-                    await discordSocketClient.LoginAsync(TokenType.Bot, Config.DiscordBotUserToken);
+                    await discordSocketClient.LoginAsync(TokenType.Bot, Config.DiscordBotUserToken).ConfigureAwait(false);
                     break;
                 case DiscordShardedClient discordShardedClient:
-                    await discordShardedClient.LoginAsync(TokenType.Bot, Config.DiscordBotUserToken);
+                    await discordShardedClient.LoginAsync(TokenType.Bot, Config.DiscordBotUserToken).ConfigureAwait(false);
                     break;
             }
             
-            await _client.StartAsync();
+            await _client.StartAsync().ConfigureAwait(false);
             while (true)
             {
-                switch (_client)
+                try
                 {
-                    case DiscordShardedClient discordShardedClient:
-                        await discordShardedClient.SetGameAsync($"{Config.CommandPrefix} help | Servers: {discordShardedClient.Guilds.Count}");
-                        break;
-                    case DiscordSocketClient discordSocketClient:
-                        await discordSocketClient.SetGameAsync($"{Config.CommandPrefix} help | Servers: {discordSocketClient.Guilds.Count}");
-                        break;
+                    switch (_client)
+                    {
+                        case DiscordShardedClient discordShardedClient:
+                            await discordShardedClient.SetGameAsync($"{Config.CommandPrefix} help | Servers: {discordShardedClient.Guilds.Count}").ConfigureAwait(false);
+                            break;
+                        case DiscordSocketClient discordSocketClient:
+                            await discordSocketClient.SetGameAsync($"{Config.CommandPrefix} help | Servers: {discordSocketClient.Guilds.Count}").ConfigureAwait(false);
+                            break;
+                    }
                 }
-                await Task.Delay(60000);
+                catch (Exception e)
+                {
+                    _logger.LogError(e, "An error occurred whilst setting bot displayed game");
+                    throw;
+                }
+                
+                await Task.Delay(60000).ConfigureAwait(false);
             }
         }
     }

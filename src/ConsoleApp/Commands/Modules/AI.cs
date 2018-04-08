@@ -2,20 +2,20 @@
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
-using Microsoft.EntityFrameworkCore;
-
+using Stupify.Data.Repositories;
 using StupifyConsoleApp.Commands.Conditions;
-using StupifyConsoleApp.DataModels;
 using StupifyConsoleApp.TicTacZapManagement;
 
 namespace StupifyConsoleApp.Commands.Modules
 {
     [Debug]
     [Group("Solve")]
-    public class AI : StupifyModuleBase
+    public class AI : ModuleBase<CommandContext>
     {
         private readonly TicTacZapController _tacZapController;
         private readonly GameState _gameState;
+        private readonly ISegmentRepository _segmentRepository;
+        private readonly IUserRepository _userRepository;
 
         private const decimal ConsiderationThreshold = 30;
         private const decimal RemoveThreshold = 20;
@@ -25,10 +25,12 @@ namespace StupifyConsoleApp.Commands.Modules
 
         private static readonly Dictionary<int, StupifyConsoleApp.AI.AI> AiInstances = new Dictionary<int, StupifyConsoleApp.AI.AI>();
 
-        public AI(BotContext db, TicTacZapController tacZapController, GameState gameState) : base(db)
+        public AI(TicTacZapController tacZapController, GameState gameState, ISegmentRepository segmentRepository, IUserRepository userRepository)
         {
             _tacZapController = tacZapController;
             _gameState = gameState;
+            _segmentRepository = segmentRepository;
+            _userRepository = userRepository;
         }
 
         [Command(RunMode = RunMode.Async)]
@@ -36,36 +38,29 @@ namespace StupifyConsoleApp.Commands.Modules
             decimal rmvThr = RemoveThreshold,
             double exp = ExpansionChance, double rmv = RemoveChance, double brk = BreakChance)
         {
-            var user = await this.GetUserAsync();
-            if (AiInstances.ContainsKey(user.UserId))
+            var userId = await _userRepository.GetUserId(Context.User);
+            if (AiInstances.ContainsKey(userId))
             {
                 await ReplyAsync(
                     $"you already have an AI instance running, you can stop it using {Config.CommandPrefix} Solve Stop");
                 return;
             }
 
-            if (!await this.UserHasSegmentAsync(segmentId))
+            if (!await _segmentRepository.UserHasSegmentAsync(Context.User, segmentId))
             {
                 await ReplyAsync(Responses.SegmentOwnershipProblem);
                 return;
             }
 
-            var segment = await Db.Segments.FirstOrDefaultAsync(s => s.SegmentId == segmentId);
-            if (segment == null)
-            {
-                await ReplyAsync("invalid segment ID");
-                return;
-            }
-
-            await RunAI(segment, user, addThr, rmvThr, exp, rmv, brk);
+            await RunAI(segmentId, userId, addThr, rmvThr, exp, rmv, brk);
         }
 
         [Command]
         public async Task Solve(decimal addThr = ConsiderationThreshold,
             decimal rmvThr = RemoveThreshold, double exp = ExpansionChance, double rmv = RemoveChance, double brk = BreakChance)
         {
-            var user = await this.GetUserAsync();
-            var id = _gameState.GetUserSegmentSelection(user.UserId);
+            var userId = await _userRepository.GetUserId(Context.User);
+            var id = _gameState.GetUserSegmentSelection(userId);
 
             if (id != null)
                 await Solve((int) id, addThr, rmvThr, exp, rmv, brk);
@@ -76,40 +71,40 @@ namespace StupifyConsoleApp.Commands.Modules
         [Command("Stop")]
         public async Task Stop()
         {
-            var user = await this.GetUserAsync();
-            if (!AiInstances.ContainsKey(user.UserId))
+            var userId = await _userRepository.GetUserId(Context.User);
+            if (!AiInstances.ContainsKey(userId))
             {
                 await ReplyAsync("you have no AI instances running");
                 return;
             }
 
             var msg = await ReplyAsync("stopping.");
-            var instance = AiInstances[user.UserId];
+            var instance = AiInstances[userId];
             instance.Stop();
             await msg.ModifyAsync(message => message.Content = "stopped.");
         }
 
-        private async Task RunAI(Segment segment, User user, decimal addThr, decimal rmvThr, double exp,
+        private async Task RunAI(int segmentId, int userId, decimal addThr, decimal rmvThr, double exp,
             double rmv, double brk)
         {
-            var aiInstance = new StupifyConsoleApp.AI.AI(Db, segment, user);
-            AiInstances.Add(user.UserId, aiInstance);
+            var aiInstance = new StupifyConsoleApp.AI.AI(_segmentRepository, segmentId);
+            AiInstances.Add(userId, aiInstance);
 
             var ai = Task.Run(() => aiInstance.Run(exp, rmv, addThr, rmvThr, brk));
             var msg = await ReplyAsync("hang on...");
 
             while (!ai.IsCompleted)
             {
-                await UpdateMsg(msg, segment, aiInstance.Status);
+                await UpdateMsg(msg, segmentId, aiInstance.Status);
                 await Task.Delay(2000);
             }
 
-            await UpdateMsg(msg, segment, aiInstance.Status);
+            await UpdateMsg(msg, segmentId, aiInstance.Status);
         }
 
-        private async Task UpdateMsg(IUserMessage msg, Segment segment, StupifyConsoleApp.AI.AI.AIStatus status)
+        private async Task UpdateMsg(IUserMessage msg, int segmentId, StupifyConsoleApp.AI.AI.AIStatus status)
         {
-            var str = await _tacZapController.RenderSegmentAsync(segment.SegmentId) + "\n";
+            var str = await _tacZapController.RenderSegmentAsync(segmentId) + "\n";
             switch (status)
             {
                 case StupifyConsoleApp.AI.AI.AIStatus.Finished:
