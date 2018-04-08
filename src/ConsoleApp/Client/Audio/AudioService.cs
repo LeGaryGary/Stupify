@@ -24,7 +24,7 @@ namespace StupifyConsoleApp.Client.Audio
             _youTubeService = youTubeService;
         }
 
-        public async Task QueueFile(ITextChannel guildChannel, IVoiceChannel target, string path)
+        public async Task QueueFileAsync(ITextChannel guildChannel, IVoiceChannel target, string path)
         {
             if(guildChannel == null) return;
             if (_connectedChannels.TryGetValue(guildChannel.Guild.Id, out var audio))
@@ -35,7 +35,7 @@ namespace StupifyConsoleApp.Client.Audio
 
             if (target.Guild.Id != guildChannel.Guild.Id) return;
 
-            var audioClient = await target.ConnectAsync();
+            var audioClient = await target.ConnectAsync().ConfigureAwait(false);
 
             audio = new GuildAudioInfo(guildChannel, audioClient);
             audio.Queue.Enqueue(path);
@@ -57,32 +57,32 @@ namespace StupifyConsoleApp.Client.Audio
                     var videoId = Path.GetFileNameWithoutExtension(path);
                     audio.InfoChannel?.SendMessageAsync(
                         string.Empty,
-                        embed: await GetEmbedForYoutubeVideo(videoId));
+                        embed: await GetEmbedForYoutubeVideoAsync(videoId).ConfigureAwait(false));
                     using (var ffmpeg = CreateStream(path))
                     using (var stream = audio.Client.CreatePCMStream(AudioApplication.Music))
                     {
                         audio.Ffmpeg = ffmpeg;
                         try
                         {
-                            await ffmpeg.StandardOutput.BaseStream.CopyToAsync(stream);
+                            await ffmpeg.StandardOutput.BaseStream.CopyToAsync(stream).ConfigureAwait(false);
                         }
                         finally
                         {
-                            await stream.FlushAsync();
+                            await stream.FlushAsync().ConfigureAwait(false);
                         }
                     }
                 }
                 catch(Exception e){ _logger.LogWarning(e, "Exception whilst attempting to stream the file {FilePath}", path);}
             }
 
-            await LeaveAudioAsync(guild);
+            await LeaveAudioAsync(guild).ConfigureAwait(false);
         }
 
-        private async Task<Embed> GetEmbedForYoutubeVideo(string id)
+        private async Task<Embed> GetEmbedForYoutubeVideoAsync(string id)
         {
             var request = _youTubeService.Videos.List("id,snippet");
             request.Id = id;
-            var response = await request.ExecuteAsync();
+            var response = await request.ExecuteAsync().ConfigureAwait(false);
             if (response.Items.Count != 1) return null;
             var video = response.Items.Single();
 
@@ -96,7 +96,7 @@ namespace StupifyConsoleApp.Client.Audio
             return embed.Build();
         }
 
-        private Process CreateStream(string path)
+        private static Process CreateStream(string path)
         {
             return Process.Start(new ProcessStartInfo
             {

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 using System.Xml;
@@ -32,7 +33,7 @@ namespace StupifyConsoleApp.Commands.Modules
         public async Task PlayAirHornAsync()
         {
             if (Context.User is IVoiceState state && state.VoiceChannel != null)
-                await _audioService.QueueFile(Context.Channel as ITextChannel, state.VoiceChannel, Directory.GetCurrentDirectory() + "\\AirHorn.mp3").ConfigureAwait(false);
+                await _audioService.QueueFileAsync(Context.Channel as ITextChannel, state.VoiceChannel, Directory.GetCurrentDirectory() + "\\AirHorn.mp3").ConfigureAwait(false);
         }
 
         [Command("play", RunMode = RunMode.Async), Priority(1)]
@@ -89,17 +90,19 @@ namespace StupifyConsoleApp.Commands.Modules
 
             foreach (var searchResult in response.Items)
             {
-                switch (searchResult.Id.Kind)
+                if (searchResult.Id.Kind == "youtube#video")
                 {
-                    case "youtube#video":
-                        optionsMessage += $"{response.Items.IndexOf(searchResult) + 1} - `{searchResult.Snippet.Title}` (Video)" + Environment.NewLine;
-                        options.Add(new Uri("https://www.youtube.com/watch?v=" + searchResult.Id.VideoId));
-                        break;
-
-                    case "youtube#playlist":
-                        optionsMessage += $"{response.Items.IndexOf(searchResult) + 1} - `{searchResult.Snippet.Title}` (Playlist)" + Environment.NewLine;
-                        options.Add(new Uri("https://www.youtube.com/watch?list=" + searchResult.Id.PlaylistId));
-                        break;
+                    optionsMessage +=
+                        $"{response.Items.IndexOf(searchResult) + 1} - `{searchResult.Snippet.Title}` (Video)" +
+                        Environment.NewLine;
+                    options.Add(new Uri("https://www.youtube.com/watch?v=" + searchResult.Id.VideoId));
+                }
+                else if (searchResult.Id.Kind == "youtube#playlist")
+                {
+                    optionsMessage +=
+                        $"{response.Items.IndexOf(searchResult) + 1} - `{searchResult.Snippet.Title}` (Playlist)" +
+                        Environment.NewLine;
+                    options.Add(new Uri("https://www.youtube.com/watch?list=" + searchResult.Id.PlaylistId));
                 }
             }
 
@@ -122,20 +125,20 @@ namespace StupifyConsoleApp.Commands.Modules
 
             var titles = (await TryGetYoutubeTitlesAsync(fileNames).ConfigureAwait(false)).ToArray();
 
-            var message = string.Empty;
+            var message = new StringBuilder();
 
             for (var i = 0; i < fileNames.Length; i++)
             {
                 var addition = $"{i} - *{titles[i] ?? fileNames[i]}*" + Environment.NewLine;
                 if ((message + addition).Length > 1997)
                 {
-                    message += "...";
+                    message.Append("...");
                     break;
                 }
-                message += addition;
+                message.Append(addition);
             }
 
-            if (string.IsNullOrWhiteSpace(message)) await ReplyAsync("The queue is empty").ConfigureAwait(false);
+            if (string.IsNullOrWhiteSpace(message.ToString())) await ReplyAsync("The queue is empty").ConfigureAwait(false);
             else await ReplyAsync($"{message}").ConfigureAwait(false);
         }
 
@@ -214,7 +217,7 @@ namespace StupifyConsoleApp.Commands.Modules
 
             if (Context.User is IVoiceState state && state.VoiceChannel != null)
             {
-                await _audioService.QueueFile(
+                await _audioService.QueueFileAsync(
                     Context.Channel as ITextChannel,
                     state.VoiceChannel,
                     output).ConfigureAwait(false);

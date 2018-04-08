@@ -11,7 +11,7 @@ namespace Stupify.Data.FileSystem
     {
         private const string UniverseExtension = ".UNI";
         private readonly string _universePath;
-        private string _universeDirectory;
+        private readonly string _universeDirectory;
 
         private Universe _universe;
 
