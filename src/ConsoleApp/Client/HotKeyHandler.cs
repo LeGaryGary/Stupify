@@ -19,7 +19,7 @@ namespace StupifyConsoleApp.Client
             _logger = logger;
         }
 
-        public async Task Handle(ICommandContext context)
+        public async Task HandleAsync(ICommandContext context)
         {
             try
             {
@@ -44,10 +44,10 @@ namespace StupifyConsoleApp.Client
                 if (executorType == null) return;
 
                 var keyExecutor = MakeExecutor(executorType);
-                if (await keyExecutor.ExecuteAsync(context))
+                if (await keyExecutor.ExecuteAsync(context).ConfigureAwait(false))
                 {
-                    await context.Message.DeleteAsync();
-                };
+                    await context.Message.DeleteAsync().ConfigureAwait(false);
+                }
             }
             catch (Exception e)
             {
@@ -73,6 +73,6 @@ namespace StupifyConsoleApp.Client
 
     public interface IHotKeyHandler
     {
-        Task Handle(ICommandContext message);
+        Task HandleAsync(ICommandContext message);
     }
 }

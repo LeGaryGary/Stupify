@@ -75,7 +75,7 @@ namespace StupifyConsoleApp.Client.Audio
                 catch(Exception e){ _logger.LogWarning(e, "Exception whilst attempting to stream the file {FilePath}", path);}
             }
 
-            await LeaveAudio(guild);
+            await LeaveAudioAsync(guild);
         }
 
         private async Task<Embed> GetEmbedForYoutubeVideo(string id)
@@ -108,11 +108,11 @@ namespace StupifyConsoleApp.Client.Audio
             });
         }
 
-        public async Task LeaveAudio(IGuild guild)
+        public async Task LeaveAudioAsync(IGuild guild)
         {
             if (_connectedChannels.TryRemove(guild.Id, out var audio))
             {
-                await audio.Client.StopAsync();
+                await audio.Client.StopAsync().ConfigureAwait(false);
                 audio.Ffmpeg.Kill();
             }
         }

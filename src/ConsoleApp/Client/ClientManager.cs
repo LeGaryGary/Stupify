@@ -19,7 +19,7 @@ namespace StupifyConsoleApp.Client
             switch (_client)
             {
                 case DiscordSocketClient discordSocketClient:
-                    discordSocketClient.MessageReceived += messageHandler.Handle;
+                    discordSocketClient.MessageReceived += messageHandler.HandleAsync;
                     discordSocketClient.ReactionAdded += segmentEditHandler.Handle;
                     discordSocketClient.Log += logMessage =>
                     {
@@ -52,19 +52,19 @@ namespace StupifyConsoleApp.Client
             }
         }
 
-        public async Task Start()
+        public async Task StartAsync()
         {
             switch (_client)
             {
                 case DiscordSocketClient discordSocketClient:
-                    await discordSocketClient.LoginAsync(TokenType.Bot, Config.DiscordBotUserToken);
+                    await discordSocketClient.LoginAsync(TokenType.Bot, Config.DiscordBotUserToken).ConfigureAwait(false);
                     break;
                 case DiscordShardedClient discordShardedClient:
-                    await discordShardedClient.LoginAsync(TokenType.Bot, Config.DiscordBotUserToken);
+                    await discordShardedClient.LoginAsync(TokenType.Bot, Config.DiscordBotUserToken).ConfigureAwait(false);
                     break;
             }
             
-            await _client.StartAsync();
+            await _client.StartAsync().ConfigureAwait(false);
             while (true)
             {
                 try
@@ -72,10 +72,10 @@ namespace StupifyConsoleApp.Client
                     switch (_client)
                     {
                         case DiscordShardedClient discordShardedClient:
-                            await discordShardedClient.SetGameAsync($"{Config.CommandPrefix} help | Servers: {discordShardedClient.Guilds.Count}");
+                            await discordShardedClient.SetGameAsync($"{Config.CommandPrefix} help | Servers: {discordShardedClient.Guilds.Count}").ConfigureAwait(false);
                             break;
                         case DiscordSocketClient discordSocketClient:
-                            await discordSocketClient.SetGameAsync($"{Config.CommandPrefix} help | Servers: {discordSocketClient.Guilds.Count}");
+                            await discordSocketClient.SetGameAsync($"{Config.CommandPrefix} help | Servers: {discordSocketClient.Guilds.Count}").ConfigureAwait(false);
                             break;
                     }
                 }
@@ -85,7 +85,7 @@ namespace StupifyConsoleApp.Client
                     throw;
                 }
                 
-                await Task.Delay(60000);
+                await Task.Delay(60000).ConfigureAwait(false);
             }
         }
     }

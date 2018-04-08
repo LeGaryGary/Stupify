@@ -14,29 +14,29 @@ namespace Stupify.Data.Repositories
             _universeController = universeController;
         }
 
-        public async Task<(int x, int y)?> FindAsync(int segmentId)
+        public Task<(int x, int y)?> FindAsync(int segmentId)
         {
-            return await _universeController.FindAsync(segmentId);
+            return _universeController.FindAsync(segmentId);
         }
 
-        public async Task<(int x, int y)?> NewSegmentAsync(int segmentId)
+        public Task<(int x, int y)?> NewSegmentAsync(int segmentId)
         {
-            return await _universeController.NewSegmentAsync(segmentId);
+            return _universeController.NewSegmentAsync(segmentId);
         }
 
-        public async Task<(int x, int y)?> DeleteSegmentAsync(int segmentId)
+        public Task<(int x, int y)?> DeleteSegmentAsync(int segmentId)
         {
-            return await _universeController.DeleteSegment(segmentId);
+            return _universeController.DeleteSegmentAsync(segmentId);
         }
 
-        public async Task<int?> GetAdjacentSegmentInDirectionAsync(int segmentId, Direction direction)
+        public Task<int?> GetAdjacentSegmentInDirectionAsync(int segmentId, Direction direction)
         {
-            return await _universeController.GetAdjacentSegmentInDirectionAsync(segmentId, direction);
+            return _universeController.GetAdjacentSegmentInDirectionAsync(segmentId, direction);
         }
 
-        public async Task<string> RenderRelativeToSegmentAsync(int segmentId, int scope)
+        public Task<string> RenderRelativeToSegmentAsync(int segmentId, int scope)
         {
-            return await _universeController.RenderRelativeToSegmentAsync(segmentId, scope);
+            return _universeController.RenderRelativeToSegmentAsync(segmentId, scope);
         }
 
         public IEnumerable<int> UniverseSegments()

@@ -43,7 +43,7 @@ namespace TicTacZap
 
         public async Task<(int x, int y)?> NewSegmentAsync(int segmentId)
         {
-            var locationNullable = await GetFirstEmptySegment();
+            var locationNullable = await GetFirstEmptySegmentAsync().ConfigureAwait(false);
             if (!locationNullable.HasValue) return null;
             (var x, int y) = ((int, int)) locationNullable;
             Segments[x, y] = segmentId;
@@ -55,12 +55,12 @@ namespace TicTacZap
             Segments[coords.x, coords.y] = null;
         }
 
-        private async Task<(int x, int y)?> GetFirstEmptySegment()
+        private Task<(int x, int y)?> GetFirstEmptySegmentAsync()
         {
-            return await FindSegmentAsync(null);
+            return FindSegmentAsync(null);
         }
 
-        public async Task<(int x, int y)?> FindSegmentAsync(int? segmentId)
+        public Task<(int x, int y)?> FindSegmentAsync(int? segmentId)
         {
             (int x, int y)? FindSegment()
             {
@@ -144,7 +144,7 @@ namespace TicTacZap
                 return (x, y);
             }
 
-            return await Task.Run(() => FindSegment());
+            return Task.Run(() => FindSegment());
         }
     }
 }

@@ -26,7 +26,7 @@ namespace Stupify.Data
                 .AddSingleton(sp =>
                 {
                     var ctrl = new UniverseController(dataDirectory, "Alpha");
-                    ctrl.Start().GetAwaiter().GetResult();
+                    ctrl.StartAsync().GetAwaiter().GetResult();
                     
                     return ctrl;
                 })

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -10,7 +9,6 @@ using Discord;
 using Discord.Commands;
 using NYoutubeDL;
 using Google.Apis.YouTube.v3;
-using StupifyConsoleApp.Client;
 using StupifyConsoleApp.Client.Audio;
 
 namespace StupifyConsoleApp.Commands.Modules
@@ -31,14 +29,14 @@ namespace StupifyConsoleApp.Commands.Modules
         }
 
         [Command("AirHorn", RunMode = RunMode.Async)]
-        public async Task PlayAirHorn()
+        public async Task PlayAirHornAsync()
         {
             if (Context.User is IVoiceState state && state.VoiceChannel != null)
-                await _audioService.QueueFile(Context.Channel as ITextChannel, state.VoiceChannel, Directory.GetCurrentDirectory() + "\\AirHorn.mp3");
+                await _audioService.QueueFile(Context.Channel as ITextChannel, state.VoiceChannel, Directory.GetCurrentDirectory() + "\\AirHorn.mp3").ConfigureAwait(false);
         }
 
         [Command("play", RunMode = RunMode.Async), Priority(1)]
-        public async Task DownloadAndPlayFromYoutube(Uri youtubeUrl)
+        public async Task DownloadAndPlayFromYoutubeAsync(Uri youtubeUrl)
         {
             var query = HttpUtility.ParseQueryString(youtubeUrl.Query);
 
@@ -48,43 +46,43 @@ namespace StupifyConsoleApp.Commands.Modules
             if (listValues != null)
             {
                 var playlistId = listValues.First();
-                var ids = await GetVideoIdsAsync(playlistId);
+                var ids = await GetVideoIdsAsync(playlistId).ConfigureAwait(false);
                 foreach (var id in ids)
                 {
-                    var length = await VideoLength(id);
+                    var length = await VideoLengthAsync(id).ConfigureAwait(false);
                     if (!length.HasValue || length > 10) continue;
 
-                    await PlayYoutubeSongByIdAsync(id);
+                    await PlayYoutubeSongByIdAsync(id).ConfigureAwait(false);
                 }
             }
             else if (vValues != null)
             {
                 var id = vValues.First();
-                var length = (await VideoLength(id));
+                var length = (await VideoLengthAsync(id).ConfigureAwait(false));
 
                 if (!length.HasValue)
                 {
-                    await ReplyAsync("The requested video could not be found!");
+                    await ReplyAsync("The requested video could not be found!").ConfigureAwait(false);
                     return;
                 }
 
                 if (length > 10)
                 {
-                    await ReplyAsync("The maximum length is 10 minutes!");
+                    await ReplyAsync("The maximum length is 10 minutes!").ConfigureAwait(false);
                 }
 
-                else await PlayYoutubeSongByIdAsync(id);
+                else await PlayYoutubeSongByIdAsync(id).ConfigureAwait(false);
             }
         }
 
         [Command("play"), Priority(0)]
-        public async Task FindAndDisplayYoutubeOptions([Remainder]string query)
+        public async Task FindAndDisplayYoutubeOptionsAsync([Remainder]string query)
         {
             if (!(Context.User is IGuildUser user)) return;
 
             var request = _youTubeService.Search.List("id,snippet");
             request.Q = query;
-            var response = await request.ExecuteAsync();
+            var response = await request.ExecuteAsync().ConfigureAwait(false);
 
             var options = new List<Uri>();
             var optionsMessage = string.Empty;
@@ -106,11 +104,11 @@ namespace StupifyConsoleApp.Commands.Modules
             }
 
             _musicSearches.AddSearch(user, options.ToArray());
-            await ReplyAsync(optionsMessage);
+            await ReplyAsync(optionsMessage).ConfigureAwait(false);
         }
         
         [Command("queue")]
-        public async Task DisplayQueue()
+        public async Task DisplayQueueAsync()
         {
             var fileNames = _audioService.GetQueuedFiles(Context.Guild)?
                 .Select(Path.GetFileNameWithoutExtension)
@@ -118,11 +116,11 @@ namespace StupifyConsoleApp.Commands.Modules
 
             if (fileNames == null)
             {
-                await ReplyAsync("The queue is empty");
+                await ReplyAsync("The queue is empty").ConfigureAwait(false);
                 return;
             }
 
-            var titles = (await TryGetYoutubeTitles(fileNames)).ToArray();
+            var titles = (await TryGetYoutubeTitlesAsync(fileNames).ConfigureAwait(false)).ToArray();
 
             var message = string.Empty;
 
@@ -137,42 +135,34 @@ namespace StupifyConsoleApp.Commands.Modules
                 message += addition;
             }
 
-            if (string.IsNullOrWhiteSpace(message)) await ReplyAsync("The queue is empty");
-            else await ReplyAsync($"{message}");
+            if (string.IsNullOrWhiteSpace(message)) await ReplyAsync("The queue is empty").ConfigureAwait(false);
+            else await ReplyAsync($"{message}").ConfigureAwait(false);
         }
 
         [Command("Dequeue")]
-        public async Task Dequeue(int position)
+        public void Dequeue(int position)
         {
             _audioService.Dequeue(Context.Guild, position);
         }
 
         [Command("Skip")]
-        public async Task Skip()
+        public void Skip()
         {
             _audioService.Skip(Context.Guild);
         }
 
         [Command("KillQueue")]
-        public async Task StopGuildAudio()
+        public Task StopGuildAudioAsync()
         {
-            await _audioService.LeaveAudio(Context.Guild);
+            return _audioService.LeaveAudioAsync(Context.Guild);
         }
 
-        private async Task<string> TryGetYoutubeTitle(string name)
-        {
-            var request = _youTubeService.Videos.List("id,snippet");
-            request.Id = name;
-            var response = await request.ExecuteAsync();
-            return response.Items.Count == 1 ? response.Items.Single().Snippet.Title : null;
-        }
-
-        private async Task<IEnumerable<string>> TryGetYoutubeTitles(IEnumerable<string> names)
+        private async Task<IEnumerable<string>> TryGetYoutubeTitlesAsync(IEnumerable<string> names)
         {
             var namesArray = names.ToArray();
             var request = _youTubeService.Videos.List("id,snippet");
             request.Id = string.Join(',', namesArray);
-            var response = await request.ExecuteAsync();
+            var response = await request.ExecuteAsync().ConfigureAwait(false);
 
             var videoTitles = new string[namesArray.Length];
             for (var i = 0; i < namesArray.Length; i++)
@@ -189,21 +179,20 @@ namespace StupifyConsoleApp.Commands.Modules
             var listRequest = _youTubeService.PlaylistItems.List("id,contentDetails");
             listRequest.PlaylistId = playlistId;
             listRequest.MaxResults = 50;
-            var playlistItems = (await listRequest.ExecuteAsync()).Items;
+            var playlistItems = (await listRequest.ExecuteAsync().ConfigureAwait(false)).Items;
             return playlistItems.Select(pli => pli.ContentDetails?.VideoId).Where(id => id != null);
         }
 
-        private async Task<double?> VideoLength(string id)
+        private async Task<double?> VideoLengthAsync(string id)
         {
             var listRequest = _youTubeService.Videos.List("id,contentDetails");
             listRequest.Id = id;
-            var response = (await listRequest.ExecuteAsync());
-            if (response.Items.Count == 1)
-            {
-                var video = response.Items.Single();
-                return XmlConvert.ToTimeSpan(video.ContentDetails.Duration).TotalMinutes;
-            }
-            else return null;
+            var response = await listRequest.ExecuteAsync().ConfigureAwait(false);
+
+            if (response.Items.Count != 1) return null;
+
+            var video = response.Items.Single();
+            return XmlConvert.ToTimeSpan(video.ContentDetails.Duration).TotalMinutes;
         }
 
         private async Task PlayYoutubeSongByIdAsync(string id)
@@ -218,13 +207,18 @@ namespace StupifyConsoleApp.Commands.Modules
                 var process = _youtubeDl.Download($"https://www.youtube.com/watch?v={id}");
                 while (true)
                 {
-                    await Task.Delay(100);
+                    await Task.Delay(100).ConfigureAwait(false);
                     if (process.HasExited) break;
                 }
             }
 
             if (Context.User is IVoiceState state && state.VoiceChannel != null)
-                await _audioService.QueueFile(Context.Channel as ITextChannel, state.VoiceChannel, output);
+            {
+                await _audioService.QueueFile(
+                    Context.Channel as ITextChannel,
+                    state.VoiceChannel,
+                    output).ConfigureAwait(false);
+            }
         }
     }
 }

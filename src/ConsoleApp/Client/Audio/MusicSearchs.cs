@@ -25,7 +25,7 @@ namespace StupifyConsoleApp.Client.Audio
 
         public void AddSearch(IGuildUser user, Uri[] optionResults)
         {
-            _musicSearches.TryRemove(user, out var value);
+            _musicSearches.TryRemove(user, out var _);
             _musicSearches.TryAdd(user, new MusicSearch(optionResults));
         }
     }
