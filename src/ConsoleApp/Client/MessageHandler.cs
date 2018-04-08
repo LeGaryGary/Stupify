@@ -24,7 +24,7 @@ namespace StupifyConsoleApp.Client
             _hotKeyHandler = hotKeyHandler;
         }
 
-        public async Task Handle(SocketMessage messageParam)
+        public async Task HandleAsync(SocketMessage messageParam)
         {
             if (!(messageParam is SocketUserMessage message) || messageParam.Author.IsBot) return;
 
@@ -32,16 +32,16 @@ namespace StupifyConsoleApp.Client
             var context = new CommandContext(_client, message);
             
             //Handle mutes
-            if (context.User is IGuildUser guildUser && await Config.ServiceProvider.GetService<IUserRepository>().IsMutedAsync(guildUser))
+            if (context.User is IGuildUser guildUser && await Config.ServiceProvider.GetService<IUserRepository>().IsMutedAsync(guildUser).ConfigureAwait(false))
             {
-                await context.Message.DeleteAsync();
+                await context.Message.DeleteAsync().ConfigureAwait(false);
                 return;
             }
 
             //Handle hotkeys
             if (context.Message.Content.Length == 1)
             {
-                await _hotKeyHandler.Handle(context);
+                await _hotKeyHandler.HandleAsync(context).ConfigureAwait(false);
             }
 
             //Check prefix and set the argPos for the command
@@ -53,37 +53,37 @@ namespace StupifyConsoleApp.Client
 
             var sw = new Stopwatch();
             sw.Start();
-            var result = await _commandService.ExecuteAsync(context, argPos, Config.ServiceProvider);
+            var result = await _commandService.ExecuteAsync(context, argPos, Config.ServiceProvider).ConfigureAwait(false);
             if (!result.IsSuccess)
                 switch (result.Error)
                 {
                     case CommandError.UnknownCommand:
-                        if (Config.Debug)await context.Channel.SendMessageAsync("Command not found!");
+                        if (Config.Debug)await context.Channel.SendMessageAsync("Command not found!").ConfigureAwait(false);
                         else return;
                         break;
                     case CommandError.BadArgCount:
                     case CommandError.ParseFailed:
-                        await context.Channel.SendMessageAsync("That's not right!");
+                        await context.Channel.SendMessageAsync("That's not right!").ConfigureAwait(false);
                         break;
                     case CommandError.UnmetPrecondition:
-                        await context.Channel.SendMessageAsync(result.ErrorReason);
+                        await context.Channel.SendMessageAsync(result.ErrorReason).ConfigureAwait(false);
                         break;
                     default:
                         _logger.LogError("The message: {Message} \r\nHas caused the following error: {ErrorReason}\r\nIn the server: {Guild}", context.Message, result.ErrorReason, context.Guild.Name);
                         await context.Channel.SendMessageAsync(
-                            "Internal error! You may shout at the developers here: https://discord.gg/nb5rUhd");
+                            "Internal error! You may shout at the developers here: https://discord.gg/nb5rUhd").ConfigureAwait(false);
                         break;
                 }
             sw.Stop();
 
             _logger.LogInformation("Command {Message} in {Guild} took {ElapsedMilliseconds}ms", context.Message, context.Guild.Name, sw.ElapsedMilliseconds);
             
-            if (Config.DeleteCommands) await context.Message.DeleteAsync();
+            if (Config.DeleteCommands) await context.Message.DeleteAsync().ConfigureAwait(false);
         }
     }
 
     public interface IMessageHandler
     {
-        Task Handle(SocketMessage messageParam);
+        Task HandleAsync(SocketMessage messageParam);
     }
 }

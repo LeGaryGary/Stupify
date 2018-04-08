@@ -11,7 +11,7 @@ namespace Stupify.Data.Repositories
 {
     internal class StoryRepository : IStoryRepository
     {
-        private const int minLength = 5;
+        private const int MinLength = 5;
 
         private readonly BotContext _botContext;
 
@@ -34,7 +34,7 @@ namespace Stupify.Data.Repositories
                 .Where( ssp => ssp.ServerStory.ServerStoryId == dbStory.ServerStoryId)
                 .ToArrayAsync();
 
-            var story = new Story(minLength)
+            var story = new Story(MinLength)
             {
                 Parts = parts.Select(p => p.Part)
             };
@@ -54,7 +54,7 @@ namespace Stupify.Data.Repositories
                 .Where( ssp => ssp.ServerStory.ServerStoryId == dbStory.ServerStoryId)
                 .ToArrayAsync();
 
-            var story = new Story(minLength)
+            var story = new Story(MinLength)
             {
                 Parts = parts.Select(p => p.Part)
             };
@@ -74,7 +74,7 @@ namespace Stupify.Data.Repositories
                 .Where( ssp => ssp.ServerStory.ServerStoryId == dbStory.ServerStoryId)
                 .ToArrayAsync();
 
-            var story = new Story(minLength)
+            var story = new Story(MinLength)
             {
                 Parts = parts.Select(p => p.Part)
             };
@@ -114,7 +114,7 @@ namespace Stupify.Data.Repositories
                 Part = line,
                 PartAuthor = su,
                 TimeOfAddition = DateTime.UtcNow,
-                PartNumber = lastPart?.PartNumber + 1 ?? 1
+                PartNumber = lastPart.PartNumber + 1
             });
 
             await _botContext.SaveChangesAsync();

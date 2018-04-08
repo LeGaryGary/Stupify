@@ -21,11 +21,12 @@ namespace StupifyConsoleApp
                     universeRepository.DeleteSegmentAsync(segment).GetAwaiter().GetResult();
             }
 
-            var startTask = Config.ServiceProvider.GetService<ClientManager>().Start();
+            var _ = Config.ServiceProvider.GetService<ClientManager>().StartAsync();
             while (true)
             {
-                await Config.ServiceProvider.GetService<GameRunner>().Run();
+                await Config.ServiceProvider.GetService<GameRunner>().Run().ConfigureAwait(false);
             }
+            // ReSharper disable once FunctionNeverReturns
         }
     }
 }

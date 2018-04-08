@@ -90,53 +90,6 @@ namespace TicTacZap
             return total;
         }
 
-        private int Layer(int x, int y)
-        {
-            return Math.Max(Math.Abs(x - 4), Math.Abs(y - 4));
-        }
-
-        private int ConnectedDiagonals(int x, int y)
-        {
-            var diagonals = 0;
-            try
-            {
-                diagonals = Blocks[x - 1, y - 1] == null ? diagonals : diagonals + 1;
-            }
-            catch (Exception e)
-            {
-                if (!(e is IndexOutOfRangeException)) throw;
-            }
-
-            try
-            {
-                diagonals = Blocks[x + 1, y - 1] == null ? diagonals : diagonals + 1;
-            }
-            catch (Exception e)
-            {
-                if (!(e is IndexOutOfRangeException)) throw;
-            }
-
-            try
-            {
-                diagonals = Blocks[x + 1, y + 1] == null ? diagonals : diagonals + 1;
-            }
-            catch (Exception e)
-            {
-                if (!(e is IndexOutOfRangeException)) throw;
-            }
-
-            try
-            {
-                diagonals = Blocks[x - 1, y + 1] == null ? diagonals : diagonals + 1;
-            }
-            catch (Exception e)
-            {
-                if (!(e is IndexOutOfRangeException)) throw;
-            }
-
-            return diagonals;
-        }
-
         private int DistanceSumInDirections(int x, int y)
         {
             var sum = 0;

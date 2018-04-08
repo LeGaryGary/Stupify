@@ -7,21 +7,21 @@ namespace Stupify.Data.FileSystem
     internal class SegmentTemplates
     {
         private const string TemplateExtension = ".TEMPLATE";
-        private readonly string TemplatePath;
+        private readonly string _templatePath;
 
         public SegmentTemplates(string dataDirectory)
         {
-            TemplatePath = dataDirectory + @"\Inventories";
-            Directory.CreateDirectory(TemplatePath);
+            _templatePath = dataDirectory + @"\Inventories";
+            Directory.CreateDirectory(_templatePath);
         }
 
         public async Task<Segment> GetAsync(int templateId)
         {
-            if (!File.Exists(TemplatePath + $@"\{templateId + TemplateExtension}")) return null;
+            if (!File.Exists(_templatePath + $@"\{templateId + TemplateExtension}")) return null;
             
-            using (var stream = File.OpenText(TemplatePath + $@"\{templateId + TemplateExtension}"))
+            using (var stream = File.OpenText(_templatePath + $@"\{templateId + TemplateExtension}"))
             {
-                var fileText = await stream.ReadToEndAsync();
+                var fileText = await stream.ReadToEndAsync().ConfigureAwait(false);
                 return FileSegments.DeserializeSegment(fileText);
             }
         }
@@ -29,9 +29,9 @@ namespace Stupify.Data.FileSystem
         public async Task SaveAsync(int templateId, Segment segment)
         {
             var fileText = FileSegments.SerializeSegment(segment);
-            using (var stream = File.CreateText(TemplatePath + $@"\{templateId + TemplateExtension}"))
+            using (var stream = File.CreateText(_templatePath + $@"\{templateId + TemplateExtension}"))
             {
-                await stream.WriteAsync(fileText);
+                await stream.WriteAsync(fileText).ConfigureAwait(false);
             }
         }
     }

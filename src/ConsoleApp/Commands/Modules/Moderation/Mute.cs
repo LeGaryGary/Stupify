@@ -19,16 +19,24 @@ namespace StupifyConsoleApp.Commands.Modules.Moderation
         [RequireUserPermission(ChannelPermission.ManageMessages)]
         public async Task MuteAsync(IGuildUser user)
         {
-            await _userRepository.MuteAsync(user);
-            await ReplyAsync($"{user.Username} is now muted");
+            await _userRepository.MuteAsync(user).ConfigureAwait(false);
+            await ReplyAsync($"{user.Username} is now muted").ConfigureAwait(false);
         }
 
-        [Command("Unmute")]
+        [Command("UnMute")]
         public async Task UnMuteAsync(IGuildUser user)
         {
-            var message = await _userRepository.UnMuteAsync(user)
-                ? await ReplyAsync($"{user.Username} is no longer muted!")
-                : await ReplyAsync($"{user.Username} isn't muted!");
+            string message;
+            if (await _userRepository.UnMuteAsync(user).ConfigureAwait(false))
+            {
+                message = $"{user.Username} is no longer muted!";
+            }
+            else
+            {
+                message = $"{user.Username} isn't muted!";
+            }
+
+            await ReplyAsync(message).ConfigureAwait(false);
         }
     }
 }

@@ -28,26 +28,26 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
         }
 
         [Command("SaveTemplate")]
-        public async Task SaveTemplateCommand()
+        public async Task SaveTemplateCommandAsync()
         {
-            var userId = await _userRepository.GetUserId(Context.User);
+            var userId = await _userRepository.GetUserId(Context.User).ConfigureAwait(false);
             var userSelection = _gameState.GetUserSegmentSelection(userId);
             if (!userSelection.HasValue)
             {
-                await ReplyAsync(Responses.SelectSegmentMessage);
+                await ReplyAsync(Responses.SelectSegmentMessage).ConfigureAwait(false);
                 return;
             }
 
-            var segment = await _segmentRepository.GetSegmentAsync(userSelection.Value);
-            var templateId = await _templateRepository.NewTemplateAsync(segment, Context.User);
+            var segment = await _segmentRepository.GetSegmentAsync(userSelection.Value).ConfigureAwait(false);
+            var templateId = await _templateRepository.NewTemplateAsync(segment, Context.User).ConfigureAwait(false);
 
-            await ReplyAsync($"Segment saved, Id: {templateId}");
+            await ReplyAsync($"Segment saved, Id: {templateId}").ConfigureAwait(false);
         }
 
         [Command("Templates")]
-        public async Task ShowTemplatesCommand()
+        public async Task ShowTemplatesCommandAsync()
         {
-            var templates = await _templateRepository.GetTemplatesAsync(Context.User);
+            var templates = await _templateRepository.GetTemplatesAsync(Context.User).ConfigureAwait(false);
             var message = string.Empty;
             foreach (var (id, name) in templates)
             {
@@ -59,54 +59,54 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
 
             if (message == string.Empty)
             {
-                await ReplyAsync($"You have no segment templates, use `{Config.CommandPrefix} SaveTemplate` to save your current segment.");
+                await ReplyAsync($"You have no segment templates, use `{Config.CommandPrefix} SaveTemplate` to save your current segment.").ConfigureAwait(false);
                 return;
             }
 
-            await ReplyAsync("```" + message + "```");
+            await ReplyAsync($"```{message}```").ConfigureAwait(false);
         }
 
         [Command("Template")]
-        public async Task ShowTemplateCommand(int templateId)
+        public async Task ShowTemplateCommandAsync(int templateId)
         {
-            if (!await _templateRepository.UserHasTemplateAsync(Context.User, templateId))
+            if (!await _templateRepository.UserHasTemplateAsync(Context.User, templateId).ConfigureAwait(false))
             {
-                await ReplyAsync(Responses.TemplateOwnershipProblem);
+                await ReplyAsync(Responses.TemplateOwnershipProblem).ConfigureAwait(false);
                 return;
             }
 
-            await _tacZapController.ShowTemplateAsync(Context, templateId);
+            await _tacZapController.ShowTemplateAsync(Context, templateId).ConfigureAwait(false);
         }
 
         [Command("ApplyTemplate")]
-        public async Task ApplyTemplateCommand()
+        public async Task ApplyTemplateCommandAsync()
         {
-            var userId = await _userRepository.GetUserId(Context.User);
+            var userId = await _userRepository.GetUserId(Context.User).ConfigureAwait(false);
             var selectedSegment = _gameState.GetUserSegmentSelection(userId);
             var selectedTemplate = _gameState.GetUserTemplateSelection(userId);
 
             if (!selectedSegment.HasValue)
             {
-                await ReplyAsync(Responses.SelectSegmentMessage);
+                await ReplyAsync(Responses.SelectSegmentMessage).ConfigureAwait(false);
                 return;
             }
 
             if (!selectedTemplate.HasValue)
             {
-                await ReplyAsync(Responses.SelectTemplateMessage);
+                await ReplyAsync(Responses.SelectTemplateMessage).ConfigureAwait(false);
                 return;
             }
 
             var segmentId = selectedSegment.Value;
             var templateId = selectedTemplate.Value;
 
-            var inventory = await _inventoryRepository.GetInventoryAsync(Context.User);
-            foreach (var block in await _segmentRepository.ResetSegmentAsync(segmentId))
+            var inventory = await _inventoryRepository.GetInventoryAsync(Context.User).ConfigureAwait(false);
+            foreach (var block in await _segmentRepository.ResetSegmentAsync(segmentId).ConfigureAwait(false))
             {
                 inventory.AddBlocks(block.Key, block.Value);
             }
             
-            var template = await _templateRepository.GetTemplateAsync(templateId);
+            var template = await _templateRepository.GetTemplateAsync(templateId).ConfigureAwait(false);
             var templateBlocks = new Dictionary<BlockType, int>();
 
             for (var y = 0; y < template.Blocks.GetLength(1); y++)
@@ -138,11 +138,11 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
                     message += $"{block.Key} x{block.Value}";
                 }
 
-                await ReplyAsync(message);
+                await ReplyAsync(message).ConfigureAwait(false);
                 return;
             }
 
-            var segment = await _segmentRepository.GetSegmentAsync(segmentId);
+            var segment = await _segmentRepository.GetSegmentAsync(segmentId).ConfigureAwait(false);
             for (var y = 0; y < template.Blocks.GetLength(1); y++)
             for (var x = 0; x < template.Blocks.GetLength(0); x++) 
             {
@@ -153,9 +153,9 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
                 segment.AddBlock(x, y, block.BlockType);
             }
 
-            await _segmentRepository.SetSegmentAsync(segmentId, segment);
-            await _inventoryRepository.SaveInventoryAsync(Context.User, inventory);
-            await _tacZapController.ShowSegmentAsync(Context, segmentId);
+            await _segmentRepository.SetSegmentAsync(segmentId, segment).ConfigureAwait(false);
+            await _inventoryRepository.SaveInventoryAsync(Context.User, inventory).ConfigureAwait(false);
+            await _tacZapController.ShowSegmentAsync(Context, segmentId).ConfigureAwait(false);
         }
     }
 }

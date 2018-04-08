@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using TicTacZap;
@@ -12,7 +11,7 @@ namespace Stupify.Data.FileSystem
     {
         private const string UniverseExtension = ".UNI";
         private readonly string _universePath;
-        private string _universeDirectory;
+        private readonly string _universeDirectory;
 
         private Universe _universe;
 
@@ -22,56 +21,59 @@ namespace Stupify.Data.FileSystem
             _universePath = $"{dataDirectory}/Universes/{universeName}{UniverseExtension}";
         }
 
-        public async Task Start()
+        public async Task StartAsync()
         {
             Directory.CreateDirectory(_universeDirectory);
             if (File.Exists(_universePath))
             {
-                _universe = await LoadUniverseFile();
+                _universe = await LoadUniverseFileAsync().ConfigureAwait(false);
             }
             else
             {
                 _universe = new Universe(999);
-                await SaveUniverseFileAsync();
+                await SaveUniverseFileAsync().ConfigureAwait(false);
             }
         }
 
         public IEnumerable<int> UniverseSegments()
         {
-            return from int? segment in _universe.Segments where segment.HasValue select segment.Value;
+            foreach (var segment in _universe.Segments)
+            {
+                if (segment.HasValue) yield return segment.Value;
+            }
         }
 
-        public async Task<(int x, int y)?> FindAsync(int segmentId)
+        public Task<(int x, int y)?> FindAsync(int segmentId)
         {
-            return await _universe.FindSegmentAsync(segmentId);
+            return _universe.FindSegmentAsync(segmentId);
         }
 
         public async Task<string> RenderRelativeToSegmentAsync(int segmentId, int scope)
         {
             if (scope > 12) return null;
-            var locationNullable = await _universe.FindSegmentAsync(segmentId);
+            var locationNullable = await _universe.FindSegmentAsync(segmentId).ConfigureAwait(false);
             return locationNullable.HasValue ? _universe.RenderRelative(locationNullable.Value, scope) : null;
         }
 
         public async Task<(int, int)?> NewSegmentAsync(int segmentId)
         {
-            var newSegmentCoords = await _universe.NewSegmentAsync(segmentId);
-            await SaveUniverseFileAsync();
+            var newSegmentCoords = await _universe.NewSegmentAsync(segmentId).ConfigureAwait(false);
+            await SaveUniverseFileAsync().ConfigureAwait(false);
             return newSegmentCoords;
         }
 
-        public async Task<(int, int)?> DeleteSegment(int segmentId)
+        public async Task<(int, int)?> DeleteSegmentAsync(int segmentId)
         {
-            var coords = await _universe.FindSegmentAsync(segmentId);
+            var coords = await _universe.FindSegmentAsync(segmentId).ConfigureAwait(false);
             if (!coords.HasValue) return null;
             _universe.DeleteSegment(((int x,int y))coords);
-            await SaveUniverseFileAsync();
+            await SaveUniverseFileAsync().ConfigureAwait(false);
             return coords;
         }
 
         public async Task<int?> GetAdjacentSegmentInDirectionAsync(int originalSegment, Direction direction)
         {
-            var locationNullable = await _universe.FindSegmentAsync(originalSegment);
+            var locationNullable = await _universe.FindSegmentAsync(originalSegment).ConfigureAwait(false);
             if (!locationNullable.HasValue) return null;
             var location = ((int x, int y)) locationNullable;
 
@@ -104,11 +106,11 @@ namespace Stupify.Data.FileSystem
             return _universe.Segments[location.x, location.y];
         }
 
-        private async Task<Universe> LoadUniverseFile()
+        private async Task<Universe> LoadUniverseFileAsync()
         {
             using (var stream = File.OpenText(_universePath))
             {
-                var fileText = await stream.ReadToEndAsync();
+                var fileText = await stream.ReadToEndAsync().ConfigureAwait(false);
                 return JsonConvert.DeserializeObject<Universe>(fileText);
             }
         }
@@ -118,8 +120,8 @@ namespace Stupify.Data.FileSystem
             var fileText = JsonConvert.SerializeObject(_universe);
             using (var stream = File.CreateText(_universePath))
             {
-                await stream.WriteAsync(fileText);
-            };
+                await stream.WriteAsync(fileText).ConfigureAwait(false);
+            }
         }
     }
 }

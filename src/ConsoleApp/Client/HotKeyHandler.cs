@@ -19,7 +19,7 @@ namespace StupifyConsoleApp.Client
             _logger = logger;
         }
 
-        public async Task Handle(ICommandContext context)
+        public async Task HandleAsync(ICommandContext context)
         {
             try
             {
@@ -44,17 +44,15 @@ namespace StupifyConsoleApp.Client
                 if (executorType == null) return;
 
                 var keyExecutor = MakeExecutor(executorType);
-                await keyExecutor.ExecuteAsync(context);
+                if (await keyExecutor.ExecuteAsync(context).ConfigureAwait(false))
+                {
+                    await context.Message.DeleteAsync().ConfigureAwait(false);
+                }
             }
             catch (Exception e)
             {
                 _logger.LogError(e, "Unhandled exception in HotKeyHandler");
                 throw;
-            }
-            finally
-            {
-                //Delete message
-                await context.Message.DeleteAsync();
             }
         }
 
@@ -75,6 +73,6 @@ namespace StupifyConsoleApp.Client
 
     public interface IHotKeyHandler
     {
-        Task Handle(ICommandContext message);
+        Task HandleAsync(ICommandContext message);
     }
 }
