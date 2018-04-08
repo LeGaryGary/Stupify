@@ -26,13 +26,13 @@ namespace Stupify.Data.Repositories
                 .Where(ss => ss.Server.DiscordGuildId == (long) guild.Id)
                 .OrderBy(x => new Guid())
                 .Include(ss => ss.ServerStoryParts)
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync().ConfigureAwait(false);
 
             if (dbStory == null) return null;
 
             var parts = await _botContext.ServerStoryParts
                 .Where( ssp => ssp.ServerStory.ServerStoryId == dbStory.ServerStoryId)
-                .ToArrayAsync();
+                .ToArrayAsync().ConfigureAwait(false);
 
             var story = new Story(MinLength)
             {
@@ -46,13 +46,13 @@ namespace Stupify.Data.Repositories
             var dbStory = await _botContext.ServerStories
                 .Where(ss => ss.Server.DiscordGuildId == (long) guild.Id)
                 .Include(ss => ss.ServerStoryParts)
-                .FirstOrDefaultAsync(ss => ss.EndTime < ss.StartTime);
+                .FirstOrDefaultAsync(ss => ss.EndTime < ss.StartTime).ConfigureAwait(false);
 
             if (dbStory == null) return null;
 
             var parts = await _botContext.ServerStoryParts
                 .Where( ssp => ssp.ServerStory.ServerStoryId == dbStory.ServerStoryId)
-                .ToArrayAsync();
+                .ToArrayAsync().ConfigureAwait(false);
 
             var story = new Story(MinLength)
             {
@@ -66,13 +66,13 @@ namespace Stupify.Data.Repositories
             var dbStory = await _botContext.ServerStories
                 .Where(ss => ss.Server.DiscordGuildId == (long) guild.Id)
                 .Include(ss => ss.ServerStoryParts)
-                .FirstOrDefaultAsync(ss => ss.EndTime < ss.StartTime);
+                .FirstOrDefaultAsync(ss => ss.EndTime < ss.StartTime).ConfigureAwait(false);
 
             if (dbStory == null) return false;
 
             var parts = await _botContext.ServerStoryParts
                 .Where( ssp => ssp.ServerStory.ServerStoryId == dbStory.ServerStoryId)
-                .ToArrayAsync();
+                .ToArrayAsync().ConfigureAwait(false);
 
             var story = new Story(MinLength)
             {
@@ -82,7 +82,7 @@ namespace Stupify.Data.Repositories
             if (!story.AtLeastMinLength()) return false;
 
             dbStory.EndTime = DateTime.UtcNow;
-            await _botContext.SaveChangesAsync();
+            await _botContext.SaveChangesAsync().ConfigureAwait(false);
 
             return true;
 
@@ -92,19 +92,19 @@ namespace Stupify.Data.Repositories
         {
             var su = await _botContext.ServerUsers
                 .FirstOrDefaultAsync(u => u.User.DiscordUserId == (long) user.Id &&
-                                          u.Server.DiscordGuildId == (long) user.GuildId);
+                                          u.Server.DiscordGuildId == (long) user.GuildId).ConfigureAwait(false);
 
             var dbStory = await _botContext.ServerStories
                 .Where(ss => ss.Server.DiscordGuildId == (long) user.GuildId)
                 .Include(ss => ss.ServerStoryParts)
-                .FirstOrDefaultAsync(ss => ss.EndTime < ss.StartTime);
+                .FirstOrDefaultAsync(ss => ss.EndTime < ss.StartTime).ConfigureAwait(false);
             
             if (dbStory == null) return false;
 
             var lastPart = await _botContext.ServerStoryParts
                 .Where(ssp => ssp.ServerStory.ServerStoryId == dbStory.ServerStoryId)
                 .OrderByDescending(ssp => ssp.PartNumber)
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync().ConfigureAwait(false);
 
             if (DateTime.UtcNow - lastPart.TimeOfAddition < TimeSpan.FromSeconds(15)) return false;
 
@@ -117,22 +117,22 @@ namespace Stupify.Data.Repositories
                 PartNumber = lastPart.PartNumber + 1
             });
 
-            await _botContext.SaveChangesAsync();
+            await _botContext.SaveChangesAsync().ConfigureAwait(false);
             return true;
         }
 
         public async Task<bool> StartNewStoryAsync(IGuildUser user, string line)
         {
-            var server = await _botContext.Servers.FirstOrDefaultAsync(s => s.DiscordGuildId == (long) user.GuildId);
+            var server = await _botContext.Servers.FirstOrDefaultAsync(s => s.DiscordGuildId == (long) user.GuildId).ConfigureAwait(false);
 
             var su = await _botContext.ServerUsers
                 .FirstOrDefaultAsync(u => u.User.DiscordUserId == (long) user.Id &&
-                                          u.Server.DiscordGuildId == (long) user.GuildId);
+                                          u.Server.DiscordGuildId == (long) user.GuildId).ConfigureAwait(false);
 
             var dbStory = await _botContext.ServerStories
                 .Where(ss => ss.Server.DiscordGuildId == (long) user.GuildId)
                 .Include(ss => ss.ServerStoryParts)
-                .FirstOrDefaultAsync(ss => ss.EndTime < ss.StartTime);
+                .FirstOrDefaultAsync(ss => ss.EndTime < ss.StartTime).ConfigureAwait(false);
 
             if (dbStory != null) return false;
 
@@ -152,7 +152,7 @@ namespace Stupify.Data.Repositories
                 TimeOfAddition = DateTime.UtcNow
             });
 
-            await _botContext.SaveChangesAsync();
+            await _botContext.SaveChangesAsync().ConfigureAwait(false);
             return true;
         }
     }

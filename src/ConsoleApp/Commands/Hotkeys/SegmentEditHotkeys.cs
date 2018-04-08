@@ -27,7 +27,8 @@ namespace StupifyConsoleApp.Commands.Hotkeys
             position.y--;
             messageOwnerInfo.Value.Position = position;
 
-            await _segmentEditReactionHandler.UpdateMsg((IUserMessage)await context.Channel.GetMessageAsync(messageOwnerInfo.Key));
+            var userMessage = (IUserMessage)await context.Channel.GetMessageAsync(messageOwnerInfo.Key).ConfigureAwait(false);
+            await _segmentEditReactionHandler.UpdateMsg(userMessage).ConfigureAwait(false);
             return true;
         }
     }
@@ -53,7 +54,8 @@ namespace StupifyConsoleApp.Commands.Hotkeys
             position.y++;
             messageOwnerInfo.Value.Position = position;
 
-            await _segmentEditReactionHandler.UpdateMsg((IUserMessage)await context.Channel.GetMessageAsync(messageOwnerInfo.Key));
+            var userMessage = (IUserMessage)await context.Channel.GetMessageAsync(messageOwnerInfo.Key).ConfigureAwait(false);
+            await _segmentEditReactionHandler.UpdateMsg(userMessage).ConfigureAwait(false);
             return true;
         }
     }
@@ -79,7 +81,8 @@ namespace StupifyConsoleApp.Commands.Hotkeys
             position.x--;
             messageOwnerInfo.Value.Position = position;
 
-            await _segmentEditReactionHandler.UpdateMsg((IUserMessage)await context.Channel.GetMessageAsync(messageOwnerInfo.Key));
+            var userMessage = (IUserMessage)await context.Channel.GetMessageAsync(messageOwnerInfo.Key).ConfigureAwait(false);
+            await _segmentEditReactionHandler.UpdateMsg(userMessage).ConfigureAwait(false);
             return true;
         }
     }
@@ -105,7 +108,8 @@ namespace StupifyConsoleApp.Commands.Hotkeys
             position.x++;
             messageOwnerInfo.Value.Position = position;
 
-            await _segmentEditReactionHandler.UpdateMsg((IUserMessage)await context.Channel.GetMessageAsync(messageOwnerInfo.Key));
+            var userMessage = (IUserMessage)await context.Channel.GetMessageAsync(messageOwnerInfo.Key).ConfigureAwait(false);
+            await _segmentEditReactionHandler.UpdateMsg(userMessage).ConfigureAwait(false);
             return true;
         }
     }
