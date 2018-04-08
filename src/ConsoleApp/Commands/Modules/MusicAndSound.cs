@@ -143,15 +143,17 @@ namespace StupifyConsoleApp.Commands.Modules
         }
 
         [Command("Dequeue")]
-        public void Dequeue(int position)
+        public Task DequeueAsync(int position)
         {
             _audioService.Dequeue(Context.Guild, position);
+            return Task.CompletedTask;
         }
 
         [Command("Skip")]
-        public void Skip()
+        public Task SkipAsync()
         {
             _audioService.Skip(Context.Guild);
+            return Task.CompletedTask;
         }
 
         [Command("KillQueue")]
