@@ -15,13 +15,15 @@ namespace StupifyConsoleApp.Client
         private readonly CommandService _commandService;
         private readonly ILogger<MessageHandler> _logger;
         private readonly IHotKeyHandler _hotKeyHandler;
+        private readonly ICustomCommandRepository _commandRepository;
 
-        public MessageHandler(IDiscordClient client, CommandService commandService, ILogger<MessageHandler> logger, IHotKeyHandler hotKeyHandler)
+        public MessageHandler(IDiscordClient client, CommandService commandService, ILogger<MessageHandler> logger, IHotKeyHandler hotKeyHandler, ICustomCommandRepository commandRepository)
         {
             _client = client;
             _commandService = commandService;
             _logger = logger;
             _hotKeyHandler = hotKeyHandler;
+            _commandRepository = commandRepository;
         }
 
         public async Task HandleAsync(SocketMessage messageParam)
@@ -48,7 +50,12 @@ namespace StupifyConsoleApp.Client
             if (!(message.HasStringPrefix(Config.CommandPrefix + " ", ref argPos)
                   || message.HasMentionPrefix(_client.CurrentUser, ref argPos)))
             {
-                return;      
+                if (message.HasStringPrefix(Config.CustomCommandPrefix + " ", ref argPos))
+                {
+                    await _commandRepository.ExecuteAsync(context, argPos).ConfigureAwait(false);
+                }
+
+                return;
             }
 
             var sw = new Stopwatch();

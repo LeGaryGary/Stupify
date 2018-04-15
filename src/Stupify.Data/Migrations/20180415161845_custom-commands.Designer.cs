@@ -11,9 +11,10 @@ using System;
 namespace Stupify.Data.Migrations
 {
     [DbContext(typeof(BotContext))]
-    partial class BotContextModelSnapshot : ModelSnapshot
+    [Migration("20180415161845_custom-commands")]
+    partial class customcommands
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -29,11 +30,11 @@ namespace Stupify.Data.Migrations
 
                     b.Property<string>("CommandTag");
 
-                    b.Property<int?>("ServerId");
+                    b.Property<int?>("UserId");
 
                     b.HasKey("CustomCommandId");
 
-                    b.HasIndex("ServerId");
+                    b.HasIndex("UserId");
 
                     b.ToTable("CustomCommands");
                 });
@@ -204,9 +205,9 @@ namespace Stupify.Data.Migrations
 
             modelBuilder.Entity("Stupify.Data.SQL.Models.CustomCommand", b =>
                 {
-                    b.HasOne("Stupify.Data.SQL.Models.Server", "Server")
+                    b.HasOne("Stupify.Data.SQL.Models.User", "User")
                         .WithMany()
-                        .HasForeignKey("ServerId");
+                        .HasForeignKey("UserId");
                 });
 
             modelBuilder.Entity("Stupify.Data.SQL.Models.Quote", b =>

@@ -43,6 +43,7 @@ namespace StupifyConsoleApp
         public static string TwitchClientSecret => Configuration["TwitchClientSecret"];
 
         public static string CommandPrefix => Configuration["CommandPrefix"];
+        public static string CustomCommandPrefix => Configuration["CustomCommandPrefix"];
         public static bool DeleteCommands => bool.Parse(Configuration["DeleteCommands"]);
         public static ulong DeveloperRole => ulong.Parse(Configuration["DeveloperRole"]);
         public static bool Debug => bool.Parse(Configuration["Debug"]);
