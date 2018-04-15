@@ -90,7 +90,7 @@ namespace StupifyConsoleApp.Client.Audio
             {
                 Title = "Now playing...",
                 ImageUrl = video.Snippet.Thumbnails.High.Url,
-                Url = $"https://www.youtube.com/watch?v{id}"
+                Url = $"https://www.youtube.com/watch?v={id}"
             };
 
             return embed.Build();

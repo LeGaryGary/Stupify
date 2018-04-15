@@ -38,7 +38,8 @@ namespace Stupify.Data
                 .AddTransient<IUniverseRepository, UniverseRepository>()
                 .AddTransient<ITemplateRepository, TemplateRepository>()
                 .AddTransient<IQuoteRepository, QuoteRepository>()
-                .AddTransient<IStoryRepository, StoryRepository>();
+                .AddTransient<IStoryRepository, StoryRepository>()
+                .AddTransient<ITwitchRepository, TwitchRepository>();
 
             return collection;
         }

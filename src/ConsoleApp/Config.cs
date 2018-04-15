@@ -18,6 +18,7 @@ using StupifyConsoleApp.Client;
 using StupifyConsoleApp.Client.Audio;
 using StupifyConsoleApp.Client.CustomTypeReaders;
 using StupifyConsoleApp.TicTacZapManagement;
+using TwitchApi;
 
 namespace StupifyConsoleApp
 {
@@ -38,10 +39,13 @@ namespace StupifyConsoleApp
         public static string DbConnectionString => Configuration["DbConnectionString"];
         public static string DiscordBotUserToken => Configuration["DiscordBotUserToken"];
         public static string YoutubeApiKey => Configuration["YoutubeApiKey"];
-        public static bool Debug => bool.Parse(Configuration["Debug"]);
+        public static string TwitchClientId => Configuration["TwitchClientId"];
+        public static string TwitchClientSecret => Configuration["TwitchClientSecret"];
+
         public static string CommandPrefix => Configuration["CommandPrefix"];
-        public static ulong DeveloperRole => ulong.Parse(Configuration["DeveloperRole"]);
         public static bool DeleteCommands => bool.Parse(Configuration["DeleteCommands"]);
+        public static ulong DeveloperRole => ulong.Parse(Configuration["DeveloperRole"]);
+        public static bool Debug => bool.Parse(Configuration["Debug"]);
 
         public static string DataDirectory => Configuration["DataDirectory"];
         public static string UniverseName => Configuration["UniverseName"];
@@ -94,7 +98,8 @@ namespace StupifyConsoleApp
                     .AddTransient<GameRunner>()
                     .AddSingleton<AudioService>()
                     .AddSingleton<MusicSearches>()
-                    .AddTransient(sp => new YoutubeDL($"{Directory.GetCurrentDirectory()}/youtube-dl.exe"));
+                    .AddTransient(sp => new YoutubeDL($"{Directory.GetCurrentDirectory()}/youtube-dl.exe"))
+                    .AddTransient(sp => new TwitchClient(TwitchClientId));
 
                 ConfigureLogging();
                 _serviceProvider = collection.BuildServiceProvider();
