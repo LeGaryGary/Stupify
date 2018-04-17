@@ -14,6 +14,7 @@ using NYoutubeDL;
 using Serilog;
 using Serilog.Events;
 using Stupify.Data;
+using Stupify.Data.CustomCommandBuiltIns.HarryPotterApiCommands;
 using StupifyConsoleApp.Client;
 using StupifyConsoleApp.Client.Audio;
 using StupifyConsoleApp.Client.CustomTypeReaders;
@@ -38,9 +39,11 @@ namespace StupifyConsoleApp
 
         public static string DbConnectionString => Configuration["DbConnectionString"];
         public static string DiscordBotUserToken => Configuration["DiscordBotUserToken"];
+
         public static string YoutubeApiKey => Configuration["YoutubeApiKey"];
         public static string TwitchClientId => Configuration["TwitchClientId"];
         public static string TwitchClientSecret => Configuration["TwitchClientSecret"];
+        public static string HarryPotterApiKey => Configuration["HarryPotterApiKey"];
 
         public static string CommandPrefix => Configuration["CommandPrefix"];
         public static string CustomCommandPrefix => Configuration["CustomCommandPrefix"];
@@ -100,7 +103,8 @@ namespace StupifyConsoleApp
                     .AddSingleton<AudioService>()
                     .AddSingleton<MusicSearches>()
                     .AddTransient(sp => new YoutubeDL($"{Directory.GetCurrentDirectory()}/youtube-dl.exe"))
-                    .AddTransient(sp => new TwitchClient(TwitchClientId));
+                    .AddTransient(sp => new TwitchClient(TwitchClientId))
+                    .AddTransient(sp => new HarryPotterApiClient(HarryPotterApiKey));
 
                 ConfigureLogging();
                 _serviceProvider = collection.BuildServiceProvider();

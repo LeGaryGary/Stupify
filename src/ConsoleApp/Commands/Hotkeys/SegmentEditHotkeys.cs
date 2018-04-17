@@ -28,7 +28,7 @@ namespace StupifyConsoleApp.Commands.Hotkeys
             messageOwnerInfo.Value.Position = position;
 
             var userMessage = (IUserMessage)await context.Channel.GetMessageAsync(messageOwnerInfo.Key).ConfigureAwait(false);
-            await _segmentEditReactionHandler.UpdateMsg(userMessage).ConfigureAwait(false);
+            await _segmentEditReactionHandler.UpdateMsgAsync(userMessage).ConfigureAwait(false);
             return true;
         }
     }
@@ -55,7 +55,7 @@ namespace StupifyConsoleApp.Commands.Hotkeys
             messageOwnerInfo.Value.Position = position;
 
             var userMessage = (IUserMessage)await context.Channel.GetMessageAsync(messageOwnerInfo.Key).ConfigureAwait(false);
-            await _segmentEditReactionHandler.UpdateMsg(userMessage).ConfigureAwait(false);
+            await _segmentEditReactionHandler.UpdateMsgAsync(userMessage).ConfigureAwait(false);
             return true;
         }
     }
@@ -82,7 +82,7 @@ namespace StupifyConsoleApp.Commands.Hotkeys
             messageOwnerInfo.Value.Position = position;
 
             var userMessage = (IUserMessage)await context.Channel.GetMessageAsync(messageOwnerInfo.Key).ConfigureAwait(false);
-            await _segmentEditReactionHandler.UpdateMsg(userMessage).ConfigureAwait(false);
+            await _segmentEditReactionHandler.UpdateMsgAsync(userMessage).ConfigureAwait(false);
             return true;
         }
     }
@@ -109,7 +109,7 @@ namespace StupifyConsoleApp.Commands.Hotkeys
             messageOwnerInfo.Value.Position = position;
 
             var userMessage = (IUserMessage)await context.Channel.GetMessageAsync(messageOwnerInfo.Key).ConfigureAwait(false);
-            await _segmentEditReactionHandler.UpdateMsg(userMessage).ConfigureAwait(false);
+            await _segmentEditReactionHandler.UpdateMsgAsync(userMessage).ConfigureAwait(false);
             return true;
         }
     }

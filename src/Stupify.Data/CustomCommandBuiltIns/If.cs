@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace Stupify.Data.CustomCommandBuiltIns
 {
@@ -7,7 +8,7 @@ namespace Stupify.Data.CustomCommandBuiltIns
         public If(IServiceProvider provider) : base(provider)
         {
             Tag = "$if";
-            Execute = args => args[0] == "true" ? args[1] : args[2];
+            Execute = args => Task.FromResult(args[0] == "true" ? args[1] : args[2]);
         }
     }
 }

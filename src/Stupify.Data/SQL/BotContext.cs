@@ -26,7 +26,7 @@ namespace Stupify.Data.SQL
     {
         public BotContext CreateDbContext(string[] args)
         {
-            return new BotContext(new DbContextOptionsBuilder<BotContext>().UseSqlServer("connectionstring").Options);
+            return new BotContext(new DbContextOptionsBuilder<BotContext>().UseSqlServer("Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=StupifyLocalDev;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=True;ApplicationIntent=ReadWrite;MultiSubnetFailover=False").Options);
         }
     }
 }

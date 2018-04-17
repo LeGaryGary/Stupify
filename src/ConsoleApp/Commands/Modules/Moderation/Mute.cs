@@ -16,7 +16,7 @@ namespace StupifyConsoleApp.Commands.Modules.Moderation
         }
 
         [Command("Mute")]
-        [RequireUserPermission(ChannelPermission.ManageMessages)]
+        [RequireUserPermission(GuildPermission.KickMembers)]
         public async Task MuteAsync(IGuildUser user)
         {
             await _userRepository.MuteAsync(user).ConfigureAwait(false);
@@ -24,6 +24,7 @@ namespace StupifyConsoleApp.Commands.Modules.Moderation
         }
 
         [Command("UnMute")]
+        [RequireUserPermission(GuildPermission.KickMembers)]
         public async Task UnMuteAsync(IGuildUser user)
         {
             string message;

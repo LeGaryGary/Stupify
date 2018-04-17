@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using TwitchApi.Responses;
@@ -23,7 +22,7 @@ namespace TwitchApi
             _clientId = applicationClientId;
         }
 
-        private HttpClient httpClient
+        private HttpClient HttpClient
         {
             get
             {
@@ -35,7 +34,7 @@ namespace TwitchApi
 
         public async Task<TwitchUser> GetTwitchUserAsync(string loginName)
         {
-            var response = await httpClient.GetAsync(UsersEndpoint + $"?login={loginName}").ConfigureAwait(false);
+            var response = await HttpClient.GetAsync(UsersEndpoint + $"?login={loginName}").ConfigureAwait(false);
             var responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             return JsonConvert.DeserializeObject<TwitchResponse<TwitchUser>>(responseBody).Data.SingleOrDefault();
         }
@@ -47,14 +46,14 @@ namespace TwitchApi
 
         public async Task<TwitchStream> GetStreamAsync(string loginName)
         {
-            var response = await httpClient.GetAsync(StreamsEndpoint + $"?user_login={loginName}").ConfigureAwait(false);
+            var response = await HttpClient.GetAsync(StreamsEndpoint + $"?user_login={loginName}").ConfigureAwait(false);
             var responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             return JsonConvert.DeserializeObject<TwitchResponse<TwitchStream>>(responseBody).Data.SingleOrDefault();
         }
 
         public async Task<TwitchGame> GetGameTitleAsync(string gameId)
         {
-            var response = await httpClient.GetAsync(GameEndpoint + $"?id={gameId}").ConfigureAwait(false);
+            var response = await HttpClient.GetAsync(GameEndpoint + $"?id={gameId}").ConfigureAwait(false);
             var responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             return JsonConvert.DeserializeObject<TwitchResponse<TwitchGame>>(responseBody).Data.SingleOrDefault();
         }

@@ -19,29 +19,29 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
         }
 
         [Command("Universe")]
-        public async Task ShowUniverseCommand()
+        public Task ShowUniverseCommandAsync()
         {
-            await ShowUniverseCommand(10);
+            return ShowUniverseCommandAsync(10);
         }
 
         [Command("Universe")]
-        public async Task ShowUniverseCommand(int scope)
+        public async Task ShowUniverseCommandAsync(int scope)
         {
-            var userId = await _userRepository.GetUserId(Context.User);
+            var userId = await _userRepository.GetUserIdAsync(Context.User).ConfigureAwait(false);
             var userSelection = _gameState.GetUserSegmentSelection(userId);
             if (!userSelection.HasValue)
             {
-                await ReplyAsync(Responses.SelectSegmentMessage);
+                await ReplyAsync(Responses.SelectSegmentMessage).ConfigureAwait(false);
                 return;
             }
 
-            var renderRelativeToSegment = await _universeRepository.RenderRelativeToSegmentAsync(userSelection.Value, scope);
+            var renderRelativeToSegment = await _universeRepository.RenderRelativeToSegmentAsync(userSelection.Value, scope).ConfigureAwait(false);
             if (string.IsNullOrEmpty(renderRelativeToSegment))
             {
-                await ReplyAsync("There's nothing to show! (or you felt like a smart cookie and tried a scope bigger than 12!)");
+                await ReplyAsync("There's nothing to show! (or you felt like a smart cookie and tried a scope bigger than 12!)").ConfigureAwait(false);
                 return;
             }
-            await ReplyAsync($"```{renderRelativeToSegment}```");
+            await ReplyAsync($"```{renderRelativeToSegment}```").ConfigureAwait(false);
         }
     }
 }

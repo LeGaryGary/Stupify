@@ -26,14 +26,14 @@ namespace StupifyConsoleApp.Client
             _inventoryRepository = inventoryRepository;
         }
 
-        public async Task Handle(Cacheable<IUserMessage, ulong> message, ISocketMessageChannel channel, SocketReaction reaction)
+        public async Task HandleAsync(Cacheable<IUserMessage, ulong> message, ISocketMessageChannel channel, SocketReaction reaction)
         {
             if (reaction.UserId != _client.CurrentUser.Id && Owners.ContainsKey(message.Id))
             {
                 var owner = Owners[message.Id];
                 if (reaction.UserId != owner.UserId)
                 {
-                    await message.Value.RemoveReactionAsync(reaction.Emote, reaction.User.Value);
+                    await message.Value.RemoveReactionAsync(reaction.Emote, reaction.User.Value).ConfigureAwait(false);
                     return;
                 }
 
@@ -45,86 +45,86 @@ namespace StupifyConsoleApp.Client
                         {
 
                             case "❌":
-                                await RemoveBlock(owner);
+                                await RemoveBlockAsync(owner).ConfigureAwait(false);
                                 break;
                             case "🛡":
-                                comment = await AddBlock(owner, BlockType.Wall);
+                                comment = await AddBlockAsync(owner, BlockType.Wall).ConfigureAwait(false);
                                 break;
                             case "⚡":
-                                comment = await AddBlock(owner, BlockType.Energy);
+                                comment = await AddBlockAsync(owner, BlockType.Energy).ConfigureAwait(false);
                                 break;
                             case "🗼":
-                                comment = await AddBlock(owner, BlockType.Beamer);
+                                comment = await AddBlockAsync(owner, BlockType.Beamer).ConfigureAwait(false);
                                 break;
                             case "✅":
                                 Owners.Remove(message.Id);
-                                await message.Value.RemoveAllReactionsAsync();
+                                await message.Value.RemoveAllReactionsAsync().ConfigureAwait(false);
                                 return;
                         }
 
-                        await UpdateMsg(message.Value, comment);
+                        await UpdateMsgAsync(message.Value, comment).ConfigureAwait(false);
                         break;
                 }
 
-                await message.Value.RemoveReactionAsync(reaction.Emote, reaction.User.Value);
+                await message.Value.RemoveReactionAsync(reaction.Emote, reaction.User.Value).ConfigureAwait(false);
             }
         }
 
-        public async Task UpdateMsg(IUserMessage message, string comment = "")
+        public async Task UpdateMsgAsync(IUserMessage message, string comment = "")
         {
             var owner = Owners[message.Id];
 
             var selection =
-                await _ticTacZapController.RenderBlockInfoAsync(owner.SegmentId, owner.Position.x, 8-owner.Position.y) ??
+                await _ticTacZapController.RenderBlockInfoAsync(owner.SegmentId, owner.Position.x, 8-owner.Position.y).ConfigureAwait(false) ??
                 "Empty block";
             var header = $"--- Selection ---\n{selection}";
 
             var body = await _ticTacZapController.RenderSegmentAsync(owner.SegmentId,
-                          (owner.Position.x, owner.Position.y));
+                (owner.Position.x, owner.Position.y)).ConfigureAwait(false);
 
-            await message.ModifyAsync(m => m.Content = $"{comment}\n```{header}\n\n{body}```");
+            await message.ModifyAsync(m => m.Content = $"{comment}\n```{header}\n\n{body}```").ConfigureAwait(false);
         }
 
-        private async Task SetState(IUserMessage message, State state)
+        private async Task SetStateAsync(IUserMessage message, State state)
         {
             Owners[message.Id].State = state;
-            await message.RemoveAllReactionsAsync();
+            await message.RemoveAllReactionsAsync().ConfigureAwait(false);
             switch (state)
             {
                 case State.Select:
-                    await message.AddReactionAsync(new Emoji("🛡"));
-                    await message.AddReactionAsync(new Emoji("⚡"));
-                    await message.AddReactionAsync(new Emoji("🗼"));
-                    await message.AddReactionAsync(new Emoji("❌"));
-                    await message.AddReactionAsync(new Emoji("✅"));
+                    await message.AddReactionAsync(new Emoji("🛡")).ConfigureAwait(false);
+                    await message.AddReactionAsync(new Emoji("⚡")).ConfigureAwait(false);
+                    await message.AddReactionAsync(new Emoji("🗼")).ConfigureAwait(false);
+                    await message.AddReactionAsync(new Emoji("❌")).ConfigureAwait(false);
+                    await message.AddReactionAsync(new Emoji("✅")).ConfigureAwait(false);
                     break;
             }
         }
 
-        private async Task<string> AddBlock(OwnerInfo owner, BlockType type)
+        private async Task<string> AddBlockAsync(OwnerInfo owner, BlockType type)
         {
-            var user = await _client.GetUserAsync(owner.UserId);
-            if (!await _inventoryRepository.RemoveFromInventoryAsync(type, 1, user)) return Responses.ShopAdvisoryMessage;
-            await RemoveBlock(owner);
-            await _segmentRepository.AddBlockAsync(owner.SegmentId, owner.Position.x, 8-owner.Position.y, type);
+            var user = await _client.GetUserAsync(owner.UserId).ConfigureAwait(false);
+            if (!await _inventoryRepository.RemoveFromInventoryAsync(type, 1, user).ConfigureAwait(false)) return Responses.ShopAdvisoryMessage;
+            await RemoveBlockAsync(owner).ConfigureAwait(false);
+            await _segmentRepository.AddBlockAsync(owner.SegmentId, owner.Position.x, 8-owner.Position.y, type).ConfigureAwait(false);
             return "";
         }
 
-        private async Task RemoveBlock(OwnerInfo owner)
+        private async Task RemoveBlockAsync(OwnerInfo owner)
         {
-            var blockType = await _segmentRepository.DeleteBlockAsync(owner.SegmentId, owner.Position.x, 8-owner.Position.y);
+            var blockType = await _segmentRepository.DeleteBlockAsync(owner.SegmentId, owner.Position.x, 8-owner.Position.y).ConfigureAwait(false);
             if (blockType != null)
             {
-                var user = await _client.GetUserAsync(owner.UserId);
-                await _inventoryRepository.AddToInventoryAsync(blockType.Value, 1, user);
+                var user = await _client.GetUserAsync(owner.UserId).ConfigureAwait(false);
+                await _inventoryRepository.AddToInventoryAsync(blockType.Value, 1, user).ConfigureAwait(false);
             }
         }
 
-        public async Task NewOwner(IUserMessage message, int segmentId, ulong userId, int dbUserId)
+        public async Task NewOwnerAsync(IUserMessage message, int segmentId, ulong userId, int dbUserId)
         {
             Owners.Add(message.Id, new OwnerInfo(userId, dbUserId, segmentId));
-            await UpdateMsg(message);
-            await SetState(message, State.Select);
+            await UpdateMsgAsync(message).ConfigureAwait(false);
+            await SetStateAsync(message, State.Select).ConfigureAwait(false);
         }
 
         internal class OwnerInfo
@@ -148,6 +148,6 @@ namespace StupifyConsoleApp.Client
 
     public interface IReactionHandler
     {
-        Task Handle(Cacheable<IUserMessage, ulong> message, ISocketMessageChannel channel, SocketReaction reaction);
+        Task HandleAsync(Cacheable<IUserMessage, ulong> message, ISocketMessageChannel channel, SocketReaction reaction);
     }
 }

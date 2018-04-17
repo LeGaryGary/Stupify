@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
@@ -27,7 +26,7 @@ namespace StupifyConsoleApp.Client
             {
                 case DiscordSocketClient discordSocketClient:
                     discordSocketClient.MessageReceived += messageHandler.HandleAsync;
-                    discordSocketClient.ReactionAdded += segmentEditHandler.Handle;
+                    discordSocketClient.ReactionAdded += segmentEditHandler.HandleAsync;
                     discordSocketClient.Ready += () =>
                     {
                         _ready = true;
@@ -90,7 +89,7 @@ namespace StupifyConsoleApp.Client
 
                 try
                 {
-                    await UpdateTwichStatusChannels().ConfigureAwait(false);
+                    await UpdateTwichStatusChannelsAsync().ConfigureAwait(false);
                 }
                 catch (Exception e)
                 {
@@ -99,9 +98,10 @@ namespace StupifyConsoleApp.Client
                 
                 await Task.Delay(60000).ConfigureAwait(false);
             }
+            // ReSharper disable once FunctionNeverReturns
         }
 
-        private async Task UpdateTwichStatusChannels()
+        private async Task UpdateTwichStatusChannelsAsync()
         {
             var twitchRepository = Config.ServiceProvider.GetService<ITwitchRepository>();
 

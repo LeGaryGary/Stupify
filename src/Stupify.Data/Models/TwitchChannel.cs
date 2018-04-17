@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Stupify.Data.Models
+﻿namespace Stupify.Data.Models
 {
     public class TwitchChannel
     {

@@ -23,7 +23,7 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
         [Command("Segments")]
         public async Task ListSegmentsAsync()
         {
-            var segments = await _segmentRepository.GetSegmentIds(Context.User).ConfigureAwait(false);
+            var segments = await _segmentRepository.GetSegmentIdsAsync(Context.User).ConfigureAwait(false);
             var renderSegmentList = await RenderSegmentListAsync(segments).ConfigureAwait(false);
             if (renderSegmentList == string.Empty)
                 await ReplyAsync($"You don't have any segments, buy your first one: `{Config.CommandPrefix} Segment Buy`").ConfigureAwait(false);
@@ -155,8 +155,8 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
                 }
 
                 var msg = await ReplyAsync($"```Hang on...```").ConfigureAwait(false);
-                var dbUserId = await _userRepository.GetUserId(Context.User).ConfigureAwait(false);
-                await _editReactionHandler.NewOwner(msg, segmentId, Context.User.Id, dbUserId).ConfigureAwait(false);
+                var dbUserId = await _userRepository.GetUserIdAsync(Context.User).ConfigureAwait(false);
+                await _editReactionHandler.NewOwnerAsync(msg, segmentId, Context.User.Id, dbUserId).ConfigureAwait(false);
             }
 
             [Command("Delete")]
@@ -207,7 +207,7 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
 
             private async Task<int?> GetSegmentSelectionAsync()
             {
-                var userId = await _userRepository.GetUserId(Context.User).ConfigureAwait(false);
+                var userId = await _userRepository.GetUserIdAsync(Context.User).ConfigureAwait(false);
                 var segmentId = _gameState.GetUserSegmentSelection(userId);
 
                 if (segmentId.HasValue) return segmentId;

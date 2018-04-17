@@ -28,7 +28,7 @@ namespace StupifyConsoleApp.TicTacZapManagement
             _userRepository = userRepository;
         }
 
-        public async Task Run()
+        public async Task RunAsync()
         {
             var sw = new Stopwatch();
             sw.Start();
@@ -36,17 +36,17 @@ namespace StupifyConsoleApp.TicTacZapManagement
             {
                 _gameState.Tick++;
 
-                await PerformAttacks();
-                await _segmentRepository.UpdateBalancesAsync();
+                await PerformAttacksAsync().ConfigureAwait(false);
+                await _segmentRepository.UpdateBalancesAsync().ConfigureAwait(false);
             }
             catch (Exception e)
             {
                 _logger.LogCritical(e, "Unhandled Exception thrown in game loop!");
             }
-            await Wait(sw, 1000);
+            await WaitAsync(sw, 1000).ConfigureAwait(false);
         }
 
-        private async Task Wait(Stopwatch timer, int tickMinTime)
+        private async Task WaitAsync(Stopwatch timer, int tickMinTime)
         {
             while (true)
             {
@@ -56,26 +56,26 @@ namespace StupifyConsoleApp.TicTacZapManagement
                     break;
                 }
 
-                await Task.Delay(50);
+                await Task.Delay(50).ConfigureAwait(false);
             }
         }
 
-        private async Task PerformAttacks()
+        private async Task PerformAttacksAsync()
         {
             var endedWars = new List<(int, int, Direction, IUserMessage, Queue<string>)>();
             foreach (var war in _gameState.CurrentWars)
             {
                 try
                 {
-                    if (!await _segmentRepository.Exists(war.attackingSegment) ||
-                    !await _segmentRepository.Exists(war.defendingSegment))
+                    if (!await _segmentRepository.ExistsAsync(war.attackingSegment).ConfigureAwait(false) ||
+                    !await _segmentRepository.ExistsAsync(war.defendingSegment).ConfigureAwait(false))
                     {
                         endedWars.Add(war);
                         continue;
                     }
 
-                    var attackingSegment = await _segmentRepository.GetSegmentAsync(war.attackingSegment);
-                    var defendingSegment = await _segmentRepository.GetSegmentAsync(war.defendingSegment);
+                    var attackingSegment = await _segmentRepository.GetSegmentAsync(war.attackingSegment).ConfigureAwait(false);
+                    var defendingSegment = await _segmentRepository.GetSegmentAsync(war.defendingSegment).ConfigureAwait(false);
 
                     var remainingTickEnergy = attackingSegment.ResourcePerTick(Resource.Energy);
                     var blocksAttacking = 0;
@@ -100,34 +100,34 @@ namespace StupifyConsoleApp.TicTacZapManagement
 
                     if (defendingSegment.Blocks[4, 4] != null)
                     {
-                        await _segmentRepository.SetSegmentAsync(war.defendingSegment, defendingSegment);
+                        await _segmentRepository.SetSegmentAsync(war.defendingSegment, defendingSegment).ConfigureAwait(false);
 
                         var healthTextRender = attackingSegment.HealthTextRender() + Environment.NewLine;
                         foreach (var str in war.battlefeed)
                         {
                             healthTextRender += str + Environment.NewLine;
                         }
-                        if (war.attackingmessage.Content != healthTextRender && _gameState.Tick%2 == 0) await war.attackingmessage.ModifyAsync(m => m.Content = $"```{healthTextRender}```");
+                        if (war.attackingmessage.Content != healthTextRender && _gameState.Tick%2 == 0) await war.attackingmessage.ModifyAsync(m => m.Content = $"```{healthTextRender}```").ConfigureAwait(false);
 
                         continue;
                     }
                     // ---------- Attacking segment has won ----------
 
                     // Get the segment owners and make loot transaction
-                    var attackingUser = await _segmentRepository.GetOwner(war.attackingSegment);
-                    var defendingUser = await _segmentRepository.GetOwner(war.defendingSegment);
+                    var attackingUser = await _segmentRepository.GetOwnerAsync(war.attackingSegment).ConfigureAwait(false);
+                    var defendingUser = await _segmentRepository.GetOwnerAsync(war.defendingSegment).ConfigureAwait(false);
 
-                    var defendingBalance = await _userRepository.BalanceAsync(defendingUser);
-                    var defendingSegmentCount = await _segmentRepository.SegmentCountAsync(defendingUser);
+                    var defendingBalance = await _userRepository.BalanceAsync(defendingUser).ConfigureAwait(false);
+                    var defendingSegmentCount = await _segmentRepository.SegmentCountAsync(defendingUser).ConfigureAwait(false);
 
                     var lootAmount = defendingBalance / defendingSegmentCount;
 
-                    await _userRepository.BalanceTransferAsync(defendingUser, attackingUser, lootAmount);
+                    await _userRepository.BalanceTransferAsync(defendingUser, attackingUser, lootAmount).ConfigureAwait(false);
 
                     // Delete defending segment
-                    await _segmentRepository.DeleteSegmentAsync(war.defendingSegment);
+                    await _segmentRepository.DeleteSegmentAsync(war.defendingSegment).ConfigureAwait(false);
                     
-                    await war.attackingmessage.ModifyAsync(m => m.Content = "```Your opponent has been destroyed!```");
+                    await war.attackingmessage.ModifyAsync(m => m.Content = "```Your opponent has been destroyed!```").ConfigureAwait(false);
                 }
                 catch (Exception e)
                 {

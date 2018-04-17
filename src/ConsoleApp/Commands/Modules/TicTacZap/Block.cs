@@ -25,76 +25,76 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
         }
 
         [Command("BlockInfo")]
-        public async Task BlockInfoCommand(int x, int y)
+        public async Task BlockInfoCommandAsync(int x, int y)
         {
-            var segmentSelectionId = _gameState.GetUserSegmentSelection(await _userRepository.GetUserId(Context.User));
+            var segmentSelectionId = _gameState.GetUserSegmentSelection(await _userRepository.GetUserIdAsync(Context.User).ConfigureAwait(false));
             if (!segmentSelectionId.HasValue)
             {
-                await ReplyAsync(Responses.SelectSegmentMessage);
+                await ReplyAsync(Responses.SelectSegmentMessage).ConfigureAwait(false);
                 return;
             }
 
-            var text = await _tacZapController.RenderBlockInfoAsync(segmentSelectionId.Value, x-1, y-1);
+            var text = await _tacZapController.RenderBlockInfoAsync(segmentSelectionId.Value, x-1, y-1).ConfigureAwait(false);
             if (string.IsNullOrEmpty(text))
             {
-                await ReplyAsync(Responses.NoSuchBlock);
+                await ReplyAsync(Responses.NoSuchBlock).ConfigureAwait(false);
                 return;
             }
 
-            await ReplyAsync($"```{text}```");
+            await ReplyAsync($"```{text}```").ConfigureAwait(false);
         }
 
         [Command("AddBlock")]
-        public async Task AddBlockCommand(int x, int y, string type)
+        public async Task AddBlockCommandAsync(int x, int y, string type)
         {
-            var segmentSelectionId = _gameState.GetUserSegmentSelection(await _userRepository.GetUserId(Context.User));
+            var segmentSelectionId = _gameState.GetUserSegmentSelection(await _userRepository.GetUserIdAsync(Context.User).ConfigureAwait(false));
             if (segmentSelectionId.HasValue)
             {
-                await AddBlockCommand(segmentSelectionId.Value, x, y, type);
+                await AddBlockCommandAsync(segmentSelectionId.Value, x, y, type).ConfigureAwait(false);
                 return;
             }
 
-            await ReplyAsync(Responses.SelectSegmentMessage);
-        }
-
-        private async Task AddBlockCommand(int segmentId, int x, int y, string type)
-        {
-            var blockType = Enum.Parse<BlockType>(type, true);
-            if (await _inventoryRepository.RemoveFromInventoryAsync(blockType, 1, Context.User))
-            {
-                if (!await _segmentRepository.AddBlockAsync(segmentId, x - 1, y - 1, blockType))
-                {
-                    await _inventoryRepository.AddToInventoryAsync(blockType, 1, Context.User);
-                }
-                await _tacZapController.ShowSegmentAsync(Context, segmentId);
-                return;
-            }
-
-            await ReplyAsync(Responses.ShopAdvisoryMessage);
+            await ReplyAsync(Responses.SelectSegmentMessage).ConfigureAwait(false);
         }
 
         [Command("RemoveBlock")]
-        public async Task RemoveBlockCommand(int x, int y)
+        public async Task RemoveBlockCommandAsync(int x, int y)
         {
-            var segmentSelectionId = _gameState.GetUserSegmentSelection(await _userRepository.GetUserId(Context.User));
+            var segmentSelectionId = _gameState.GetUserSegmentSelection(await _userRepository.GetUserIdAsync(Context.User).ConfigureAwait(false));
             if (segmentSelectionId.HasValue)
             {
-                await RemoveBlockCommand(segmentSelectionId.Value, x, y);
+                await RemoveBlockCommandAsync(segmentSelectionId.Value, x, y).ConfigureAwait(false);
                 return;
             }
 
-            await ReplyAsync(Responses.SelectSegmentMessage);
+            await ReplyAsync(Responses.SelectSegmentMessage).ConfigureAwait(false);
         }
 
-        private async Task RemoveBlockCommand(int segmentId, int x, int y)
+        private async Task AddBlockCommandAsync(int segmentId, int x, int y, string type)
         {
-            var blockType = await _segmentRepository.DeleteBlockAsync(segmentId, x - 1, y - 1);
+            var blockType = Enum.Parse<BlockType>(type, true);
+            if (await _inventoryRepository.RemoveFromInventoryAsync(blockType, 1, Context.User).ConfigureAwait(false))
+            {
+                if (!await _segmentRepository.AddBlockAsync(segmentId, x - 1, y - 1, blockType).ConfigureAwait(false))
+                {
+                    await _inventoryRepository.AddToInventoryAsync(blockType, 1, Context.User).ConfigureAwait(false);
+                }
+                await _tacZapController.ShowSegmentAsync(Context, segmentId).ConfigureAwait(false);
+                return;
+            }
+
+            await ReplyAsync(Responses.ShopAdvisoryMessage).ConfigureAwait(false);
+        }
+
+        private async Task RemoveBlockCommandAsync(int segmentId, int x, int y)
+        {
+            var blockType = await _segmentRepository.DeleteBlockAsync(segmentId, x - 1, y - 1).ConfigureAwait(false);
 
             if (blockType != null)
             {
-                await _inventoryRepository.AddToInventoryAsync(blockType.Value, 1, Context.User);
+                await _inventoryRepository.AddToInventoryAsync(blockType.Value, 1, Context.User).ConfigureAwait(false);
             }
-            await _tacZapController.ShowSegmentAsync(Context, segmentId);
+            await _tacZapController.ShowSegmentAsync(Context, segmentId).ConfigureAwait(false);
         }
     }
 }

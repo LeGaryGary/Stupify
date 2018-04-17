@@ -30,13 +30,13 @@ namespace Stupify.Data.FileSystem
         {
             var segmentTuple = _segmentCache.FirstOrDefault(s => s.Item1 == segmentId);
             if (segmentTuple != null) return segmentTuple.Item2;
-            var segment = await LoadSegmentFileAsync(segmentId);
+            var segment = await LoadSegmentFileAsync(segmentId).ConfigureAwait(false);
             if (_segmentCache.Count >= 1000) _segmentCache.RemoveAt(_random.Next(_segmentCache.Count));
             _segmentCache.Add(new Tuple<int, Segment>(segmentId, segment));
             return segment;
         }
 
-        public async Task SetAsync(int segmentId, Segment segment)
+        public Task SetAsync(int segmentId, Segment segment)
         {
             var segmentTuple = _segmentCache.FirstOrDefault(s => s.Item1 == segmentId);
             if (segmentTuple != null)
@@ -45,22 +45,22 @@ namespace Stupify.Data.FileSystem
                 _segmentCache.Add(new Tuple<int, Segment>(segmentId, segment));
             }
 
-            await SaveSegmentFileAsync(segmentId, segment);
+            return SaveSegmentFileAsync(segmentId, segment);
         }
 
-        public async Task NewSegmentAsync(int segmentId)
+        public Task NewSegmentAsync(int segmentId)
         {
             var segment = new Segment();
             if (_segmentCache.Count >= 1000) _segmentCache.RemoveAt(_random.Next(_segmentCache.Count));
             _segmentCache.Add(new Tuple<int, Segment>(segmentId, segment));
-            await SaveSegmentFileAsync(segmentId, segment);
+            return SaveSegmentFileAsync(segmentId, segment);
         }
 
         private async Task<Segment> LoadSegmentFileAsync(int segmentId)
         {
             using (var stream = File.OpenText(_segmentsPath + $@"\{segmentId}{SegmentExtension}"))
             {
-                var fileText = await stream.ReadToEndAsync();
+                var fileText = await stream.ReadToEndAsync().ConfigureAwait(false);
                 return DeserializeSegment(fileText);
             }
         }
@@ -71,7 +71,7 @@ namespace Stupify.Data.FileSystem
 
             using (var streamWriter = File.CreateText(_segmentsPath + $@"\{segmentId + SegmentExtension}"))
             {
-                await streamWriter.WriteAsync(fileText);
+                await streamWriter.WriteAsync(fileText).ConfigureAwait(false);
             }
         }
 
@@ -85,7 +85,7 @@ namespace Stupify.Data.FileSystem
         public async Task<Dictionary<BlockType, int>> ResetSegmentAsync(int segmentId)
         {
             var blocks = new Dictionary<BlockType, int>();
-            var segment = await GetAsync(segmentId);
+            var segment = await GetAsync(segmentId).ConfigureAwait(false);
 
             for (var x = 0; x < 9; x++)
             for (var y = 0; y < 9; y++)
@@ -98,7 +98,7 @@ namespace Stupify.Data.FileSystem
                     blocks.Add(blockType.Value, 1);
             }
 
-            await SaveSegmentFileAsync(segmentId, segment);
+            await SaveSegmentFileAsync(segmentId, segment).ConfigureAwait(false);
             return blocks;
         }
 

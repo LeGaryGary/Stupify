@@ -11,6 +11,6 @@ namespace Stupify.Data.Repositories
         Task SaveInventoryAsync(IUser user, Inventory inventory);
         Task AddToInventoryAsync(BlockType blockType, int quantity, IUser user);
         Task<bool> RemoveFromInventoryAsync(BlockType blockType, int quantity, IUser user);
-        Task ResetInventory(IUser user);
+        Task ResetInventoryAsync(IUser user);
     }
 }

@@ -30,7 +30,7 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
         [Command("SaveTemplate")]
         public async Task SaveTemplateCommandAsync()
         {
-            var userId = await _userRepository.GetUserId(Context.User).ConfigureAwait(false);
+            var userId = await _userRepository.GetUserIdAsync(Context.User).ConfigureAwait(false);
             var userSelection = _gameState.GetUserSegmentSelection(userId);
             if (!userSelection.HasValue)
             {
@@ -81,7 +81,7 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
         [Command("ApplyTemplate")]
         public async Task ApplyTemplateCommandAsync()
         {
-            var userId = await _userRepository.GetUserId(Context.User).ConfigureAwait(false);
+            var userId = await _userRepository.GetUserIdAsync(Context.User).ConfigureAwait(false);
             var selectedSegment = _gameState.GetUserSegmentSelection(userId);
             var selectedTemplate = _gameState.GetUserTemplateSelection(userId);
 

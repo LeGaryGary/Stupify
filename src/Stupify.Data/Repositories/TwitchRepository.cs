@@ -29,12 +29,17 @@ namespace Stupify.Data.Repositories
                 .Include(channel => channel.Server)
                 .Where(channel => channel.Server.TwitchUpdateChannel != null)
                 .ToArrayAsync().ConfigureAwait(false);
-            return serverTwitchWatchChannels.Select(channel => new TwitchChannel
+            return serverTwitchWatchChannels.Select(channel =>
             {
-                GuildId = channel.Server.DiscordGuildId,
-                TwitchLoginName = channel.TwitchLoginName,
-                LastStatus = channel.LastStatus,
-                UpdateChannel = channel.Server.TwitchUpdateChannel.Value
+                if (channel.Server.TwitchUpdateChannel != null)
+                    return new TwitchChannel
+                    {
+                        GuildId = channel.Server.DiscordGuildId,
+                        TwitchLoginName = channel.TwitchLoginName,
+                        LastStatus = channel.LastStatus,
+                        UpdateChannel = channel.Server.TwitchUpdateChannel.Value
+                    };
+                return null;
             }).ToArray();
         }
 

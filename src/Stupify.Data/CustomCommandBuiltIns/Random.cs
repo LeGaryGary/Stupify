@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Stupify.Data.CustomCommandBuiltIns
@@ -12,7 +13,7 @@ namespace Stupify.Data.CustomCommandBuiltIns
             {
                 var max = int.Parse(args[1]);
                 var min = int.Parse(args[0]);
-                return (Provider.GetService<Random>().Next(max - min + 1) + min).ToString();
+                return Task.FromResult((Provider.GetService<Random>().Next(max - min + 1) + min).ToString());
             };
         }
     }
@@ -26,7 +27,7 @@ namespace Stupify.Data.CustomCommandBuiltIns
             {
                 var random = Provider.GetService<Random>();
                 var index = random.Next(args.Length);
-                return args[index];
+                return Task.FromResult(args[index]);
             };
         }
     }

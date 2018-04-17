@@ -23,13 +23,13 @@ namespace Stupify.Data.FileSystem
             {
                 using (var stream = File.OpenText(_inventoriesPath + $@"\{userId + InventoryExtension}"))
                 {
-                    var fileText = await stream.ReadToEndAsync();
+                    var fileText = await stream.ReadToEndAsync().ConfigureAwait(false);
                     return JsonConvert.DeserializeObject<Inventory>(fileText);
                 }
             }
 
             var inventory = new Inventory(5);
-            await SaveInventoryAsync(userId, inventory);
+            await SaveInventoryAsync(userId, inventory).ConfigureAwait(false);
             return inventory;
         }
 
@@ -38,30 +38,30 @@ namespace Stupify.Data.FileSystem
             var fileText = JsonConvert.SerializeObject(inventory);
             using (var stream = File.CreateText(_inventoriesPath + $@"\{userId + InventoryExtension}"))
             {
-                await stream.WriteAsync(fileText);
+                await stream.WriteAsync(fileText).ConfigureAwait(false);
             }
         }
 
         public async Task AddToInventoryAsync(BlockType blockType, int quantity, int userId)
         {
-            var inventory = await GetInventoryAsync(userId);
+            var inventory = await GetInventoryAsync(userId).ConfigureAwait(false);
             inventory.AddBlocks(blockType, quantity);
-            await SaveInventoryAsync(userId, inventory);
+            await SaveInventoryAsync(userId, inventory).ConfigureAwait(false);
         }
 
         public async Task<bool> RemoveFromInventoryAsync(BlockType blockType, int quantity, int userId)
         {
-            var inventory = await GetInventoryAsync(userId);
+            var inventory = await GetInventoryAsync(userId).ConfigureAwait(false);
             if (!inventory.RemoveBlocks(blockType, quantity)) return false;
-            await SaveInventoryAsync(userId, inventory);
+            await SaveInventoryAsync(userId, inventory).ConfigureAwait(false);
             return true;
         }
 
-        public async Task ResetInventory(int userId)
+        public async Task ResetInventoryAsync(int userId)
         {
-            var inventory = await GetInventoryAsync(userId);
+            var inventory = await GetInventoryAsync(userId).ConfigureAwait(false);
             inventory.Reset();
-            await SaveInventoryAsync(userId, inventory);
+            await SaveInventoryAsync(userId, inventory).ConfigureAwait(false);
         }
     }
 }

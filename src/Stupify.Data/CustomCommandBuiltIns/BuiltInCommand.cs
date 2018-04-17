@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
+using System.Threading.Tasks;
 
 namespace Stupify.Data.CustomCommandBuiltIns
 {
@@ -14,6 +13,6 @@ namespace Stupify.Data.CustomCommandBuiltIns
         }
 
         public string Tag { get; protected set; }
-        public Func<string[], string> Execute { get; protected set; }
+        public Func<string[], Task<string>> Execute { get; protected set; }
     }
 }

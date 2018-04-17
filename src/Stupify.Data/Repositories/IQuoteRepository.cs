@@ -6,9 +6,9 @@ namespace Stupify.Data.Repositories
 {
     public interface IQuoteRepository
     {
-        Task<Quote> RandomQuote();
-        Task<Quote> RandomQuote(IGuild guild);
-        Task<Quote> RandomQuote(IUser user);
+        Task<Quote> RandomQuoteAsync();
+        Task<Quote> RandomQuoteAsync(IGuild guild);
+        Task<Quote> RandomQuoteAsync(IUser user);
 
         Task AddQuoteAsync(Quote quote, IGuild guild);
     }
