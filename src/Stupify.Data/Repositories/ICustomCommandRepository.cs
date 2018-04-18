@@ -14,5 +14,6 @@ namespace Stupify.Data.Repositories
         Task<string> EvaluateAsync(string command);
         Task<bool> IsCreatorAsync(IGuildUser user, string commandTag);
         Task DeleteAsync(IGuildUser user, string commandTag);
+        Task EditAsync(IGuildUser user, string commandTag, string commandText);
     }
 }

@@ -172,6 +172,18 @@ namespace Stupify.Data.Repositories
             await _botContext.SaveChangesAsync().ConfigureAwait(false);
         }
 
+        public async Task EditAsync(IGuildUser user, string commandTag, string commandText)
+        {
+            var guildId = (long) user.GuildId;
+            var command = await _botContext.CustomCommands
+                .Where(cc => cc.ServerUser.Server.DiscordGuildId == guildId)
+                .FirstOrDefaultAsync(cc => cc.CommandTag == commandTag).ConfigureAwait(false);
+
+            command.Command = commandText;
+
+            await _botContext.SaveChangesAsync().ConfigureAwait(false);
+        }
+
         private static string[] SplitArgs(string input, char splitter, char escape)
         {
             var inputChars = input.ToCharArray();

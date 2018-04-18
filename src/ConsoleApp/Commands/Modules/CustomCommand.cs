@@ -107,5 +107,19 @@ namespace StupifyConsoleApp.Commands.Modules
                 await ReplyAsync("You um... don't own this command, so no?").ConfigureAwait(false);
             }
         }
+
+        [Command("EditCommand")]
+        public async Task EditCommandAsync(string commandTag, [Remainder]string commandText)
+        {
+            if (await _commandRepository.IsCreatorAsync(Context.User as IGuildUser, commandTag).ConfigureAwait(false))
+            {
+                await _commandRepository.EditAsync(Context.User as IGuildUser, commandTag, commandText).ConfigureAwait(false);
+                await ReplyAsync("There we go, good as new!").ConfigureAwait(false);
+            }
+            else
+            {
+                await ReplyAsync("You um... don't own this command, so no?").ConfigureAwait(false);
+            }
+        }
     }
 }
