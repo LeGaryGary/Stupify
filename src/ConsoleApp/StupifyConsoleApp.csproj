@@ -31,9 +31,9 @@
     <PackageReference Include="Serilog.Sinks.Seq" Version="4.0.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\TwitchApi\TwitchApi.csproj" />
     <ProjectReference Include="..\Stupify.Data\Stupify.Data.csproj" />
     <ProjectReference Include="..\TicTacZap\TicTacZap.csproj" />
+    <ProjectReference Include="..\TwitchApi\TwitchApi.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Update="AirHorn.mp3">
