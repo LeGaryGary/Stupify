@@ -21,7 +21,7 @@ namespace Stupify.Data.CustomCommandBuiltIns
                     result.Add(args[0]);
                 }
 
-                var separator = bool.Parse(args[3]) ? "," : "";
+                var separator = bool.Parse(args[2]) ? "," : "";
 
                 return Task.FromResult(string.Join(separator, result));
             };

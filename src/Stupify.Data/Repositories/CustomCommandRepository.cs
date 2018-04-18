@@ -12,6 +12,7 @@ using Stupify.Data.CustomCommandBuiltIns;
 using Stupify.Data.CustomCommandBuiltIns.HarryPotterApiCommands;
 using Stupify.Data.SQL;
 using Stupify.Data.SQL.Models;
+using TwitchApi;
 
 namespace Stupify.Data.Repositories
 {
@@ -19,6 +20,7 @@ namespace Stupify.Data.Repositories
     {
         private readonly BotContext _botContext;
         private readonly HarryPotterApiClient _harryPotterApiClient;
+        private readonly TwitchClient _twitchClient;
         private static IEnumerable<BuiltInCommand> _builtInCommands;
 
         private static IServiceProvider _serviceProvider;
@@ -31,16 +33,18 @@ namespace Stupify.Data.Repositories
                 _serviceProvider = new ServiceCollection()
                     .AddSingleton<Random>()
                     .AddTransient(sp => _harryPotterApiClient)
+                    .AddTransient(sp => _twitchClient)
                     .BuildServiceProvider();
 
                 return _serviceProvider;
             }
         }
 
-        public CustomCommandRepository(BotContext botContext, HarryPotterApiClient harryPotterApiClient)
+        public CustomCommandRepository(BotContext botContext, HarryPotterApiClient harryPotterApiClient, TwitchClient twitchClient)
         {
             _botContext = botContext;
             _harryPotterApiClient = harryPotterApiClient;
+            _twitchClient = twitchClient;
         }
 
         public async Task<string> GetCommandAsync(IGuildUser user, string commandTag)

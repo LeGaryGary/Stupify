@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\TicTacZap\TicTacZap.csproj" />
+    <ProjectReference Include="..\TwitchApi\TwitchApi.csproj" />
   </ItemGroup>
 
 </Project>
