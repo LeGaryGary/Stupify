@@ -20,7 +20,7 @@ namespace StupifyConsoleApp.Commands.Modules
         }
 
         [Command("AddQuote")]
-        public async Task AddQuoteAsync(string quoteBody)
+        public async Task AddQuoteAsync([Remainder]string quoteBody)
         {
             if (Context.User is IGuildUser guildUser)
             {
@@ -45,7 +45,7 @@ namespace StupifyConsoleApp.Commands.Modules
                 return;
             }
 
-            var message = $"{quote.Content} - {quote.Author.Username}";
+            var message = $"{quote.Content} - {quote.Author.Username.Replace("*", "\\*")}";
             await ReplyAsync(message).ConfigureAwait(false);
         }
     }

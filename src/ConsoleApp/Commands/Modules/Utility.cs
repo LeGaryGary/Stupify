@@ -25,7 +25,7 @@ namespace StupifyConsoleApp.Commands.Modules
 
             var message = "Modules:" + Environment.NewLine;
             foreach (var module in modules) message += module.Name + Environment.NewLine;
-            return ReplyAsync($"```{message}```{Environment.NewLine}Use `{Config.CommandPrefix} Help [moduleName]` Or `{Config.CommandPrefix} HelpAll` to find out more!{Environment.NewLine}We love feedback, Positive or negative: https://discord.gg/nb5rUhd");
+            return ReplyAsync($"```{message}```{Environment.NewLine}Use `{Config.CommandPrefix} Help [moduleName]` to find out more!{Environment.NewLine}We love feedback, Positive or negative: https://discord.gg/nb5rUhd");
         }
 
         [Command("Help")]

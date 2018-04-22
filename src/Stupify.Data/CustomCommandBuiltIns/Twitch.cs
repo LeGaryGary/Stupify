@@ -7,7 +7,7 @@ using TwitchApi;
 
 namespace Stupify.Data.CustomCommandBuiltIns
 {
-    class StreamLive : BuiltInCommand
+    internal class StreamLive : BuiltInCommand
     {
         public StreamLive(IServiceProvider provider) : base(provider)
         {

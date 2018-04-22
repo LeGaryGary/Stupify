@@ -6,11 +6,22 @@ namespace StupifyConsoleApp.Commands.Modules
 {
     public class MockingBird : ModuleBase<CommandContext>
     {
-        [Command("Mock")]
-        public async Task MockCommandAsync(IGuildUser userToMock, [Remainder]string messageToSay)
+        [Command("Mock"), Priority(1)]
+        public Task MockCommandAsync(IGuildUser userToMockTag, [Remainder]string messageToSay)
+        {
+            var mockNickname = userToMockTag.Nickname ?? userToMockTag.Username;
+            return MockAsync(messageToSay, mockNickname);
+        }
+
+        [Command("Mock"), Priority(0)]
+        public Task MockCommandAsync(string nameToMock, [Remainder]string messageToSay)
+        {
+            return MockAsync(messageToSay, nameToMock);
+        }
+
+        private async Task MockAsync(string messageToSay, string mockNickname)
         {
             var selfGuildUser = await Context.Guild.GetCurrentUserAsync().ConfigureAwait(false);
-            var mockNickname = userToMock.Nickname ?? userToMock.Username;
             await selfGuildUser.ModifyAsync(props => props.Nickname = mockNickname).ConfigureAwait(false);
             await ReplyAsync(messageToSay).ConfigureAwait(false);
             await selfGuildUser.ModifyAsync(props => props.Nickname = string.Empty).ConfigureAwait(false);

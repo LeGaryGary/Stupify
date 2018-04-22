@@ -20,6 +20,8 @@ namespace Stupify.Data.SQL
         public DbSet<SegmentTemplate> SegmentTemplates { get; set; }
         public DbSet<ServerTwitchChannel> ServerTwitchChannels { get; set; }
         public DbSet<CustomCommand> CustomCommands { get; set; }
+        public DbSet<ServerSettings> ServerSettings { get; set; }
+        public DbSet<UserSettings> UserSettings { get; set; }
     }
 
     internal class BotContextDesign : IDesignTimeDbContextFactory<BotContext>

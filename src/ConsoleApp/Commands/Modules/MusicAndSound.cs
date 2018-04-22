@@ -129,7 +129,7 @@ namespace StupifyConsoleApp.Commands.Modules
 
             for (var i = 0; i < fileNames.Length; i++)
             {
-                var addition = $"{i} - *{titles[i] ?? fileNames[i]}*" + Environment.NewLine;
+                var addition = $"{i + 1} - *{titles[i] ?? fileNames[i]}*" + Environment.NewLine;
                 if ((message + addition).Length > 1997)
                 {
                     message.Append("...");
@@ -145,7 +145,7 @@ namespace StupifyConsoleApp.Commands.Modules
         [Command("Dequeue")]
         public Task DequeueAsync(int position)
         {
-            _audioService.Dequeue(Context.Guild, position);
+            _audioService.Dequeue(Context.Guild, position - 1);
             return Task.CompletedTask;
         }
 
