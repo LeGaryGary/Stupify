@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Discord;
 using Microsoft.EntityFrameworkCore;
 using Stupify.Data.SQL;
@@ -91,6 +93,18 @@ namespace Stupify.Data.Repositories
             return (await GetUserAsync(user).ConfigureAwait(false)).UserId;
         }
 
+        public async Task<List<ulong>> UsersGuildsAsync(ulong discordGuildId)
+        {
+            var user = await GetUserAsync(discordGuildId).ConfigureAwait(false);
+            var userId = user.UserId;
+            var serverUsers = await _botContext.ServerUsers
+                .Where(su => su.User.UserId == userId)
+                .Include(su => su.Server)
+                .ToArrayAsync().ConfigureAwait(false);
+
+            return serverUsers.Select(su => (ulong) su.Server.DiscordGuildId).ToList();
+        }
+
         private async Task<ServerUser> GetServerUserAsync(IGuildUser discordGuildUser)
         {
             var server = await GetServerAsync(discordGuildUser.Guild).ConfigureAwait(false);
@@ -127,15 +141,27 @@ namespace Stupify.Data.Repositories
             return guild;
         }
 
-        private async Task<User> GetUserAsync(IUser discordUser)
+        private Task<User> GetUserAsync(IUser discordUser)
         {
-            var user = await _botContext.Users.FirstOrDefaultAsync(u => u.DiscordUserId == (long)discordUser.Id).ConfigureAwait(false);
+            return GetUserAsync(discordUser.Id);
+        }
+
+        private Task<User> GetUserAsync(ulong discordUserId)
+        {
+            return GetUserAsync((long) discordUserId);
+        }
+
+        private async Task<User> GetUserAsync(long discordUserId)
+        {
+            
+
+            var user = await _botContext.Users.FirstOrDefaultAsync(u => u.DiscordUserId == discordUserId).ConfigureAwait(false);
             if (user != null) return user;
 
             user = new User
             {
                 Balance = 1000,
-                DiscordUserId = (long)discordUser.Id
+                DiscordUserId = discordUserId
             };
             _botContext.Users.Add(user);
             await _botContext.SaveChangesAsync().ConfigureAwait(false);

@@ -5,4 +5,13 @@
 }
 
 <h2>@ViewData["Title"]</h2>
+<div>
+    @foreach (var serverSettings in Model.Settings)
+    {
+    <form method="post" style="margin: 3px">
+        <div>Command Prefix: <input value="@serverSettings.Value.CommandPrefix" style="margin: 2px" asp></div>
+        <div>Custom Command Prefix: <input value="@serverSettings.Value.CustomCommandPrefix" style="margin: 2px"></div>
+    </form>
+    }
+</div>
 

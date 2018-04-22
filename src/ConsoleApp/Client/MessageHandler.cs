@@ -82,8 +82,8 @@ namespace StupifyConsoleApp.Client
                         break;
                 }
             sw.Stop();
-
-            _logger.LogInformation("Command {Message} in {Guild} took {ElapsedMilliseconds}ms", context.Message, context.Guild.Name, sw.ElapsedMilliseconds);
+            
+            _logger.LogInformation("Command {Message} in {Guild} took {ElapsedMilliseconds}ms", context.Message, context.Guild?.Name ?? context.Channel.Name, sw.ElapsedMilliseconds);
             
             if (Config.DeleteCommands) await context.Message.DeleteAsync().ConfigureAwait(false);
         }

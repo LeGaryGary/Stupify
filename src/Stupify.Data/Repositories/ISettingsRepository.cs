@@ -1,14 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Stupify.Data.SQL.Models;
 
 namespace Stupify.Data.Repositories
 {
     public interface ISettingsRepository
     {
         Task<Models.ServerSettings> GetServerSettingsAsync(ulong discordGuildId);
+        Task<Dictionary<ulong, Models.ServerSettings>> GetServerSettingsAsync(List<ulong> discordGuildId);
         Task SetServerSettingsAsync(ulong discordGuildId, Models.ServerSettings serverSettings);
     }
 }

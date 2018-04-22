@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Discord;
 
 namespace Stupify.Data.Repositories
@@ -13,5 +14,6 @@ namespace Stupify.Data.Repositories
         Task<bool> BankToUserTransferAsync(IUser user, decimal amount);
         Task<bool> UserToBankTransferAsync(IUser user, decimal amount);
         Task<int> GetUserIdAsync(IUser user);
+        Task<List<ulong>> UsersGuildsAsync(ulong parse);
     }
 }

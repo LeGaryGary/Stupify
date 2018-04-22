@@ -22,11 +22,14 @@ namespace StupifyWebsite
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddSqlDatabase(Configuration["SqlConnectionString"]);
+            services.AddRepositories();
             services.AddAuthentication(options =>
             {
-                options.DefaultAuthenticateScheme = DiscordDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = DiscordDefaults.AuthenticationScheme;
+                options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
             })
+                .AddCookie()
                 .AddDiscord(options =>
             {
                 options.AppId = Configuration["Discord:AppId"];
@@ -48,6 +51,8 @@ namespace StupifyWebsite
             {
                 app.UseExceptionHandler("/Error");
             }
+
+            app.UseAuthentication();
 
             app.UseStaticFiles();
 
