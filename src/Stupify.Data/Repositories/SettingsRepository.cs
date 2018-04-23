@@ -1,6 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Discord;
 using Microsoft.EntityFrameworkCore;
 using Stupify.Data.Models;
 using Stupify.Data.SQL;
@@ -10,10 +10,12 @@ namespace Stupify.Data.Repositories
     internal class SettingsRepository : ISettingsRepository
     {
         private readonly BotContext _botContext;
+        private readonly IDiscordClient _client;
 
-        public SettingsRepository(BotContext botContext)
+        public SettingsRepository(BotContext botContext, IDiscordClient client)
         {
             _botContext = botContext;
+            _client = client;
         }
 
         public async Task<ServerSettings> GetServerSettingsAsync(ulong discordGuildId)
@@ -22,6 +24,7 @@ namespace Stupify.Data.Repositories
 
             return new ServerSettings
             {
+                GuildName = (await _client.GetGuildAsync(discordGuildId).ConfigureAwait(false)).Name,
                 CommandPrefix = settings.CommandPrefix,
                 CustomCommandPrefix = settings.CustomCommandPrefix
             };

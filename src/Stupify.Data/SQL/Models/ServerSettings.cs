@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Stupify.Data.SQL.Models
+﻿namespace Stupify.Data.SQL.Models
 {
     internal class ServerSettings
     {

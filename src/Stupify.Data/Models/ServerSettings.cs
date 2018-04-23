@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Stupify.Data.Models
+﻿namespace Stupify.Data.Models
 {
     public class ServerSettings
     {
+        public string GuildName { get; set; }
+
         public string CommandPrefix { get; set; }
         public string CustomCommandPrefix { get; set; }
     }

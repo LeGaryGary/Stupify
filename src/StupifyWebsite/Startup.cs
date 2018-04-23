@@ -1,10 +1,11 @@
-using System.Collections.Generic;
+using Discord;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Stupify.Data;
 using Discord.OAuth2;
+using Discord.Rest;
 using Microsoft.AspNetCore.Authentication.Cookies;
 
 namespace StupifyWebsite
@@ -35,6 +36,12 @@ namespace StupifyWebsite
                 options.AppId = Configuration["Discord:AppId"];
                 options.AppSecret = Configuration["Discord:AppSecret"];
                 options.Scope.Add("guilds");
+            });
+            services.AddSingleton<IDiscordClient>(sp =>
+            {
+                var client = new DiscordRestClient();
+                client.LoginAsync(TokenType.Bot, Configuration["Discord:BotUserToken"]).ConfigureAwait(false).GetAwaiter().GetResult();
+                return client;
             });
             services.AddMvc();
         }

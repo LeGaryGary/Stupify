@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -22,26 +21,42 @@ namespace StupifyWebsite.Pages
             _userRepository = userRepository;
         }
         
-        [BindProperty(SupportsGet = true)] public Dictionary<ulong, ServerSettings> Settings { get; set; }
+        public Dictionary<ulong, ServerSettings> Settings { get; set; }
+
+        [BindProperty]public ServerSettings SettingsToSet { get; set; }
 
         public async Task OnGetAsync()
         {
-            var userId = HttpContext.User.FindFirst(c =>
-                c.Type == ClaimTypes.NameIdentifier);
-            var guilds = await _userRepository.UsersGuildsAsync(ulong.Parse(userId.Value)).ConfigureAwait(false);
+            var guilds = await _userRepository.UsersGuildsAsync(UserId).ConfigureAwait(false);
 
-            Settings = await _settingsRepository.GetServerSettingsAsync(guilds).ConfigureAwait(false);
+            var ownerGuilds = new List<ulong>();
+            foreach (var guild in guilds)
+            {
+                if (await IsGuildOwnerAsync(UserId, guild).ConfigureAwait(false))
+                {
+                    ownerGuilds.Add(guild);
+                }
+            }
+
+            Settings = await _settingsRepository.GetServerSettingsAsync(ownerGuilds).ConfigureAwait(false);
         }
+
+        private ulong UserId => ulong.Parse(HttpContext.User.FindFirst(c => c.Type == ClaimTypes.NameIdentifier).Value);
 
         public async Task<IActionResult> OnPostAsync(ulong guildId)
         {
-            if (!ModelState.IsValid)
+            if (!ModelState.IsValid || !await IsGuildOwnerAsync(UserId, guildId).ConfigureAwait(false))
             {
                 return Page();
             }
 
-            await _settingsRepository.SetServerSettingsAsync(guildId, Settings[guildId]).ConfigureAwait(false);
+            await _settingsRepository.SetServerSettingsAsync(guildId, SettingsToSet).ConfigureAwait(false);
             return RedirectToPage("/GuildSettings");
+        }
+
+        private Task<bool> IsGuildOwnerAsync(ulong userId, ulong guildId)
+        {
+            return _userRepository.IsGuildOwnerAsync(userId, guildId);
         }
     }
 }

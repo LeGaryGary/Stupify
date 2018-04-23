@@ -8,10 +8,12 @@
 <div>
     @foreach (var serverSettings in Model.Settings)
     {
-    <form method="post" style="margin: 3px">
-        <div>Command Prefix: <input value="@serverSettings.Value.CommandPrefix" style="margin: 2px" asp></div>
-        <div>Custom Command Prefix: <input value="@serverSettings.Value.CustomCommandPrefix" style="margin: 2px"></div>
-    </form>
+        <form method="post" style="margin: 3px" asp-route-guildId=@serverSettings.Key>
+            <h4>@serverSettings.Value.GuildName</h4>
+            <div>Command Prefix: <input value="@serverSettings.Value.CommandPrefix" style="margin: 2px" asp-for="SettingsToSet.CommandPrefix"></div>
+            <div>Custom Command Prefix: <input value="@serverSettings.Value.CustomCommandPrefix" style="margin: 2px" asp-for="SettingsToSet.CustomCommandPrefix"></div>
+            <input type="submit" value="Submit" style="margin: 2px" />
+        </form>
     }
 </div>
 

@@ -15,19 +15,22 @@ namespace StupifyConsoleApp.Client
         private readonly CommandService _commandService;
         private readonly ILogger<MessageHandler> _logger;
         private readonly IHotKeyHandler _hotKeyHandler;
-        private readonly ICustomCommandRepository _commandRepository;
+        private ICustomCommandRepository _commandRepository;
+        private ISettingsRepository _settingsRepository;
 
-        public MessageHandler(IDiscordClient client, CommandService commandService, ILogger<MessageHandler> logger, IHotKeyHandler hotKeyHandler, ICustomCommandRepository commandRepository)
+        public MessageHandler(IDiscordClient client, CommandService commandService, ILogger<MessageHandler> logger, IHotKeyHandler hotKeyHandler)
         {
             _client = client;
             _commandService = commandService;
             _logger = logger;
             _hotKeyHandler = hotKeyHandler;
-            _commandRepository = commandRepository;
         }
 
         public async Task HandleAsync(SocketMessage messageParam)
         {
+            _settingsRepository = Config.ServiceProvider.GetService<ISettingsRepository>();
+            _commandRepository = Config.ServiceProvider.GetService<ICustomCommandRepository>();
+
             if (!(messageParam is SocketUserMessage message) || messageParam.Author.IsBot) return;
 
             var argPos = 0;
@@ -46,11 +49,13 @@ namespace StupifyConsoleApp.Client
                 await _hotKeyHandler.HandleAsync(context).ConfigureAwait(false);
             }
 
+            var settings = await _settingsRepository.GetServerSettingsAsync(context.Guild.Id).ConfigureAwait(false);
+
             //Check prefix and set the argPos for the command
-            if (!(message.HasStringPrefix(Config.CommandPrefix + " ", ref argPos)
+            if (!(message.HasStringPrefix((settings.CommandPrefix ?? Config.CommandPrefix) + " ", ref argPos)
                   || message.HasMentionPrefix(_client.CurrentUser, ref argPos)))
             {
-                if (message.HasStringPrefix(Config.CustomCommandPrefix + " ", ref argPos))
+                if (message.HasStringPrefix((settings.CustomCommandPrefix ?? Config.CustomCommandPrefix) + " ", ref argPos))
                 {
                     await _commandRepository.ExecuteAsync(context, argPos).ConfigureAwait(false);
                 }

@@ -11,10 +11,12 @@ namespace Stupify.Data.Repositories
     internal class UserRepository : IUserRepository
     {
         private readonly BotContext _botContext;
+        private readonly IDiscordClient _client;
 
-        public UserRepository(BotContext botContext)
+        public UserRepository(BotContext botContext, IDiscordClient client)
         {
             _botContext = botContext;
+            _client = client;
         }
 
         public async Task<bool> IsMutedAsync(IGuildUser user)
@@ -105,19 +107,38 @@ namespace Stupify.Data.Repositories
             return serverUsers.Select(su => (ulong) su.Server.DiscordGuildId).ToList();
         }
 
-        private async Task<ServerUser> GetServerUserAsync(IGuildUser discordGuildUser)
+        public async Task<bool> IsGuildOwnerAsync(ulong userId, ulong guildId)
         {
-            var server = await GetServerAsync(discordGuildUser.Guild).ConfigureAwait(false);
-            var user = await GetUserAsync(discordGuildUser).ConfigureAwait(false);
+            return (await GetServerUserAsync(userId, guildId).ConfigureAwait(false)).IsOwner ?? false;
+        }
+
+        private Task<ServerUser> GetServerUserAsync(IGuildUser discordGuildUser)
+        {
+            return GetServerUserAsync(discordGuildUser.Id, discordGuildUser.Guild.Id);
+        }
+
+        private async Task<ServerUser> GetServerUserAsync(ulong discordUserId, ulong discordGuildId)
+        {
+            var server = await GetServerAsync(discordGuildId).ConfigureAwait(false);
+            var user = await GetUserAsync(discordUserId).ConfigureAwait(false);
             var serverUser = await _botContext.ServerUsers.FirstOrDefaultAsync(
                 su => su.User.UserId == user.UserId && su.Server.ServerId == server.ServerId).ConfigureAwait(false);
-            if (serverUser != null) return serverUser;
+            if (serverUser != null)
+            {
+                if (serverUser.IsOwner != null) return serverUser;
+
+                serverUser.IsOwner = await IsAdministratorAsync(discordUserId, discordGuildId).ConfigureAwait(false);
+                await _botContext.SaveChangesAsync().ConfigureAwait(false);
+
+                return serverUser;
+            }
 
             serverUser = new ServerUser
             {
                 Server = server,
                 User = user,
-                Muted = false
+                Muted = false,
+                IsOwner = await IsAdministratorAsync(discordUserId, discordGuildId).ConfigureAwait(false)
             };
             _botContext.ServerUsers.Add(serverUser);
             await _botContext.SaveChangesAsync().ConfigureAwait(false);
@@ -125,14 +146,25 @@ namespace Stupify.Data.Repositories
             return serverUser;
         }
 
-        private async Task<Server> GetServerAsync(IGuild discordGuild)
+        private async Task<bool> IsAdministratorAsync(ulong discordUserId, ulong discordGuildId)
         {
-            var guild = await _botContext.Servers.FirstOrDefaultAsync(s => s.DiscordGuildId == (long)discordGuild.Id).ConfigureAwait(false);
+            return (await (await _client.GetGuildAsync(discordGuildId).ConfigureAwait(false)).GetUserAsync(discordUserId).ConfigureAwait(false)).GuildPermissions.Administrator;
+        }
+
+        private  Task<Server> GetServerAsync(IGuild discordGuild)
+        {
+            return GetServerAsync(discordGuild.Id);
+        }
+
+        private async Task<Server> GetServerAsync(ulong discordGuildId)
+        {
+            var guildId = (long) discordGuildId;
+            var guild = await _botContext.Servers.FirstOrDefaultAsync(s => s.DiscordGuildId == guildId).ConfigureAwait(false);
             if (guild != null) return guild;
 
             guild = new Server
             {
-                DiscordGuildId = (long)discordGuild.Id,
+                DiscordGuildId = guildId,
                 StoryInProgress = false
             };
             _botContext.Servers.Add(guild);

@@ -15,5 +15,6 @@ namespace Stupify.Data.Repositories
         Task<bool> UserToBankTransferAsync(IUser user, decimal amount);
         Task<int> GetUserIdAsync(IUser user);
         Task<List<ulong>> UsersGuildsAsync(ulong parse);
+        Task<bool> IsGuildOwnerAsync(ulong userId, ulong guildId);
     }
 }
