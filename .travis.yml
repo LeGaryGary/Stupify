@@ -3,7 +3,7 @@ solution: Stupify.sln
 mono: none
 dotnet: 2.1.4
 install:
-- dotnet restore
+- dotnet restore -s https://api.nuget.org/v3/index.json -s https://www.myget.org/F/discord-net/api/v3/index.json -s https://www.myget.org/F/rogueexception/api/v3/index.json
 script:
 - dotnet build
 - dotnet test tests/TicTacZapTests/TicTacZapTests.csproj
