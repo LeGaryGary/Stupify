@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
+using DiscordBotsList.Api;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Stupify.Data.Repositories;
@@ -94,6 +95,17 @@ namespace StupifyConsoleApp.Client
                 catch (Exception e)
                 {
                     _logger.LogError(e, "An error occurred whilst updating twitch channels");
+                }
+
+                try
+                {
+                    var listClient = Config.ServiceProvider.GetService<AuthDiscordBotListApi>();
+                    if (_client is DiscordSocketClient client)
+                        await listClient.UpdateStats(client.Guilds.Count).ConfigureAwait(false);
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError(e, "An error occurred whilst server count on discord bot list");
                 }
                 
                 await Task.Delay(60000).ConfigureAwait(false);

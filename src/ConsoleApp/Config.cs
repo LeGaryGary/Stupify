@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using DiscordBotsList.Api;
 using Google.Apis.Services;
 using Google.Apis.YouTube.v3;
 using Microsoft.Extensions.Configuration;
@@ -104,7 +105,8 @@ namespace StupifyConsoleApp
                     .AddSingleton<MusicSearches>()
                     .AddTransient(sp => new YoutubeDL($"{Directory.GetCurrentDirectory()}/youtube-dl.exe"))
                     .AddTransient(sp => new TwitchClient(TwitchClientId))
-                    .AddTransient(sp => new HarryPotterApiClient(HarryPotterApiKey));
+                    .AddTransient(sp => new HarryPotterApiClient(HarryPotterApiKey))
+                    .AddTransient(sp => new AuthDiscordBotListApi(ulong.Parse(Configuration["DiscordBotList:Id"]), Configuration["DiscordBotList:Token"]));
 
                 ConfigureLogging();
                 _serviceProvider = collection.BuildServiceProvider();
