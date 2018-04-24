@@ -49,7 +49,8 @@ namespace Stupify.Data
                 .AddTransient<IStoryRepository, StoryRepository>()
                 .AddTransient<ITwitchRepository, TwitchRepository>()
                 .AddTransient<ICustomCommandRepository, CustomCommandRepository>()
-                .AddTransient<ISettingsRepository, SettingsRepository>();
+                .AddTransient<ISettingsRepository, SettingsRepository>()
+                .AddTransient<IExternalAccountRepository, ExternalAccountRepository>();
 
             return collection;
         }
