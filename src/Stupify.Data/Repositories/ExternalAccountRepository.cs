@@ -18,7 +18,7 @@ namespace Stupify.Data.Repositories
     {
         private readonly BotContext _botContext;
         private readonly AesCryptography _aes;
-        private SpotifyOptions _options;
+        private readonly SpotifyOptions _options;
 
         public ExternalAccountRepository(BotContext botContext, AesCryptography aes, IOptions<SpotifyOptions> options)
         {
@@ -69,21 +69,22 @@ namespace Stupify.Data.Repositories
             Uri tokenEndpoint;
             var client = new HttpClient();
             var body = new Dictionary<string, string>();
-            switch (service)
+            if (service == ExternalService.Spotify)
             {
-                case ExternalService.Spotify:
-                    tokenEndpoint = new Uri("https://accounts.spotify.com/api/token");
-                    var encodedAuth = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{_options.AppId}:{_options.AppSecret}"));
-                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", encodedAuth);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(service), service, null);
+                tokenEndpoint = new Uri("https://accounts.spotify.com/api/token");
+                var encodedAuth =
+                    Convert.ToBase64String(Encoding.UTF8.GetBytes($"{_options.AppId}:{_options.AppSecret}"));
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", encodedAuth);
             }
+            else
+            {
+                throw new ArgumentOutOfRangeException(nameof(service), service, null);
+            }
+
             body.Add("grant_type", "refresh_token");
             body.Add("refresh_token", refreshToken);
 
             var response = await client.PostAsync(tokenEndpoint, new FormUrlEncodedContent(body)).ConfigureAwait(false);
-            var responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
             return JsonConvert.DeserializeObject<TokenEndpointResponse>(await response.Content.ReadAsStringAsync().ConfigureAwait(false));
         }

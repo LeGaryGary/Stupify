@@ -19,7 +19,7 @@ namespace StupifyWebsite.Pages
     public class LinkSpotifyModel : PageModel
     {
         private readonly IExternalAccountRepository _externalAccountRepository;
-        private SpotifyOptions _options;
+        private readonly SpotifyOptions _options;
 
         public LinkSpotifyModel(IOptions<SpotifyOptions> options, IExternalAccountRepository externalAccountRepository)
         {
