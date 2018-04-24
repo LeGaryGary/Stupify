@@ -22,6 +22,7 @@ namespace Stupify.Data.SQL
         public DbSet<CustomCommand> CustomCommands { get; set; }
         public DbSet<ServerSettings> ServerSettings { get; set; }
         public DbSet<UserSettings> UserSettings { get; set; }
+        public DbSet<ExternalAuthentication> ExternalAuthentication { get; set; }
     }
 
     internal class BotContextDesign : IDesignTimeDbContextFactory<BotContext>
