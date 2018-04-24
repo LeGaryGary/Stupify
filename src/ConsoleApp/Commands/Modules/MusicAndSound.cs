@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
@@ -10,6 +11,9 @@ using Discord;
 using Discord.Commands;
 using NYoutubeDL;
 using Google.Apis.YouTube.v3;
+using SpotifyApi;
+using Stupify.Data.Models;
+using Stupify.Data.Repositories;
 using StupifyConsoleApp.Client.Audio;
 
 namespace StupifyConsoleApp.Commands.Modules
@@ -20,13 +24,26 @@ namespace StupifyConsoleApp.Commands.Modules
         private readonly YoutubeDL _youtubeDl;
         private readonly YouTubeService _youTubeService;
         private readonly MusicSearches _musicSearches;
+        private readonly IExternalAccountRepository _externalAccountRepository;
 
-        public MusicAndSound(AudioService audioService, YoutubeDL youtubeDl, YouTubeService youTubeService, MusicSearches musicSearches)
+        public MusicAndSound(AudioService audioService, YoutubeDL youtubeDl, YouTubeService youTubeService, MusicSearches musicSearches, IExternalAccountRepository externalAccountRepository)
         {
             _audioService = audioService;
             _youtubeDl = youtubeDl;
             _youTubeService = youTubeService;
             _musicSearches = musicSearches;
+            _externalAccountRepository = externalAccountRepository;
+        }
+
+        private SpotifyClient _spotifyClient;
+        private async Task<SpotifyClient> GetSpotifyClientAsync()
+        {
+            if (_spotifyClient != null) return _spotifyClient;
+            
+            var auth = await _externalAccountRepository.GetAsync(Context.User.Id, ExternalService.Spotify).ConfigureAwait(false);
+            _spotifyClient = new SpotifyClient(auth.AccessToken);
+
+            return _spotifyClient;
         }
 
         [Command("AirHorn", RunMode = RunMode.Async)]
@@ -37,42 +54,67 @@ namespace StupifyConsoleApp.Commands.Modules
         }
 
         [Command("play", RunMode = RunMode.Async), Priority(1)]
-        public async Task DownloadAndPlayFromYoutubeAsync(Uri youtubeUrl)
+        public async Task DownloadAndPlayFromYoutubeAsync(Uri requestUri)
         {
-            var query = HttpUtility.ParseQueryString(youtubeUrl.Query);
+            if (!(Context.User is IGuildUser user)) return;
+
+            var uriString = requestUri.AbsoluteUri;
+
+            var spotifyTrackIndex = -1;
+            var spotifyUserIndex = -1;
+            var spotifyPlaylistIndex = -1;
+            if (uriString.Contains("open.spotify.com"))
+            {
+                spotifyTrackIndex = uriString.IndexOf("track", StringComparison.OrdinalIgnoreCase);
+                spotifyPlaylistIndex = uriString.IndexOf("playlist", StringComparison.OrdinalIgnoreCase);
+                spotifyUserIndex = uriString.IndexOf("user", StringComparison.OrdinalIgnoreCase);
+            }
+            var query = HttpUtility.ParseQueryString(requestUri.Query);
 
             var listValues = query.GetValues("list");
             var vValues = query.GetValues("v");
 
+            // Handle youtube Playlist
             if (listValues != null)
             {
                 var playlistId = listValues.First();
                 var ids = await GetVideoIdsAsync(playlistId).ConfigureAwait(false);
-                foreach (var id in ids)
-                {
-                    var length = await VideoLengthAsync(id).ConfigureAwait(false);
-                    if (!length.HasValue || length > 10) continue;
-
-                    await PlayYoutubeSongByIdAsync(id).ConfigureAwait(false);
-                }
+                await VerifyAndQueueAsync(ids).ConfigureAwait(false);
             }
+            // Handle youtube Video
             else if (vValues != null)
             {
                 var id = vValues.First();
-                var length = (await VideoLengthAsync(id).ConfigureAwait(false));
+                
 
-                if (!length.HasValue)
-                {
-                    await ReplyAsync("The requested video could not be found!").ConfigureAwait(false);
-                    return;
-                }
-
-                if (length > 10)
-                {
-                    await ReplyAsync("The maximum length is 10 minutes!").ConfigureAwait(false);
-                }
-
-                else await PlayYoutubeSongByIdAsync(id).ConfigureAwait(false);
+                await VerifyAndQueueAsync(id).ConfigureAwait(false);
+            }
+            // Handle Spotify Playlist
+            else if (spotifyPlaylistIndex > 0 && spotifyUserIndex > 0)
+            {
+                var userId = uriString.Substring(spotifyUserIndex + "user/".Length, 11);
+                var playlistId = uriString.Substring(spotifyPlaylistIndex + "playlist/".Length, 22);
+                await TryQueueSpotifyPlaylistAsync(userId, playlistId).ConfigureAwait(false);
+            }
+            else if (uriString.Contains("spotify:track:"))
+            {
+                var trackId = uriString.Substring("spotify:track:".Length, 22);
+                await TryQueueSpotifyTrackAsync(trackId).ConfigureAwait(false);
+                return;
+            } 
+            // Handle Spotify Track
+            else if (spotifyTrackIndex > 0)
+            {
+                var id = uriString.Substring(spotifyTrackIndex + "track/".Length, 22);
+                await TryQueueSpotifyTrackAsync(id).ConfigureAwait(false);
+            }
+            if (uriString.Contains("spotify:user:") && uriString.Contains("playlist:"))
+            {
+                var userId = uriString.Substring("spotify:user:".Length, 11);
+                var playlistIndex = uriString.IndexOf("playlist:", StringComparison.OrdinalIgnoreCase);
+                var playylistId = uriString.Substring(playlistIndex + "playlist:".Length, 22);
+                await TryQueueSpotifyPlaylistAsync(userId, playylistId).ConfigureAwait(false);
+                return;
             }
         }
 
@@ -80,6 +122,8 @@ namespace StupifyConsoleApp.Commands.Modules
         public async Task FindAndDisplayYoutubeOptionsAsync([Remainder]string query)
         {
             if (!(Context.User is IGuildUser user)) return;
+
+            
 
             var request = _youTubeService.Search.List("id,snippet");
             request.Q = query;
@@ -109,7 +153,7 @@ namespace StupifyConsoleApp.Commands.Modules
             _musicSearches.AddSearch(user, options.ToArray());
             await ReplyAsync(optionsMessage.ToString()).ConfigureAwait(false);
         }
-        
+
         [Command("queue")]
         public async Task DisplayQueueAsync()
         {
@@ -179,6 +223,34 @@ namespace StupifyConsoleApp.Commands.Modules
             return videoTitles;
         }
 
+        private async Task TryQueueSpotifyTrackAsync(string id)
+        {
+            var track = await (await GetSpotifyClientAsync().ConfigureAwait(false)).GetTrackAsync(id).ConfigureAwait(false);
+            var youtubeId = await FindYoutubeIdAsync(track.Album.Name + " " + track.Name).ConfigureAwait(false);
+            await VerifyAndQueueAsync(youtubeId).ConfigureAwait(false);
+        }
+
+        private async Task TryQueueSpotifyPlaylistAsync(string userId, string playlistId)
+        {
+            var playlist = await (await GetSpotifyClientAsync().ConfigureAwait(false)).GetPlaylistAsync(userId, playlistId)
+                .ConfigureAwait(false);
+
+            foreach (var playlistTrack in playlist.Tracks.Items)
+            {
+                var youtubeId = await FindYoutubeIdAsync(playlistTrack.Track.Album.Name + " " + playlistTrack.Track.Name)
+                    .ConfigureAwait(false);
+                await VerifyAndQueueAsync(youtubeId).ConfigureAwait(false);
+            }
+        }
+
+        private async Task<string> FindYoutubeIdAsync(string searchQ)
+        {
+            var request = _youTubeService.Search.List("id,snippet");
+            request.Q = searchQ;
+            var response = await request.ExecuteAsync().ConfigureAwait(false);
+            return response.Items.First().Id.VideoId;
+        }
+
         private async Task<IEnumerable<string>> GetVideoIdsAsync(string playlistId)
         {
             var listRequest = _youTubeService.PlaylistItems.List("id,contentDetails");
@@ -198,6 +270,35 @@ namespace StupifyConsoleApp.Commands.Modules
 
             var video = response.Items.Single();
             return XmlConvert.ToTimeSpan(video.ContentDetails.Duration).TotalMinutes;
+        }
+
+        private async Task VerifyAndQueueAsync(string id)
+        {
+            var length = (await VideoLengthAsync(id).ConfigureAwait(false));
+
+            if (!length.HasValue)
+            {
+                await ReplyAsync("The requested video could not be found!").ConfigureAwait(false);
+                return;
+            }
+
+            if (length > 10)
+            {
+                await ReplyAsync("The maximum length is 10 minutes!").ConfigureAwait(false);
+            }
+
+            else await PlayYoutubeSongByIdAsync(id).ConfigureAwait(false);
+        }
+
+        private async Task VerifyAndQueueAsync(IEnumerable<string> ids)
+        {
+            foreach (var id in ids)
+            {
+                var length = await VideoLengthAsync(id).ConfigureAwait(false);
+                if (!length.HasValue || length > 10) continue;
+
+                await PlayYoutubeSongByIdAsync(id).ConfigureAwait(false);
+            }
         }
 
         private async Task PlayYoutubeSongByIdAsync(string id)
