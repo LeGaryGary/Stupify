@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using Org.BouncyCastle.Security;
 using Stupify.Data.Encryption;
 using Stupify.Data.Models;
 using Stupify.Data.SQL;

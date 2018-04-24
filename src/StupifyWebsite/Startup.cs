@@ -9,7 +9,6 @@ using Discord.Rest;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Stupify.Data.Encryption;
 using Stupify.Data.Models;
-using StupifyWebsite.Pages;
 
 namespace StupifyWebsite
 {

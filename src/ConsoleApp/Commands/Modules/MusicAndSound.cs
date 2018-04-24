@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
@@ -112,9 +111,8 @@ namespace StupifyConsoleApp.Commands.Modules
             {
                 var userId = uriString.Substring("spotify:user:".Length, 11);
                 var playlistIndex = uriString.IndexOf("playlist:", StringComparison.OrdinalIgnoreCase);
-                var playylistId = uriString.Substring(playlistIndex + "playlist:".Length, 22);
-                await TryQueueSpotifyPlaylistAsync(userId, playylistId).ConfigureAwait(false);
-                return;
+                var playlistId = uriString.Substring(playlistIndex + "playlist:".Length, 22);
+                await TryQueueSpotifyPlaylistAsync(userId, playlistId).ConfigureAwait(false);
             }
         }
 
