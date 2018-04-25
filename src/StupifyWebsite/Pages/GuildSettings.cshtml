@@ -14,6 +14,12 @@
             <div>Custom Command Prefix: <input value="@serverSettings.Value.CustomCommandPrefix" style="margin: 2px" asp-for="SettingsToSet.CustomCommandPrefix"></div>
             <label for="mod-role">Select list:</label>
             <select class="form-control" id="mod-role" asp-for="SettingsToSet.ModeratorRoleId">
+                @if (serverSettings.Value.ModeratorRoleId == null)
+                {
+                    <option value="" selected></option>
+                }
+                else{<option value=""></option>}
+
                 @foreach (var role in Model.Roles[serverSettings.Key])
                 {
                     if (role.Id == serverSettings.Value.ModeratorRoleId)
