@@ -15,24 +15,31 @@ namespace StupifyConsoleApp.Client
         private readonly ILogger<ClientManager> _logger;
         private readonly IDiscordClient _client;
         private readonly TwitchClient _twitchClient;
+        private readonly ReliabilityService _reliabilityService;
         private bool _ready;
 
-        public ClientManager(IMessageHandler messageHandler, SegmentEditReactionHandler segmentEditHandler, ILogger<ClientManager> logger, IDiscordClient client, TwitchClient twitchClient)
+        public ClientManager(IMessageHandler messageHandler, IReactionHandler reactionHandler, ILogger<ClientManager> logger, IDiscordClient client, TwitchClient twitchClient)
         {
             _logger = logger;
             _client = client;
             _twitchClient = twitchClient;
-
             switch (_client)
             {
                 case DiscordSocketClient discordSocketClient:
+                    // Create and attach restart service
+                    _reliabilityService = new ReliabilityService(discordSocketClient, true, Config.ServiceProvider.GetService<ILogger<ReliabilityService>>());
+                    _reliabilityService.Attach();
+
+                    // Attach event handlers
                     discordSocketClient.MessageReceived += messageHandler.HandleAsync;
-                    discordSocketClient.ReactionAdded += segmentEditHandler.HandleAsync;
+                    discordSocketClient.ReactionAdded += reactionHandler.HandleAsync;
                     discordSocketClient.Ready += () =>
                     {
                         _ready = true;
                         return Task.CompletedTask;
                     };
+
+                    // Add logging
                     discordSocketClient.Log += logMessage =>
                     {
                         switch (logMessage.Severity)

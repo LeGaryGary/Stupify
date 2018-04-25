@@ -7,6 +7,8 @@ using Stupify.Data;
 using Discord.OAuth2;
 using Discord.Rest;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Stupify.Data.Encryption;
+using Stupify.Data.Models;
 
 namespace StupifyWebsite
 {
@@ -22,8 +24,9 @@ namespace StupifyWebsite
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSqlDatabase(Configuration["SqlConnectionString"]);
+            services.AddSqlDatabase(Configuration["SQL:ConnectionString"]);
             services.AddRepositories();
+
             services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
@@ -37,12 +40,24 @@ namespace StupifyWebsite
                 options.AppSecret = Configuration["Discord:AppSecret"];
                 options.Scope.Add("guilds");
             });
+
             services.AddSingleton<IDiscordClient>(sp =>
             {
                 var client = new DiscordRestClient();
                 client.LoginAsync(TokenType.Bot, Configuration["Discord:BotUserToken"]).ConfigureAwait(false).GetAwaiter().GetResult();
                 return client;
             });
+
+            services.AddSingleton((sp) => new AesCryptography(Configuration["SQL:EncryptionPassword"]));
+
+            services.AddOptions();
+
+            services.Configure<SpotifyOptions>(options =>
+            {
+                options.AppId = Configuration["Spotify:AppId"];
+                options.AppSecret = Configuration["Spotify:AppSecret"];
+            });
+
             services.AddMvc();
         }
 

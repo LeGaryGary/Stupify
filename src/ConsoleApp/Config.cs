@@ -16,6 +16,8 @@ using Serilog;
 using Serilog.Events;
 using Stupify.Data;
 using Stupify.Data.CustomCommandBuiltIns.HarryPotterApiCommands;
+using Stupify.Data.Encryption;
+using Stupify.Data.Models;
 using StupifyConsoleApp.Client;
 using StupifyConsoleApp.Client.Audio;
 using StupifyConsoleApp.Client.CustomTypeReaders;
@@ -38,7 +40,7 @@ namespace StupifyConsoleApp
             Configuration = builder.Build();
         }
 
-        public static string DbConnectionString => Configuration["DbConnectionString"];
+        public static string DbConnectionString => Configuration["SQL:ConnectionString"];
         public static string DiscordBotUserToken => Configuration["DiscordBotUserToken"];
 
         public static string YoutubeApiKey => Configuration["YoutubeApiKey"];
@@ -75,7 +77,7 @@ namespace StupifyConsoleApp
                     .AddRepositories(DataDirectory)
                     .AddSingleton<IDiscordClient>(sp => new DiscordSocketClient(new DiscordSocketConfig{AlwaysDownloadUsers = true, MessageCacheSize = 1000}))
                     .AddSingleton<IMessageHandler, MessageHandler>()
-                    .AddTransient<SegmentEditReactionHandler>()
+                    .AddTransient<IReactionHandler, SegmentEditReactionHandler>()
                     .AddTransient<IHotKeyHandler, HotKeyHandler>()
                     .AddSingleton(sp =>
                     {
@@ -106,9 +108,18 @@ namespace StupifyConsoleApp
                     .AddTransient(sp => new YoutubeDL($"{Directory.GetCurrentDirectory()}/youtube-dl.exe"))
                     .AddTransient(sp => new TwitchClient(TwitchClientId))
                     .AddTransient(sp => new HarryPotterApiClient(HarryPotterApiKey))
-                    .AddTransient(sp => new AuthDiscordBotListApi(ulong.Parse(Configuration["DiscordBotList:Id"]), Configuration["DiscordBotList:Token"]));
+                    .AddTransient(sp => new AuthDiscordBotListApi(ulong.Parse(Configuration["DiscordBotList:Id"]), Configuration["DiscordBotList:Token"]))
+                    .AddTransient(sp => new AesCryptography(Configuration["SQL:EncryptionPassword"]));
+
+                collection.AddOptions();
+                collection.Configure<SpotifyOptions>(options =>
+                {
+                    options.AppId = Configuration["Spotify:AppId"];
+                    options.AppSecret = Configuration["Spotify:AppSecret"];
+                });
 
                 ConfigureLogging();
+
                 _serviceProvider = collection.BuildServiceProvider();
                 return _serviceProvider;
             }
