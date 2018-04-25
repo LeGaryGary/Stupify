@@ -10,8 +10,8 @@
     {
         <form method="post" style="margin: 3px" asp-route-guildId=@serverSettings.Key>
             <h4>@serverSettings.Value.GuildName</h4>
-            <div>Command Prefix: <input value="@serverSettings.Value.CommandPrefix" style="margin: 2px" asp-for="SettingsToSet.CommandPrefix"></div>
-            <div>Custom Command Prefix: <input value="@serverSettings.Value.CustomCommandPrefix" style="margin: 2px" asp-for="SettingsToSet.CustomCommandPrefix"></div>
+            <div>Command Prefix: <input class="form-control" value="@serverSettings.Value.CommandPrefix" style="margin: 2px" asp-for="SettingsToSet.CommandPrefix"></div>
+            <div>Custom Command Prefix: <input class="form-control" value="@serverSettings.Value.CustomCommandPrefix" style="margin: 2px" asp-for="SettingsToSet.CustomCommandPrefix"></div>
             <label for="mod-role">Select list:</label>
             <select class="form-control" id="mod-role" asp-for="SettingsToSet.ModeratorRoleId">
                 @if (serverSettings.Value.ModeratorRoleId == null)
