@@ -15,4 +15,10 @@
     <ProjectReference Include="..\TwitchApi\TwitchApi.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="crypto">
+      <HintPath>..\..\..\..\Users\Jordan\.nuget\packages\portable.bouncycastle\1.8.1.1\lib\netstandard1.3\crypto.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>

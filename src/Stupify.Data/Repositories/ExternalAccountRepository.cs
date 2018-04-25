@@ -59,8 +59,7 @@ namespace Stupify.Data.Repositories
             // Update return object
             auth.AccessToken = newToken.AccessToken;
             auth.ExpiresIn = newToken.ExpiresIn;
-
-
+            
             return auth;
         }
 
@@ -85,7 +84,8 @@ namespace Stupify.Data.Repositories
             body.Add("refresh_token", refreshToken);
 
             var response = await client.PostAsync(tokenEndpoint, new FormUrlEncodedContent(body)).ConfigureAwait(false);
-            response.EnsureSuccessStatusCode();
+            var responsebody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            if (!response.IsSuccessStatusCode) throw new InvalidOperationException(responsebody);
             return JsonConvert.DeserializeObject<TokenEndpointResponse>(await response.Content.ReadAsStringAsync().ConfigureAwait(false));
         }
 
