@@ -6,5 +6,6 @@
         public Server Server { get; set; }
         public string CommandPrefix { get; set; }
         public string CustomCommandPrefix { get; set; }
+        public long? ModeratorRoleId { get; set; }
     }
 }
