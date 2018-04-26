@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Stupify.Data.Repositories;
+using StupifyConsoleApp.Commands.Conditions;
 using TwitchApi;
 
 namespace StupifyConsoleApp.Commands.Modules
@@ -26,16 +27,16 @@ namespace StupifyConsoleApp.Commands.Modules
             await ReplyAsync(message).ConfigureAwait(false);
         }
 
-        [RequireUserPermission(GuildPermission.ManageGuild)]
         [Command("SetUpdateChannel")]
+        [Moderator]
         public async Task SetUpdateChannelAsync()
         {
             await _twitchRepository.SetUpdateChannelAsync(Context.Channel as ITextChannel).ConfigureAwait(false);
             await ReplyAsync("This channel will now be used to send twitch updates!").ConfigureAwait(false);
         }
 
-        [RequireUserPermission(GuildPermission.ManageGuild)]
         [Command("AddChannelUpdate")]
+        [Moderator]
         public async Task AddTwitchWatchAsync(string twitchLoginName)
         {
             if (await _twitchClient.GetTwitchUserAsync(twitchLoginName).ConfigureAwait(false) == null)
