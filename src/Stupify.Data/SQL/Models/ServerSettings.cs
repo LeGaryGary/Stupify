@@ -6,5 +6,9 @@
         public Server Server { get; set; }
         public string CommandPrefix { get; set; }
         public string CustomCommandPrefix { get; set; }
+        public long? WelcomeChannel { get; set; }
+        public long? LeaveChannel { get; set; }
+        public long? BanChannel { get; set; }
+        public long? KickChannel { get; set; }
     }
 }
