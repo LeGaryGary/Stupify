@@ -58,7 +58,9 @@ namespace StupifyConsoleApp.Commands.Modules
         [Command("play", RunMode = RunMode.Async), Priority(1)]
         public async Task DownloadAndPlayFromYoutubeAsync(Uri requestUri)
         {
-            if (!(Context.User is IGuildUser user)) return;
+            if (!(Context.User is IGuildUser user) || user.VoiceChannel == null) return;
+
+            
 
             var uriString = requestUri.AbsoluteUri;
 
@@ -83,6 +85,7 @@ namespace StupifyConsoleApp.Commands.Modules
                 var ids = await GetVideoIdsAsync(playlistId).ConfigureAwait(false);
                 await VerifyAndQueueAsync(ids).ConfigureAwait(false);
             }
+
             // Handle youtube Video
             else if (vValues != null)
             {
@@ -91,38 +94,42 @@ namespace StupifyConsoleApp.Commands.Modules
 
                 await VerifyAndQueueAsync(id).ConfigureAwait(false);
             }
+
             // Handle Spotify Playlist
             else if (spotifyPlaylistIndex > 0 && spotifyUserIndex > 0)
             {
-                var userId = uriString.Substring(spotifyUserIndex + "user/".Length, 11);
+                var startIndex = spotifyUserIndex + "user/".Length;
+                var userId = uriString.Substring(startIndex, spotifyPlaylistIndex - startIndex - 1);
                 var playlistId = uriString.Substring(spotifyPlaylistIndex + "playlist/".Length, 22);
                 await TryQueueSpotifyPlaylistAsync(userId, playlistId).ConfigureAwait(false);
             }
-            else if (uriString.Contains("spotify:track:"))
+            else if (uriString.Contains("spotify:user:") && uriString.Contains("playlist:"))
             {
-                var trackId = uriString.Substring("spotify:track:".Length, 22);
-                await TryQueueSpotifyTrackAsync(trackId).ConfigureAwait(false);
-                return;
-            } 
+                var playlistIndex = uriString.IndexOf("playlist:", StringComparison.OrdinalIgnoreCase);
+
+                var startIndex = "spotify:user:".Length;
+                var userId = uriString.Substring(startIndex, playlistIndex - startIndex - 1);
+                var playlistId = uriString.Substring(playlistIndex + "playlist:".Length, 22);
+                await TryQueueSpotifyPlaylistAsync(userId, playlistId).ConfigureAwait(false);
+            }
+
             // Handle Spotify Track
             else if (spotifyTrackIndex > 0)
             {
                 var id = uriString.Substring(spotifyTrackIndex + "track/".Length, 22);
                 await TryQueueSpotifyTrackAsync(id).ConfigureAwait(false);
             }
-            if (uriString.Contains("spotify:user:") && uriString.Contains("playlist:"))
+            else if (uriString.Contains("spotify:track:"))
             {
-                var userId = uriString.Substring("spotify:user:".Length, 11);
-                var playlistIndex = uriString.IndexOf("playlist:", StringComparison.OrdinalIgnoreCase);
-                var playlistId = uriString.Substring(playlistIndex + "playlist:".Length, 22);
-                await TryQueueSpotifyPlaylistAsync(userId, playlistId).ConfigureAwait(false);
-            }
+                var trackId = uriString.Substring("spotify:track:".Length, 22);
+                await TryQueueSpotifyTrackAsync(trackId).ConfigureAwait(false);
+            } 
         }
 
         [Command("play"), Priority(0)]
         public async Task FindAndDisplayYoutubeOptionsAsync([Remainder]string query)
         {
-            if (!(Context.User is IGuildUser user)) return;
+            if (!(Context.User is IGuildUser user) || user.VoiceChannel == null) return;
 
             var request = _youTubeService.Search.List("id,snippet");
             request.Q = query;
@@ -234,6 +241,7 @@ namespace StupifyConsoleApp.Commands.Modules
 
             var track = await spotifyClient.GetTrackAsync(id).ConfigureAwait(false);
             var youtubeId = await FindYoutubeIdAsync(track.Album.Name + " " + track.Name).ConfigureAwait(false);
+            if (youtubeId == null) return;
             await VerifyAndQueueAsync(youtubeId).ConfigureAwait(false);
         }
 
@@ -252,8 +260,9 @@ namespace StupifyConsoleApp.Commands.Modules
 
             foreach (var playlistTrack in playlist.Tracks.Items)
             {
-                var youtubeId = await FindYoutubeIdAsync(playlistTrack.Track.Album.Name + " " + playlistTrack.Track.Name)
+                var youtubeId = await FindYoutubeIdAsync(playlistTrack.Track.Name + " " + playlistTrack.Track.Artists.FirstOrDefault()?.Name)
                     .ConfigureAwait(false);
+                if (youtubeId == null) continue;
                 await VerifyAndQueueAsync(youtubeId).ConfigureAwait(false);
             }
         }
