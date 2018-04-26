@@ -21,9 +21,9 @@ namespace Stupify.Data.Repositories
         {
             var text = (await GetServerCustomTextAsync(userToBan.GuildId, CustomText.Ban).ConfigureAwait(false)).Text;
 
-            if (text == null) return $"```Banned!{Environment.NewLine}User: {userToBan.Username}{userToBan.Discriminator}{Environment.NewLine}Deleted messages from last {daysOfMessagesToDelete ?? 0} days{Environment.NewLine}Reason: {banReason}```";
+            if (text == null) return $"```Banned!{Environment.NewLine}User: {userToBan.Username + "#" + userToBan.Discriminator}{Environment.NewLine}Deleted messages from last {daysOfMessagesToDelete ?? 0} days{Environment.NewLine}Reason: {banReason}```";
 
-            text = text.Replace("{USERNAME}", userToBan.Username + userToBan.Discriminator);
+            text = text.Replace("{USERNAME}", userToBan.Username + "#" + userToBan.Discriminator);
             text = text.Replace("{DAYS_OF_MESSAGES_DELETED}", (daysOfMessagesToDelete ?? 0).ToString());
             text = text.Replace("{BAN_REASON}", banReason);
 
@@ -41,9 +41,9 @@ namespace Stupify.Data.Repositories
         {
             var text = (await GetServerCustomTextAsync(userToKick.GuildId, CustomText.Kick).ConfigureAwait(false)).Text;
 
-            if (text == null) return $"```Kicked!{Environment.NewLine}User: {userToKick.Username}{userToKick.Discriminator}{Environment.NewLine}Reason: {kickReason}```";
+            if (text == null) return $"```Kicked!{Environment.NewLine}User: {userToKick.Username + "#" + userToKick.Discriminator}{Environment.NewLine}Reason: {kickReason}```";
 
-            text = text.Replace("{USERNAME}", userToKick.Username + userToKick.Discriminator);
+            text = text.Replace("{USERNAME}", userToKick.Username + "#" + userToKick.Discriminator);
             text = text.Replace("{KICK_REASON}", kickReason);
 
             return text;
@@ -60,9 +60,9 @@ namespace Stupify.Data.Repositories
         {
             var text = (await GetServerCustomTextAsync(userThatJoined.GuildId, CustomText.Welcome).ConfigureAwait(false)).Text;
 
-            if (text == null) return $"Welcome {userThatJoined.Username}!";
+            if (text == null) return $"Welcome {userThatJoined.Username + "#" + userThatJoined.Discriminator}!";
 
-            text = text.Replace("{USERNAME}", userThatJoined.Username);
+            text = text.Replace("{USERNAME}", userThatJoined.Username + "#" + userThatJoined.Discriminator);
 
             return text;
         }
@@ -78,9 +78,9 @@ namespace Stupify.Data.Repositories
         {
             var text = (await GetServerCustomTextAsync(userThatLeft.GuildId, CustomText.Leave).ConfigureAwait(false)).Text;
 
-            if (text == null) return $"{userThatLeft.Username} has left";
+            if (text == null) return $"{userThatLeft.Username + "#" + userThatLeft.Discriminator} has left";
 
-            text = text.Replace("{USERNAME}", userThatLeft.Username);
+            text = text.Replace("{USERNAME}", userThatLeft.Username + "#" + userThatLeft.Discriminator);
 
             return text;
         }

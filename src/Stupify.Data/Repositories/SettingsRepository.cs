@@ -27,7 +27,7 @@ namespace Stupify.Data.Repositories
                 GuildName = (await _client.GetGuildAsync(discordGuildId).ConfigureAwait(false)).Name,
                 CommandPrefix = settings.CommandPrefix,
                 CustomCommandPrefix = settings.CustomCommandPrefix,
-                ModeratorRoleId = (ulong?)settings.ModeratorRoleId
+                ModeratorRoleId = (ulong?)settings.ModeratorRoleId,
                 WelcomeChannel = (ulong?)settings.WelcomeChannel,
                 LeaveChannel = (ulong?)settings.LeaveChannel,
                 BanChannel = (ulong?)settings.BanChannel,
