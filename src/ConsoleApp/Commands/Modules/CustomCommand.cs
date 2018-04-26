@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Stupify.Data.Repositories;
+using StupifyConsoleApp.Commands.Conditions;
 
 namespace StupifyConsoleApp.Commands.Modules
 {
@@ -86,8 +87,9 @@ namespace StupifyConsoleApp.Commands.Modules
             }
         }
 
-        [RequireUserPermission(GuildPermission.ManageRoles)]
+        
         [Command("ForceDeleteCommand")]
+        [Moderator]
         public async Task ForceDeleteCommandAsync(string commandTag)
         {
             await _commandRepository.DeleteAsync(Context.User as IGuildUser, commandTag).ConfigureAwait(false);

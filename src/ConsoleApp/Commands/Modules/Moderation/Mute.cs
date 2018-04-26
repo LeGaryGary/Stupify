@@ -2,6 +2,7 @@
 using Discord;
 using Discord.Commands;
 using Stupify.Data.Repositories;
+using StupifyConsoleApp.Commands.Conditions;
 
 namespace StupifyConsoleApp.Commands.Modules.Moderation
 {
@@ -16,7 +17,7 @@ namespace StupifyConsoleApp.Commands.Modules.Moderation
         }
 
         [Command("Mute")]
-        [RequireUserPermission(GuildPermission.KickMembers)]
+        [Moderator]
         public async Task MuteAsync(IGuildUser user)
         {
             await _userRepository.MuteAsync(user).ConfigureAwait(false);
@@ -24,7 +25,7 @@ namespace StupifyConsoleApp.Commands.Modules.Moderation
         }
 
         [Command("UnMute")]
-        [RequireUserPermission(GuildPermission.KickMembers)]
+        [Moderator]
         public async Task UnMuteAsync(IGuildUser user)
         {
             string message;

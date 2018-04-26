@@ -6,5 +6,6 @@
 
         public string CommandPrefix { get; set; }
         public string CustomCommandPrefix { get; set; }
+        public ulong? ModeratorRoleId { get; set; }
     }
 }
