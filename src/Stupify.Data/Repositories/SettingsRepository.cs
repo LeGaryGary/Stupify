@@ -27,6 +27,7 @@ namespace Stupify.Data.Repositories
                 GuildName = (await _client.GetGuildAsync(discordGuildId).ConfigureAwait(false)).Name,
                 CommandPrefix = settings.CommandPrefix,
                 CustomCommandPrefix = settings.CustomCommandPrefix,
+                ModeratorRoleId = (ulong?)settings.ModeratorRoleId
                 WelcomeChannel = (ulong?)settings.WelcomeChannel,
                 LeaveChannel = (ulong?)settings.LeaveChannel,
                 BanChannel = (ulong?)settings.BanChannel,
@@ -51,6 +52,7 @@ namespace Stupify.Data.Repositories
 
             settings.CommandPrefix = serverSettings.CommandPrefix;
             settings.CustomCommandPrefix = serverSettings.CustomCommandPrefix;
+            settings.ModeratorRoleId = (long?)serverSettings.ModeratorRoleId;
             settings.WelcomeChannel = (long?)serverSettings.WelcomeChannel;
             settings.LeaveChannel = (long?)serverSettings.LeaveChannel;
             settings.BanChannel = (long?)serverSettings.BanChannel;
@@ -89,12 +91,11 @@ namespace Stupify.Data.Repositories
             var settings = await _botContext.ServerSettings
                 .FirstOrDefaultAsync(ss => ss.Server.DiscordGuildId == guildId).ConfigureAwait(false);
 
-            if (settings == null)
-            {
-                settings = _botContext.ServerSettings.Add(new SQL.Models.ServerSettings()).Entity;
-                settings.Server = await _botContext.Servers.FirstOrDefaultAsync(s => s.DiscordGuildId == guildId).ConfigureAwait(false);
-                await _botContext.SaveChangesAsync().ConfigureAwait(false);
-            }
+            if (settings != null) return settings;
+
+            settings = _botContext.ServerSettings.Add(new SQL.Models.ServerSettings()).Entity;
+            settings.Server = await _botContext.Servers.FirstOrDefaultAsync(s => s.DiscordGuildId == guildId).ConfigureAwait(false);
+            await _botContext.SaveChangesAsync().ConfigureAwait(false);
 
             return settings;
         }

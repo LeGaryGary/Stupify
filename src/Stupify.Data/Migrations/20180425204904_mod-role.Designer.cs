@@ -12,9 +12,10 @@ using System;
 namespace Stupify.Data.Migrations
 {
     [DbContext(typeof(BotContext))]
-    partial class BotContextModelSnapshot : ModelSnapshot
+    [Migration("20180425204904_mod-role")]
+    partial class modrole
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -133,30 +134,10 @@ namespace Stupify.Data.Migrations
                     b.ToTable("Servers");
                 });
 
-            modelBuilder.Entity("Stupify.Data.SQL.Models.ServerCustomText", b =>
-                {
-                    b.Property<int>("ServerCustomTextId")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<int?>("ServerId");
-
-                    b.Property<string>("Text");
-
-                    b.Property<int>("Type");
-
-                    b.HasKey("ServerCustomTextId");
-
-                    b.HasIndex("ServerId");
-
-                    b.ToTable("ServerCustomTexts");
-                });
-
             modelBuilder.Entity("Stupify.Data.SQL.Models.ServerSettings", b =>
                 {
                     b.Property<int>("ServerSettingsId")
                         .ValueGeneratedOnAdd();
-
-                    b.Property<long?>("BanChannel");
 
                     b.Property<string>("CommandPrefix");
 
@@ -164,13 +145,7 @@ namespace Stupify.Data.Migrations
 
                     b.Property<long?>("ModeratorRoleId");
 
-                    b.Property<long?>("KickChannel");
-
-                    b.Property<long?>("LeaveChannel");
-
                     b.Property<int?>("ServerId");
-
-                    b.Property<long?>("WelcomeChannel");
 
                     b.HasKey("ServerSettingsId");
 
@@ -327,13 +302,6 @@ namespace Stupify.Data.Migrations
                     b.HasOne("Stupify.Data.SQL.Models.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId");
-                });
-
-            modelBuilder.Entity("Stupify.Data.SQL.Models.ServerCustomText", b =>
-                {
-                    b.HasOne("Stupify.Data.SQL.Models.Server", "Server")
-                        .WithMany()
-                        .HasForeignKey("ServerId");
                 });
 
             modelBuilder.Entity("Stupify.Data.SQL.Models.ServerSettings", b =>
