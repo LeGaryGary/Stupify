@@ -18,4 +18,8 @@ public interface ICustomTextRepository
     Task<string> GetLeaveTextAsync(IGuildUser userThatLeft);
     Task<string> GetLeaveTextAsync(ulong guildId);
     Task SetLeaveTextAsync(ulong guildId, string leaveText);
+
+    Task<string> GetBlockedWordTextAsync(IGuildUser user);
+    Task<string> GetBlockedWordTextAsync(ulong guildId);
+    Task SetBlockedWordTextAsync(ulong guildId, string blockedWordText);
 }

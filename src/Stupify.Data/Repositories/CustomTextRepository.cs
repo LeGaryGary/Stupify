@@ -91,7 +91,7 @@ namespace Stupify.Data.Repositories
 
         public async Task<string> GetLeaveTextAsync(IGuildUser userThatLeft)
         {
-            var text = (await GetServerCustomTextAsync(userThatLeft.GuildId, CustomText.Leave).ConfigureAwait(false)).Text;
+            var text = await GetLeaveTextAsync(userThatLeft.Guild.Id).ConfigureAwait(false);
 
             if (text == null) return $"{userThatLeft.Username + "#" + userThatLeft.Discriminator} has left";
 
@@ -109,6 +109,24 @@ namespace Stupify.Data.Repositories
         {
             var serverText = await GetServerCustomTextAsync(guildId, CustomText.Leave).ConfigureAwait(false);
             serverText.Text = leaveText;
+            await _botContext.SaveChangesAsync().ConfigureAwait(false);
+        }
+
+        public async Task<string> GetBlockedWordTextAsync(IGuildUser user)
+        {
+            var text = (await GetBlockedWordTextAsync( user.Guild.Id).ConfigureAwait(false));
+            return text ?? "That word is blocked!";
+        }
+
+        public async Task<string> GetBlockedWordTextAsync(ulong guildId)
+        {
+            return (await GetServerCustomTextAsync(guildId, CustomText.BlockedWord).ConfigureAwait(false)).Text;
+        }
+
+        public async Task SetBlockedWordTextAsync(ulong guildId, string blockedWordText)
+        {
+            var serverText = await GetServerCustomTextAsync(guildId, CustomText.BlockedWord).ConfigureAwait(false);
+            serverText.Text = blockedWordText;
             await _botContext.SaveChangesAsync().ConfigureAwait(false);
         }
 

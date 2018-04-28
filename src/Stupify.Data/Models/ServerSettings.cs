@@ -1,4 +1,6 @@
-﻿namespace Stupify.Data.Models
+﻿using System.Collections.Generic;
+
+namespace Stupify.Data.Models
 {
     public class ServerSettings
     {
@@ -11,5 +13,6 @@
         public ulong? LeaveChannel { get; set; }
         public ulong? BanChannel { get; set; }
         public ulong? KickChannel { get; set; }
+        public string BlockedWords { get; set; }
     }
 }

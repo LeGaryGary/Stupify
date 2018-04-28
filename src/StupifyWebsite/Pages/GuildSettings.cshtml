@@ -35,6 +35,9 @@
                 }
             </select>
 
+            <label for="blocked-words" class="label">Blocked Words (Comma Separated)</label>
+            <input class="form-control" id="blocked-words" value="@serverSettings.Value.BlockedWords" asp-for="SettingsToSet.BlockedWords">
+
             <label for="ban-channel" class="label">Ban Channel</label>
             <select class="form-control" id="ban-channel" asp-for="SettingsToSet.BanChannel">
                 @if (serverSettings.Value.BanChannel == null)

@@ -11,5 +11,6 @@
         public long? LeaveChannel { get; set; }
         public long? BanChannel { get; set; }
         public long? KickChannel { get; set; }
+        public string BlockedWords { get; set; }
     }
 }

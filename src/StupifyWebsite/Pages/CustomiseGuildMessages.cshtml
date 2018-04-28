@@ -11,6 +11,9 @@
     <form method="post" style="margin: 3px" asp-route-guildId=@text.Key>
         <h4 class="label">@Model.GuildName[text.Key]</h4>
 
+        <label for="blocked-word" class="label">Blocked Word message</label>
+        <input class="form-control" id="blocked-word" value="@text.Value.BlockedMessage" asp-for="BlockedPost">
+
         <label for="welcome" class="label">Welcome Message</label>
         <input class="form-control" id="welcome" value="@text.Value.Welcome" asp-for="WelcomePost">
 
