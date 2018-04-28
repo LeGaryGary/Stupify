@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Microsoft.EntityFrameworkCore;
@@ -32,6 +33,7 @@ namespace Stupify.Data.Repositories
                 LeaveChannel = (ulong?)settings.LeaveChannel,
                 BanChannel = (ulong?)settings.BanChannel,
                 KickChannel = (ulong?)settings.KickChannel,
+                BlockedWords = settings.BlockedWords
             };
         }
 
@@ -56,7 +58,8 @@ namespace Stupify.Data.Repositories
             settings.WelcomeChannel = (long?)serverSettings.WelcomeChannel;
             settings.LeaveChannel = (long?)serverSettings.LeaveChannel;
             settings.BanChannel = (long?)serverSettings.BanChannel;
-            settings.KickChannel =(long?)serverSettings.KickChannel;
+            settings.KickChannel = (long?)serverSettings.KickChannel;
+            settings.BlockedWords = serverSettings.BlockedWords;
 
             await _botContext.SaveChangesAsync().ConfigureAwait(false);
         }

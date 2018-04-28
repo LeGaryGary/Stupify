@@ -4,12 +4,14 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Discord;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Stupify.Data.Repositories;
 
 namespace StupifyWebsite.Pages
 {
+    [Authorize]
     public class CustomiseGuildMessagesModel : PageModel
     {
         private readonly IUserRepository _userRepository;
@@ -25,13 +27,14 @@ namespace StupifyWebsite.Pages
 
         private ulong UserId => ulong.Parse(HttpContext.User.FindFirst(c => c.Type == ClaimTypes.NameIdentifier).Value);
 
-        public Dictionary<ulong, (string Welcome, string Leaving, string Ban, string Kick)> GuildText { get; private set; }
+        public Dictionary<ulong, (string Welcome, string Leaving, string Ban, string Kick, string BlockedMessage)> GuildText { get; private set; }
         public Dictionary<ulong, string> GuildName { get; private set; }
 
         [BindProperty]public string WelcomePost { get; set; }
         [BindProperty]public string LeavingPost { get; set; }
         [BindProperty]public string BanPost { get; set; }
         [BindProperty]public string KickPost { get; set; }
+        [BindProperty]public string BlockedPost { get; set; }
 
         public async Task OnGetAsync()
         {
@@ -46,7 +49,7 @@ namespace StupifyWebsite.Pages
                 }
             }
             
-            GuildText = new Dictionary<ulong, (string Welcome, string Leaving, string Ban, string Kick)>();
+            GuildText = new Dictionary<ulong, (string Welcome, string Leaving, string Ban, string Kick, string BlockedMessage)>();
             GuildName = new Dictionary<ulong, string>();
             foreach (var guildId in ownerGuilds)
             {
@@ -54,7 +57,8 @@ namespace StupifyWebsite.Pages
                 var leaving = await _customTextRepository.GetLeaveTextAsync(guildId).ConfigureAwait(false);
                 var ban = await _customTextRepository.GetBanTextAsync(guildId).ConfigureAwait(false);
                 var kick = await _customTextRepository.GetKickTextAsync(guildId).ConfigureAwait(false);
-                GuildText.Add(guildId, (welcome, leaving, ban, kick));
+                var blocked = await _customTextRepository.GetBlockedWordTextAsync(guildId).ConfigureAwait(false);
+                GuildText.Add(guildId, (welcome, leaving, ban, kick, blocked));
 
                 GuildName.Add(guildId, (await _client.GetGuildAsync(guildId).ConfigureAwait(false)).Name);
             }
@@ -71,6 +75,7 @@ namespace StupifyWebsite.Pages
             await _customTextRepository.SetLeaveTextAsync(guildId, LeavingPost).ConfigureAwait(false);
             await _customTextRepository.SetBanTextAsync(guildId, BanPost).ConfigureAwait(false);
             await _customTextRepository.SetKickTextAsync(guildId, KickPost).ConfigureAwait(false);
+            await _customTextRepository.SetBlockedWordTextAsync(guildId, BlockedPost).ConfigureAwait(false);
             return RedirectToPage("/CustomiseGuildMessages");
         }
     }
