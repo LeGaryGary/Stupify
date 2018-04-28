@@ -33,6 +33,10 @@ namespace StupifyConsoleApp.Client
                     // Attach event handlers
                     discordSocketClient.MessageReceived += messageHandler.HandleAsync;
                     discordSocketClient.ReactionAdded += reactionHandler.HandleAsync;
+                    discordSocketClient.UserJoined += OnUserJoinAsync;
+                    discordSocketClient.UserLeft += OnUserLeaveAsync;
+                    discordSocketClient.UserBanned += OnUserBanAsync;
+
                     discordSocketClient.Ready += () =>
                     {
                         _ready = true;
@@ -97,7 +101,7 @@ namespace StupifyConsoleApp.Client
 
                 try
                 {
-                    await UpdateTwichStatusChannelsAsync().ConfigureAwait(false);
+                    await UpdateTwitchStatusChannelsAsync().ConfigureAwait(false);
                 }
                 catch (Exception e)
                 {
@@ -120,7 +124,40 @@ namespace StupifyConsoleApp.Client
             // ReSharper disable once FunctionNeverReturns
         }
 
-        private async Task UpdateTwichStatusChannelsAsync()
+        private static async Task OnUserJoinAsync(IGuildUser user)
+        {
+            var settingsRepo = Config.ServiceProvider.GetService<ISettingsRepository>();
+            var welcomeChannel = await settingsRepo.GetWelcomeChannelAsync(user.Guild.Id).ConfigureAwait(false);
+            if (welcomeChannel == null) return;
+            var channel = await user.Guild.GetTextChannelAsync(welcomeChannel.Value).ConfigureAwait(false);
+            var textRepo = Config.ServiceProvider.GetService<ICustomTextRepository>();
+            var text = await textRepo.GetWelcomeTextAsync(user).ConfigureAwait(false);
+            await channel.SendMessageAsync(text).ConfigureAwait(false);
+        }
+
+        private static async Task OnUserLeaveAsync(IGuildUser user)
+        {
+            var settingsRepo = Config.ServiceProvider.GetService<ISettingsRepository>();
+            var leaveChannel = await settingsRepo.GetLeaveChannelAsync(user.Guild.Id).ConfigureAwait(false);
+            if (leaveChannel == null) return;
+            var channel = await user.Guild.GetTextChannelAsync(leaveChannel.Value).ConfigureAwait(false);
+            var textRepo = Config.ServiceProvider.GetService<ICustomTextRepository>();
+            var text = await textRepo.GetLeaveTextAsync(user).ConfigureAwait(false);
+            await channel.SendMessageAsync(text).ConfigureAwait(false);
+        }
+
+        private static async Task OnUserBanAsync(IUser user, IGuild guild)
+        {
+            var settingsRepo = Config.ServiceProvider.GetService<ISettingsRepository>();
+            var banChannel = await settingsRepo.GetBanChannelAsync(guild.Id).ConfigureAwait(false);
+            if (banChannel == null) return;
+            var channel = await guild.GetTextChannelAsync(banChannel.Value).ConfigureAwait(false);
+            var textRepo = Config.ServiceProvider.GetService<ICustomTextRepository>();
+            var text = await textRepo.GetBanTextAsync(await guild.GetUserAsync(user.Id).ConfigureAwait(false), null, null).ConfigureAwait(false);
+            await channel.SendMessageAsync(text).ConfigureAwait(false);
+        }
+
+        private async Task UpdateTwitchStatusChannelsAsync()
         {
             var twitchRepository = Config.ServiceProvider.GetService<ITwitchRepository>();
 

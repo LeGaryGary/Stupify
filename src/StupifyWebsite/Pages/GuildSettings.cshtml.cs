@@ -27,6 +27,7 @@ namespace StupifyWebsite.Pages
         
         public Dictionary<ulong, ServerSettings> Settings { get; set; }
         public Dictionary<ulong, List<IRole>> Roles { get; set; }
+        public Dictionary<ulong, List<ITextChannel>> TextChannels { get; set; }
 
         [BindProperty]public ServerSettings SettingsToSet { get; set; }
 
@@ -46,10 +47,12 @@ namespace StupifyWebsite.Pages
             Settings = await _settingsRepository.GetServerSettingsAsync(ownerGuilds).ConfigureAwait(false);
 
             Roles = new Dictionary<ulong, List<IRole>>();
+            TextChannels = new Dictionary<ulong, List<ITextChannel>>();
             foreach (var guildId in Settings.Keys)
             {
                 var guild = await _client.GetGuildAsync(guildId).ConfigureAwait(false);
                 Roles.Add(guildId, guild.Roles.ToList());
+                TextChannels.Add(guildId, (await guild.GetChannelsAsync().ConfigureAwait(false)).OfType<ITextChannel>().ToList());
             }
         }
 

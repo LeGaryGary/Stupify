@@ -12,9 +12,10 @@ using System;
 namespace Stupify.Data.Migrations
 {
     [DbContext(typeof(BotContext))]
-    partial class BotContextModelSnapshot : ModelSnapshot
+    [Migration("20180426204435_customtext")]
+    partial class customtext
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -161,8 +162,6 @@ namespace Stupify.Data.Migrations
                     b.Property<string>("CommandPrefix");
 
                     b.Property<string>("CustomCommandPrefix");
-
-                    b.Property<long?>("ModeratorRoleId");
 
                     b.Property<long?>("KickChannel");
 

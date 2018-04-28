@@ -50,7 +50,8 @@ namespace Stupify.Data
                 .AddTransient<ITwitchRepository, TwitchRepository>()
                 .AddTransient<ICustomCommandRepository, CustomCommandRepository>()
                 .AddTransient<ISettingsRepository, SettingsRepository>()
-                .AddTransient<IExternalAccountRepository, ExternalAccountRepository>();
+                .AddTransient<IExternalAccountRepository, ExternalAccountRepository>()
+                .AddTransient<ICustomTextRepository, CustomTextRepository>();
 
             return collection;
         }
