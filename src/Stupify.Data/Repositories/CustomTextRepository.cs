@@ -30,6 +30,11 @@ namespace Stupify.Data.Repositories
             return text;
         }
 
+        public async Task<string> GetBanTextAsync(ulong guildId)
+        {
+            return (await GetServerCustomTextAsync(guildId, CustomText.Ban).ConfigureAwait(false)).Text;
+        }
+
         public async Task SetBanTextAsync(ulong guildId, string banText)
         {
             var serverText = await GetServerCustomTextAsync(guildId, CustomText.Ban).ConfigureAwait(false);
@@ -47,6 +52,11 @@ namespace Stupify.Data.Repositories
             text = text.Replace("{KICK_REASON}", kickReason);
 
             return text;
+        }
+
+        public async Task<string> GetKickTextAsync(ulong guildId)
+        {
+            return (await GetServerCustomTextAsync(guildId, CustomText.Kick).ConfigureAwait(false)).Text;
         }
 
         public async Task SetKickTextAsync(ulong guildId, string kickText)
@@ -67,6 +77,11 @@ namespace Stupify.Data.Repositories
             return text;
         }
 
+        public async Task<string> GetWelcomeTextAsync(ulong guildId)
+        {
+            return (await GetServerCustomTextAsync(guildId, CustomText.Welcome).ConfigureAwait(false)).Text;
+        }
+
         public async Task SetWelcomeTextAsync(ulong guildId, string welcomeText)
         {
             var serverText = await GetServerCustomTextAsync(guildId, CustomText.Welcome).ConfigureAwait(false);
@@ -83,6 +98,11 @@ namespace Stupify.Data.Repositories
             text = text.Replace("{USERNAME}", userThatLeft.Username + "#" + userThatLeft.Discriminator);
 
             return text;
+        }
+
+        public async Task<string> GetLeaveTextAsync(ulong guildId)
+        {
+            return (await GetServerCustomTextAsync(guildId, CustomText.Leave).ConfigureAwait(false)).Text;
         }
 
         public async Task SetLeaveTextAsync(ulong guildId, string leaveText)
