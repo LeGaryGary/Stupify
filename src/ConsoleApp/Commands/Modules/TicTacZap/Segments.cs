@@ -61,17 +61,17 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
         public class SegmentModule : ModuleBase<CommandContext>
         {
             private readonly TicTacZapController _tacZapController;
-            private readonly SegmentEditReactionHandler _editReactionHandler;
+            private readonly IReactionHandler _reactionHandler;
             private readonly GameState _gameState;
             private readonly IUserRepository _userRepository;
             private readonly ISegmentRepository _segmentRepository;
             private readonly IInventoryRepository _inventoryRepository;
             private readonly IUniverseRepository _universeRepository;
             
-            public SegmentModule(TicTacZapController tacZapController, SegmentEditReactionHandler editReactionHandler, GameState gameState, IUserRepository userRepository, ISegmentRepository segmentRepository, IInventoryRepository inventoryRepository, IUniverseRepository universeRepository)
+            public SegmentModule(TicTacZapController tacZapController, IReactionHandler reactionHandler, GameState gameState, IUserRepository userRepository, ISegmentRepository segmentRepository, IInventoryRepository inventoryRepository, IUniverseRepository universeRepository)
             {
                 _tacZapController = tacZapController;
-                _editReactionHandler = editReactionHandler;
+                _reactionHandler = reactionHandler;
                 _gameState = gameState;
                 _userRepository = userRepository;
                 _segmentRepository = segmentRepository;
@@ -156,7 +156,7 @@ namespace StupifyConsoleApp.Commands.Modules.TicTacZap
 
                 var msg = await ReplyAsync($"```Hang on...```").ConfigureAwait(false);
                 var dbUserId = await _userRepository.GetUserIdAsync(Context.User).ConfigureAwait(false);
-                await _editReactionHandler.NewOwnerAsync(msg, segmentId, Context.User.Id, dbUserId).ConfigureAwait(false);
+                await _reactionHandler.NewOwnerAsync(msg, segmentId, Context.User.Id, dbUserId).ConfigureAwait(false);
             }
 
             [Command("Delete")]

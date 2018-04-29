@@ -6,7 +6,7 @@ namespace StupifyConsoleApp.Client.CustomTypeReaders
 {
     public class UriTypeReader : TypeReader
     {
-        public override Task<TypeReaderResult> Read(ICommandContext context, string input, IServiceProvider services)
+        public override Task<TypeReaderResult> ReadAsync(ICommandContext context, string input, IServiceProvider services)
         {
             try
             {

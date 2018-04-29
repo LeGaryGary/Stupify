@@ -8,7 +8,7 @@ namespace StupifyConsoleApp.Commands.Conditions
 {
     public class DevOnlyAttribute : PreconditionAttribute
     {
-        public override Task<PreconditionResult> CheckPermissions(ICommandContext context, CommandInfo command,
+        public override Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context, CommandInfo command,
             IServiceProvider services)
         {
             if (context.User is IGuildUser user && user.RoleIds.Contains(Config.DeveloperRole))

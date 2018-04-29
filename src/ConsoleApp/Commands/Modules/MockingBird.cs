@@ -7,6 +7,8 @@ namespace StupifyConsoleApp.Commands.Modules
     public class MockingBird : ModuleBase<CommandContext>
     {
         [Command("Mock"), Priority(1)]
+        [RequireBotPermission(GuildPermission.ChangeNickname)]
+        [RequireBotPermission(ChannelPermission.SendMessages)]
         public Task MockCommandAsync(IGuildUser userToMockTag, [Remainder]string messageToSay)
         {
             var mockNickname = userToMockTag.Nickname ?? userToMockTag.Username;

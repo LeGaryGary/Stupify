@@ -84,7 +84,7 @@ namespace StupifyConsoleApp
                         var commandService = new CommandService();
 
                         commandService.AddTypeReader<Uri>(new UriTypeReader());
-                        commandService.AddModulesAsync(Assembly.GetEntryAssembly()).GetAwaiter().GetResult();
+                        commandService.AddModulesAsync(Assembly.GetEntryAssembly(), sp).GetAwaiter().GetResult();
 
                         var logger = sp.GetService<ILogger<MessageHandler>>();
                         commandService.Log += message =>

@@ -15,32 +15,36 @@ namespace StupifyConsoleApp.Commands.Modules.Moderation
         [Moderator]
         public Task PurgeChannelCommand()
         {
+            if (!(Context.Channel is ITextChannel channel)) return Task.CompletedTask;
             var messagesPaged = Context.Channel.GetMessagesAsync(DefaultDelete).Select(m => m.Select(mInner => mInner.Id));
-            return messagesPaged.ForEachAsync(messageIds => Context.Channel.DeleteMessagesAsync(messageIds));
+            return messagesPaged.ForEachAsync(messageIds => channel.DeleteMessagesAsync(messageIds));
         }
 
         [Command("PurgeChannel")]
         [Moderator]
         public Task PurgeChannelCommand(int messagesToDelete)
         {
+            if (!(Context.Channel is ITextChannel channel)) return Task.CompletedTask;
             var messagesPaged = Context.Channel.GetMessagesAsync(messagesToDelete).Select(m => m.Select(mInner => mInner.Id));
-            return messagesPaged.ForEachAsync(messageIds => Context.Channel.DeleteMessagesAsync(messageIds));
+            return messagesPaged.ForEachAsync(messageIds => channel.DeleteMessagesAsync(messageIds));
         }
 
         [Command("PurgeChannel")]
         [Moderator]
         public Task PurgeChannelCommand(IGuildUser userMessageToPurge)
         {
+            if (!(Context.Channel is ITextChannel channel)) return Task.CompletedTask;
             var messagesPaged = Context.Channel.GetMessagesAsync(DefaultDelete).Select(m => m.Where(mInner => mInner.Author == userMessageToPurge).Select(mInner => mInner.Id));
-            return messagesPaged.ForEachAsync(messageIds => Context.Channel.DeleteMessagesAsync(messageIds));
+            return messagesPaged.ForEachAsync(messageIds => channel.DeleteMessagesAsync(messageIds));
         }
 
         [Command("PurgeChannel")]
         [Moderator]
         public Task PurgeChannelCommand(IGuildUser userMessageToPurge, int messagesToDelete)
         {
+            if (!(Context.Channel is ITextChannel channel)) return Task.CompletedTask;
             var messagesPaged = Context.Channel.GetMessagesAsync(messagesToDelete).Select(m => m.Where(mInner => mInner.Author == userMessageToPurge).Select(mInner => mInner.Id));
-            return messagesPaged.ForEachAsync(messageIds => Context.Channel.DeleteMessagesAsync(messageIds));
+            return messagesPaged.ForEachAsync(messageIds => channel.DeleteMessagesAsync(messageIds));
         }
 
         [Command("PurgeServer")]
@@ -51,7 +55,7 @@ namespace StupifyConsoleApp.Commands.Modules.Moderation
             foreach (var channel in channels)
             {
                 var messagesPaged = channel.GetMessagesAsync(DefaultDelete).Select(m => m.Where(mInner => mInner.Author == userMessageToPurge).Select(mInner => mInner.Id));
-                await messagesPaged.ForEachAsync(messageIds => Context.Channel.DeleteMessagesAsync(messageIds)).ConfigureAwait(false);
+                await messagesPaged.ForEachAsync(messageIds => channel.DeleteMessagesAsync(messageIds)).ConfigureAwait(false);
             }
         }
 
@@ -63,7 +67,7 @@ namespace StupifyConsoleApp.Commands.Modules.Moderation
             foreach (var channel in channels)
             {
                 var messagesPaged = channel.GetMessagesAsync(messagesToDelete).Select(m => m.Where(mInner => mInner.Author == userMessageToPurge).Select(mInner => mInner.Id));
-                await messagesPaged.ForEachAsync(messageIds => Context.Channel.DeleteMessagesAsync(messageIds)).ConfigureAwait(false);
+                await messagesPaged.ForEachAsync(messageIds => channel.DeleteMessagesAsync(messageIds)).ConfigureAwait(false);
             }
         }
     }
