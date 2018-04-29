@@ -10,7 +10,7 @@ namespace StupifyConsoleApp.Commands.Conditions
 {
     public class ModeratorAttribute : PreconditionAttribute
     {
-        public override async Task<PreconditionResult> CheckPermissions(ICommandContext context, CommandInfo command,
+        public override async Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context, CommandInfo command,
             IServiceProvider services)
         {
             if (!(context.User is IGuildUser user) || user.GuildPermissions.Administrator) return PreconditionResult.FromSuccess();

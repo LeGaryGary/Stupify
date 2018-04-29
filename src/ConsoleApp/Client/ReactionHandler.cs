@@ -149,5 +149,6 @@ namespace StupifyConsoleApp.Client
     public interface IReactionHandler
     {
         Task HandleAsync(Cacheable<IUserMessage, ulong> message, ISocketMessageChannel channel, SocketReaction reaction);
+        Task NewOwnerAsync(IUserMessage msg, int segmentId, ulong userId, int dbUserId);
     }
 }

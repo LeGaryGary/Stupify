@@ -18,6 +18,7 @@ namespace StupifyConsoleApp.Commands.Modules.Moderation
 
         [Command("Mute")]
         [Moderator]
+        [RequireBotPermission(GuildPermission.ManageMessages)]
         public async Task MuteAsync(IGuildUser user)
         {
             await _userRepository.MuteAsync(user).ConfigureAwait(false);
