@@ -9,15 +9,15 @@
     @foreach (var serverSettings in Model.Settings)
     {
         <form method="post" style="margin: 3px" asp-route-guildId=@serverSettings.Key>
-            <h4 class="label">@serverSettings.Value.GuildName</h4>
+            <h4 class="my-label">@serverSettings.Value.GuildName</h4>
             
-            <label for="command-prefix" class="label">Command Prefix</label>
+            <label for="command-prefix" class="my-label">Command Prefix</label>
             <input class="form-control" id="command-prefix" value="@serverSettings.Value.CommandPrefix" asp-for="SettingsToSet.CommandPrefix">
 
-            <label for="custom-command-prefix" class="label">Custom Command Prefix</label>
+            <label for="custom-command-prefix" class="my-label">Custom Command Prefix</label>
             <input class="form-control" id="custom-command-prefix" value="@serverSettings.Value.CustomCommandPrefix" asp-for="SettingsToSet.CustomCommandPrefix">
 
-            <label for="mod-role" class="label">Moderator Role</label>
+            <label for="mod-role" class="my-label">Moderator Role</label>
             <select class="form-control" id="mod-role" asp-for="SettingsToSet.ModeratorRoleId">
                 @if (serverSettings.Value.ModeratorRoleId == null)
                 {
@@ -35,10 +35,10 @@
                 }
             </select>
 
-            <label for="blocked-words" class="label">Blocked Words (Comma Separated)</label>
+            <label for="blocked-words" class="my-label">Blocked Words (Comma Separated)</label>
             <input class="form-control" id="blocked-words" value="@serverSettings.Value.BlockedWords" asp-for="SettingsToSet.BlockedWords">
 
-            <label for="ban-channel" class="label">Ban Channel</label>
+            <label for="ban-channel" class="my-label">Ban Channel</label>
             <select class="form-control" id="ban-channel" asp-for="SettingsToSet.BanChannel">
                 @if (serverSettings.Value.BanChannel == null)
                 {
@@ -56,7 +56,7 @@
                 }
             </select>
 
-            <label for="kick-channel" class="label">Kick Channel</label>
+            <label for="kick-channel" class="my-label">Kick Channel</label>
             <select class="form-control" id="kick-channel" asp-for="SettingsToSet.KickChannel">
                 @if (serverSettings.Value.KickChannel == null)
                 {
@@ -74,7 +74,7 @@
                 }
             </select>
 
-            <label for="welcome-channel" class="label">Welcome Channel</label>
+            <label for="welcome-channel" class="my-label">Welcome Channel</label>
             <select class="form-control" id="welcome-channel" asp-for="SettingsToSet.WelcomeChannel">
                 @if (serverSettings.Value.WelcomeChannel == null)
                 {
@@ -92,7 +92,7 @@
                 }
             </select>
 
-            <label for="leave-channel" class="label">Leave Channel</label>
+            <label for="leave-channel" class="my-label">Leave Channel</label>
             <select class="form-control" id="leave-channel" asp-for="SettingsToSet.LeaveChannel">
                 @if (serverSettings.Value.LeaveChannel == null)
                 {
