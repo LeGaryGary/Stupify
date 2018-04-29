@@ -13,6 +13,7 @@ namespace StupifyConsoleApp.Commands.Modules.Moderation
 
         [Command("PurgeChannel")]
         [Moderator]
+        [RequireBotPermission(ChannelPermission.ManageMessages)]
         public Task PurgeChannelCommand()
         {
             if (!(Context.Channel is ITextChannel channel)) return Task.CompletedTask;
@@ -22,6 +23,7 @@ namespace StupifyConsoleApp.Commands.Modules.Moderation
 
         [Command("PurgeChannel")]
         [Moderator]
+        [RequireBotPermission(ChannelPermission.ManageMessages)]
         public Task PurgeChannelCommand(int messagesToDelete)
         {
             if (!(Context.Channel is ITextChannel channel)) return Task.CompletedTask;
@@ -31,6 +33,7 @@ namespace StupifyConsoleApp.Commands.Modules.Moderation
 
         [Command("PurgeChannel")]
         [Moderator]
+        [RequireBotPermission(ChannelPermission.ManageMessages)]
         public Task PurgeChannelCommand(IGuildUser userMessageToPurge)
         {
             if (!(Context.Channel is ITextChannel channel)) return Task.CompletedTask;
@@ -40,6 +43,7 @@ namespace StupifyConsoleApp.Commands.Modules.Moderation
 
         [Command("PurgeChannel")]
         [Moderator]
+        [RequireBotPermission(ChannelPermission.ManageMessages)]
         public Task PurgeChannelCommand(IGuildUser userMessageToPurge, int messagesToDelete)
         {
             if (!(Context.Channel is ITextChannel channel)) return Task.CompletedTask;
@@ -49,6 +53,8 @@ namespace StupifyConsoleApp.Commands.Modules.Moderation
 
         [Command("PurgeServer")]
         [Moderator]
+        [RequireBotPermission(ChannelPermission.ManageMessages)]
+        [RequireBotPermission(GuildPermission.ManageMessages)]
         public async Task PurgeServerCommand(IGuildUser userMessageToPurge)
         {
             var channels = await Context.Guild.GetTextChannelsAsync().ConfigureAwait(false);
@@ -61,6 +67,8 @@ namespace StupifyConsoleApp.Commands.Modules.Moderation
 
         [Command("PurgeServer")]
         [Moderator]
+        [RequireBotPermission(ChannelPermission.ManageMessages)]
+        [RequireBotPermission(GuildPermission.ManageMessages)]
         public async Task PurgeServerCommand(IGuildUser userMessageToPurge, int messagesToDelete)
         {
             var channels = await Context.Guild.GetTextChannelsAsync().ConfigureAwait(false);

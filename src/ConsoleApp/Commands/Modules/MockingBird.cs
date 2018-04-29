@@ -8,7 +8,6 @@ namespace StupifyConsoleApp.Commands.Modules
     {
         [Command("Mock"), Priority(1)]
         [RequireBotPermission(GuildPermission.ChangeNickname)]
-        [RequireBotPermission(ChannelPermission.SendMessages)]
         public Task MockCommandAsync(IGuildUser userToMockTag, [Remainder]string messageToSay)
         {
             var mockNickname = userToMockTag.Nickname ?? userToMockTag.Username;
@@ -16,6 +15,7 @@ namespace StupifyConsoleApp.Commands.Modules
         }
 
         [Command("Mock"), Priority(0)]
+        [RequireBotPermission(GuildPermission.ChangeNickname)]
         public Task MockCommandAsync(string nameToMock, [Remainder]string messageToSay)
         {
             return MockAsync(messageToSay, nameToMock);

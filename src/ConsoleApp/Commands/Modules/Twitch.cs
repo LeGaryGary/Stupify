@@ -29,6 +29,7 @@ namespace StupifyConsoleApp.Commands.Modules
 
         [Command("SetUpdateChannel")]
         [Moderator]
+        [RequireBotPermission(ChannelPermission.EmbedLinks)]
         public async Task SetUpdateChannelAsync()
         {
             await _twitchRepository.SetUpdateChannelAsync(Context.Channel as ITextChannel).ConfigureAwait(false);
