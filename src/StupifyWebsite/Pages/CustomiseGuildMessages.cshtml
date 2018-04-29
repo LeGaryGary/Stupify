@@ -9,21 +9,21 @@
 @foreach (var text in Model.GuildText)
 {
     <form method="post" style="margin: 3px" asp-route-guildId=@text.Key>
-        <h4 class="label">@Model.GuildName[text.Key]</h4>
+        <h4 class="my-label">@Model.GuildName[text.Key]</h4>
 
-        <label for="blocked-word" class="label">Blocked Word message</label>
+        <label for="blocked-word" class="my-label">Blocked Word message</label>
         <input class="form-control" id="blocked-word" value="@text.Value.BlockedMessage" asp-for="BlockedPost">
 
-        <label for="welcome" class="label">Welcome Message</label>
+        <label for="welcome" class="my-label">Welcome Message</label>
         <input class="form-control" id="welcome" value="@text.Value.Welcome" asp-for="WelcomePost">
 
-        <label for="leave" class="label">Leaving Message</label>
+        <label for="leave" class="my-label">Leaving Message</label>
         <input class="form-control" id="leave" value="@text.Value.Leaving" asp-for="LeavingPost">
 
-        <label for="ban" class="label">Ban Message</label>
+        <label for="ban" class="my-label">Ban Message</label>
         <input class="form-control" id="ban" value="@text.Value.Ban" asp-for="BanPost">
 
-        <label for="kick" class="label">Kick Message</label>
+        <label for="kick" class="my-label">Kick Message</label>
         <input class="form-control" id="kick" value="@text.Value.Kick" asp-for="KickPost">
 
         <input type="submit" value="Submit" class="form-control" />
