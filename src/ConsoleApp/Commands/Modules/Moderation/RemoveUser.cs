@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Stupify.Data.Repositories;
+using StupifyConsoleApp.Commands.Conditions;
 
 namespace StupifyConsoleApp.Commands.Modules.Moderation
 {
@@ -18,6 +19,7 @@ namespace StupifyConsoleApp.Commands.Modules.Moderation
         }
 
         [Command("Ban")]
+        [Moderator]
         public async Task BanCommandAsync(IGuildUser userToBan, int daysOfMessagesToDelete, [Remainder]string banReason)
         {
             if (await _settingsRepository.GetBanChannelAsync(Context.Guild.Id).ConfigureAwait(false) != null) return;
@@ -28,6 +30,7 @@ namespace StupifyConsoleApp.Commands.Modules.Moderation
         }
 
         [Command("Kick")]
+        [Moderator]
         public async Task KickCommandAsync(IGuildUser userToKick, [Remainder]string kickReason)
         {
             if (!(Context.Channel is ITextChannel channel)) return;
