@@ -59,7 +59,7 @@ namespace StupifyConsoleApp.Client.Audio
                         string.Empty,
                         embed: await GetEmbedForYoutubeVideoAsync(videoId).ConfigureAwait(false));
                     using (var ffmpeg = CreateStream(path))
-                    using (var stream = audio.Client.CreatePCMStream(AudioApplication.Music))
+                    using (var stream = audio.Client.CreatePCMStream(AudioApplication.Music, bufferMillis: 2500))
                     {
                         audio.Ffmpeg = ffmpeg;
                         try
@@ -90,7 +90,7 @@ namespace StupifyConsoleApp.Client.Audio
             {
                 Title = "Now playing...",
                 ImageUrl = video.Snippet.Thumbnails.High.Url,
-                Url = $"https://www.youtube.com/watch?v{id}"
+                Url = $"https://www.youtube.com/watch?v={id}"
             };
 
             return embed.Build();

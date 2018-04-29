@@ -20,7 +20,7 @@ namespace StupifyConsoleApp.Commands.Modules
         }
 
         [Command("AddQuote")]
-        public async Task AddQuoteAsync(string quoteBody)
+        public async Task AddQuoteAsync([Remainder]string quoteBody)
         {
             if (Context.User is IGuildUser guildUser)
             {
@@ -28,25 +28,25 @@ namespace StupifyConsoleApp.Commands.Modules
                 {
                     Author = guildUser,
                     Content = quoteBody
-                }, Context.Guild);
+                }, Context.Guild).ConfigureAwait(false);
                 _logger.LogInformation("Added quote from {User} in {Guild}", Context.User.Username, Context.Guild.Name);
-                await ReplyAsync("Done!");
+                await ReplyAsync("Done!").ConfigureAwait(false);
             }
         }
 
         [Command("RandomQuote")]
         public async Task RandomQuoteAsync()
         {
-            var quote = await _quoteRepository.RandomQuote(Context.Guild);
+            var quote = await _quoteRepository.RandomQuoteAsync(Context.Guild).ConfigureAwait(false);
 
             if (quote == null)
             {
-                await ReplyAsync("No quotes were found, try !addquote <quote>");
+                await ReplyAsync("No quotes were found, try !addquote <quote>").ConfigureAwait(false);
                 return;
             }
 
-            var message = $"{quote.Content} - {quote.Author.Username}";
-            await ReplyAsync(message);
+            var message = $"{quote.Content} - {quote.Author.Username.Replace("*", "\\*")}";
+            await ReplyAsync(message).ConfigureAwait(false);
         }
     }
 }

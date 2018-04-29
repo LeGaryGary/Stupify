@@ -16,26 +16,8 @@ namespace StupifyConsoleApp.Commands.Modules
             _commandService = commandService;
         }
 
-        [Command("HelpAll")]
-        public async Task HelpAll()
-        {
-            var modules = _commandService.Modules
-                .Where(m => m.Name != "Debug" && m.Name != "AI" && m.Name != "Solve")
-                .OrderBy(m => m.Name);
-
-            var message = string.Empty;
-            foreach (var module in modules)
-            {
-                if (_seenModules.Contains(module.Name)) continue;
-                _seenModules.Add(module.Name);
-                message += RenderModuleHelp(module, string.Empty, 0);
-            }
-
-            await ReplyAsync(message);
-        }
-
         [Command("Help")]
-        public async Task Help()
+        public Task HelpAsync()
         {
             var modules = _commandService.Modules
                 .Where(m => m.Name != "Debug" && m.Name != "AI" && m.Name != "Solve")
@@ -43,11 +25,11 @@ namespace StupifyConsoleApp.Commands.Modules
 
             var message = "Modules:" + Environment.NewLine;
             foreach (var module in modules) message += module.Name + Environment.NewLine;
-            await ReplyAsync($"```{message}```{Environment.NewLine}Use `{Config.CommandPrefix} Help [moduleName]` Or `{Config.CommandPrefix} HelpAll` to find out more!{Environment.NewLine}We love feedback, Positive or negative: https://discord.gg/nb5rUhd");
+            return ReplyAsync($"```{message}```{Environment.NewLine}Use `{Config.CommandPrefix} Help [moduleName]` to find out more!{Environment.NewLine}We love feedback, Positive or negative: https://discord.gg/nb5rUhd");
         }
 
         [Command("Help")]
-        public async Task Help(string moduleName)
+        public async Task HelpAsync(string moduleName)
         {
             var module = _commandService.Modules
                 .Where(m => m.Name != "Debug" && m.Name != "AI" && m.Name != "Solve")
@@ -56,11 +38,11 @@ namespace StupifyConsoleApp.Commands.Modules
             if (module == null)
             {
                 await ReplyAsync(
-                    $"This module doesn't exist, please use {Config.CommandPrefix}help to see a list of modules.");
+                    $"This module doesn't exist, please use {Config.CommandPrefix}help to see a list of modules.").ConfigureAwait(false);
                 return;
             }
 
-            await ReplyAsync(RenderModuleHelp(module, string.Empty, 0));
+            await ReplyAsync(RenderModuleHelp(module, string.Empty, 0)).ConfigureAwait(false);
         }
 
         private string RenderModuleHelp(ModuleInfo module, string prefix, int tabNumber)

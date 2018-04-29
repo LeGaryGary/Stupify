@@ -20,25 +20,38 @@ namespace Stupify.Data
 
         public static IServiceCollection AddRepositories(this IServiceCollection collection, string dataDirectory)
         {
-            collection.TryAddSingleton<Random>();
             collection.AddSingleton(sp => new FileSegments(dataDirectory, sp.GetService<Random>()))
                 .AddSingleton(sp => new Inventories(dataDirectory))
                 .AddSingleton(sp =>
                 {
                     var ctrl = new UniverseController(dataDirectory, "Alpha");
                     ctrl.StartAsync().GetAwaiter().GetResult();
-                    
+
                     return ctrl;
                 })
-                .AddSingleton(sp => new SegmentTemplates(dataDirectory))
+                .AddSingleton(sp => new SegmentTemplates(dataDirectory));
 
-                .AddTransient<IUserRepository, UserRepository>()
+            
+
+            return collection.AddRepositories();
+        }
+
+        public static IServiceCollection AddRepositories(this IServiceCollection collection)
+        {
+            collection.TryAddSingleton<Random>();
+
+            collection.AddTransient<IUserRepository, UserRepository>()
                 .AddTransient<ISegmentRepository, SegmentRepository>()
                 .AddTransient<IInventoryRepository, InventoryRepository>()
                 .AddTransient<IUniverseRepository, UniverseRepository>()
                 .AddTransient<ITemplateRepository, TemplateRepository>()
                 .AddTransient<IQuoteRepository, QuoteRepository>()
-                .AddTransient<IStoryRepository, StoryRepository>();
+                .AddTransient<IStoryRepository, StoryRepository>()
+                .AddTransient<ITwitchRepository, TwitchRepository>()
+                .AddTransient<ICustomCommandRepository, CustomCommandRepository>()
+                .AddTransient<ISettingsRepository, SettingsRepository>()
+                .AddTransient<IExternalAccountRepository, ExternalAccountRepository>()
+                .AddTransient<ICustomTextRepository, CustomTextRepository>();
 
             return collection;
         }

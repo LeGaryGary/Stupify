@@ -25,35 +25,35 @@ namespace Stupify.Data.Repositories
 
         public async Task<int> NewTemplateAsync(Segment segment, IUser user)
         {
-            var userId = await _userRepository.GetUserId(user);
-            var dbUser = await _botContext.Users.FirstAsync(u => u.UserId == userId);
+            var userId = await _userRepository.GetUserIdAsync(user).ConfigureAwait(false);
+            var dbUser = await _botContext.Users.FirstAsync(u => u.UserId == userId).ConfigureAwait(false);
             var dbTemplate = _botContext.SegmentTemplates.Add(new SegmentTemplate
             {
                 User = dbUser
             }).Entity;
-            await _botContext.SaveChangesAsync();
+            await _botContext.SaveChangesAsync().ConfigureAwait(false);
 
-            await _segmentTemplates.SaveAsync(dbTemplate.SegmentTemplateId, segment);
+            await _segmentTemplates.SaveAsync(dbTemplate.SegmentTemplateId, segment).ConfigureAwait(false);
 
             return dbTemplate.SegmentTemplateId;
         }
 
         public async Task<bool> UserHasTemplateAsync(IUser user, int templateId)
         {
-            var userId = await _userRepository.GetUserId(user);
+            var userId = await _userRepository.GetUserIdAsync(user).ConfigureAwait(false);
             return await _botContext.SegmentTemplates.AnyAsync(st =>
-                st.SegmentTemplateId == templateId && st.User.UserId == userId);
+                st.SegmentTemplateId == templateId && st.User.UserId == userId).ConfigureAwait(false);
         }
 
-        public async Task<Segment> GetTemplateAsync(int templateId)
+        public Task<Segment> GetTemplateAsync(int templateId)
         {
-            return await _segmentTemplates.GetAsync(templateId);
+            return _segmentTemplates.GetAsync(templateId);
         }
 
         public async Task<IEnumerable<(int id, string name)>> GetTemplatesAsync(IUser user)
         {
-            var userId = await _userRepository.GetUserId(user);
-            var templates = await _botContext.SegmentTemplates.Where(st => st.User.UserId == userId).ToArrayAsync();
+            var userId = await _userRepository.GetUserIdAsync(user).ConfigureAwait(false);
+            var templates = await _botContext.SegmentTemplates.Where(st => st.User.UserId == userId).ToArrayAsync().ConfigureAwait(false);
 
             return templates.Select(template => (template.SegmentTemplateId, template.Name));
         }

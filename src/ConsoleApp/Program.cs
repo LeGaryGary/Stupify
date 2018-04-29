@@ -17,14 +17,14 @@ namespace StupifyConsoleApp
             
             foreach (var segment in universeRepository.UniverseSegments())
             {
-                if (!segmentRepository.Exists(segment).GetAwaiter().GetResult())
+                if (!segmentRepository.ExistsAsync(segment).GetAwaiter().GetResult())
                     universeRepository.DeleteSegmentAsync(segment).GetAwaiter().GetResult();
             }
 
             var _ = Config.ServiceProvider.GetService<ClientManager>().StartAsync();
             while (true)
             {
-                await Config.ServiceProvider.GetService<GameRunner>().Run().ConfigureAwait(false);
+                await Config.ServiceProvider.GetService<GameRunner>().RunAsync().ConfigureAwait(false);
             }
             // ReSharper disable once FunctionNeverReturns
         }

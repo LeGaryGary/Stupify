@@ -30,7 +30,7 @@ namespace StupifyConsoleApp.TicTacZapManagement
 
         public async Task ShowSegmentAsync(ICommandContext context, int segmentId)
         {
-            var userId = await _userRepository.GetUserId(context.User).ConfigureAwait(false);
+            var userId = await _userRepository.GetUserIdAsync(context.User).ConfigureAwait(false);
             if (await _segmentRepository.UserHasSegmentAsync(context.User, segmentId).ConfigureAwait(false))
             {
                 _gameState.SetUserSegmentSelection(userId, segmentId);
@@ -42,7 +42,7 @@ namespace StupifyConsoleApp.TicTacZapManagement
 
         public async Task ShowSegmentAsync(ICommandContext context, int segmentId, Overlay overlay)
         {
-            var userId = await _userRepository.GetUserId(context.User).ConfigureAwait(false);
+            var userId = await _userRepository.GetUserIdAsync(context.User).ConfigureAwait(false);
             if (await _segmentRepository.UserHasSegmentAsync(context.User, segmentId).ConfigureAwait(false))
             {
                 _gameState.SetUserSegmentSelection(userId, segmentId);
@@ -61,7 +61,7 @@ namespace StupifyConsoleApp.TicTacZapManagement
 
         public async Task ShowTemplateAsync(ICommandContext context, int templateId)
         {
-            var userId = await _userRepository.GetUserId(context.User).ConfigureAwait(false);
+            var userId = await _userRepository.GetUserIdAsync(context.User).ConfigureAwait(false);
             if (await _templateRepository.UserHasTemplateAsync(context.User, templateId).ConfigureAwait(false))
             {
                 _gameState.SetUserTemplateSelection(userId, templateId);

@@ -19,16 +19,16 @@ namespace Stupify.Data.Repositories
             _discordClient = discordClient;
         }
 
-        public async Task<Quote> RandomQuote()
+        public async Task<Quote> RandomQuoteAsync()
         {
             var dbQuote = await _botContext.Quotes
                 .Include(q => q.ServerUser.User)
                 .Include(q => q.ServerUser.Server)
                 .OrderBy(r => Guid.NewGuid())
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync().ConfigureAwait(false);
             if (dbQuote == null) return null;
-            var server = await _discordClient.GetGuildAsync((ulong) dbQuote.ServerUser.Server.DiscordGuildId);
-            var user = await server.GetUserAsync((ulong) dbQuote.ServerUser.User.DiscordUserId);
+            var server = await _discordClient.GetGuildAsync((ulong) dbQuote.ServerUser.Server.DiscordGuildId).ConfigureAwait(false);
+            var user = await server.GetUserAsync((ulong) dbQuote.ServerUser.User.DiscordUserId).ConfigureAwait(false);
             return new Quote
             {
                 Author = user,
@@ -36,18 +36,18 @@ namespace Stupify.Data.Repositories
             };
         }
 
-        public async Task<Quote> RandomQuote(IGuild guild)
+        public async Task<Quote> RandomQuoteAsync(IGuild guild)
         {
             var dbQuote = await _botContext.Quotes
                 .Include(q => q.ServerUser.User)
                 .Include(q => q.ServerUser.Server)
                 .OrderBy(r => Guid.NewGuid())
                 .Where(q => q.ServerUser.Server.DiscordGuildId == (long)guild.Id)
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync().ConfigureAwait(false);
             if (dbQuote == null) return null;
 
-            var server = await _discordClient.GetGuildAsync((ulong) dbQuote.ServerUser.Server.DiscordGuildId);
-            var user = await server.GetUserAsync((ulong) dbQuote.ServerUser.User.DiscordUserId);
+            var server = await _discordClient.GetGuildAsync((ulong) dbQuote.ServerUser.Server.DiscordGuildId).ConfigureAwait(false);
+            var user = await server.GetUserAsync((ulong) dbQuote.ServerUser.User.DiscordUserId).ConfigureAwait(false);
             return new Quote
             {
                 Author = user,
@@ -55,18 +55,18 @@ namespace Stupify.Data.Repositories
             };
         }
 
-        public async Task<Quote> RandomQuote(IUser discordUser)
+        public async Task<Quote> RandomQuoteAsync(IUser discordUser)
         {
             var dbQuote = await _botContext.Quotes
                 .Include(q => q.ServerUser.User)
                 .Include(q => q.ServerUser.Server)
                 .OrderBy(r => Guid.NewGuid())
                 .Where(q => q.ServerUser.User.DiscordUserId == (long)discordUser.Id)
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync().ConfigureAwait(false);
             if (dbQuote == null) return null;
 
-            var server = await _discordClient.GetGuildAsync((ulong) dbQuote.ServerUser.Server.DiscordGuildId);
-            var user = await server.GetUserAsync((ulong) dbQuote.ServerUser.User.DiscordUserId);
+            var server = await _discordClient.GetGuildAsync((ulong) dbQuote.ServerUser.Server.DiscordGuildId).ConfigureAwait(false);
+            var user = await server.GetUserAsync((ulong) dbQuote.ServerUser.User.DiscordUserId).ConfigureAwait(false);
             return new Quote
             {
                 Author = user,
@@ -77,14 +77,14 @@ namespace Stupify.Data.Repositories
         public async Task AddQuoteAsync(Quote quote, IGuild guild)
         {
             var serverUser = await _botContext.ServerUsers.FirstOrDefaultAsync(
-                su => su.User.DiscordUserId == (long) quote.Author.Id && su.Server.DiscordGuildId == (long) guild.Id);
+                su => su.User.DiscordUserId == (long) quote.Author.Id && su.Server.DiscordGuildId == (long) guild.Id).ConfigureAwait(false);
 
             _botContext.Quotes.Add(new SQL.Models.Quote
             {
                 ServerUser = serverUser,
                 QuoteBody = quote.Content
             });
-            await _botContext.SaveChangesAsync();
+            await _botContext.SaveChangesAsync().ConfigureAwait(false);
         }
     }
 }

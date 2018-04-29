@@ -16,6 +16,7 @@ namespace Stupify.Data.SQL.Models
         public long DiscordGuildId { get; set; }
 
         public bool StoryInProgress { get; set; }
+        public long? TwitchUpdateChannel { get; set; }
 
         public virtual ICollection<ServerUser> ServerUsers { get; set; }
         public virtual ICollection<ServerStory> ServerStories { get; set; }

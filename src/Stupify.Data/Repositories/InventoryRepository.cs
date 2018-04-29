@@ -20,14 +20,14 @@ namespace Stupify.Data.Repositories
         public async Task<Inventory> GetInventoryAsync(IUser user)
         {
             return await _inventories.GetInventoryAsync(
-                await _userRepository.GetUserId(user));
+                await _userRepository.GetUserIdAsync(user).ConfigureAwait(false)).ConfigureAwait(false);
         }
 
         public async Task SaveInventoryAsync(IUser user, Inventory inventory)
         {
             await _inventories.SaveInventoryAsync(
-                await _userRepository.GetUserId(user),
-                inventory);
+                await _userRepository.GetUserIdAsync(user).ConfigureAwait(false),
+                inventory).ConfigureAwait(false);
         }
 
         public async Task AddToInventoryAsync(BlockType blockType, int quantity, IUser user)
@@ -35,7 +35,7 @@ namespace Stupify.Data.Repositories
             await _inventories.AddToInventoryAsync(
                 blockType,
                 quantity,
-                await _userRepository.GetUserId(user));
+                await _userRepository.GetUserIdAsync(user).ConfigureAwait(false)).ConfigureAwait(false);
         }
 
         public async Task<bool> RemoveFromInventoryAsync(BlockType blockType, int quantity, IUser user)
@@ -43,13 +43,13 @@ namespace Stupify.Data.Repositories
             return await _inventories.RemoveFromInventoryAsync(
                 blockType,
                 quantity,
-                await _userRepository.GetUserId(user));
+                await _userRepository.GetUserIdAsync(user).ConfigureAwait(false)).ConfigureAwait(false);
         }
 
-        public async Task ResetInventory(IUser user)
+        public async Task ResetInventoryAsync(IUser user)
         {
-            await _inventories.ResetInventory(
-                await _userRepository.GetUserId(user));
+            await _inventories.ResetInventoryAsync(
+                await _userRepository.GetUserIdAsync(user).ConfigureAwait(false)).ConfigureAwait(false);
         }
     }
 }

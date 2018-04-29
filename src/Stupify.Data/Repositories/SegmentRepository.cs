@@ -29,9 +29,9 @@ namespace Stupify.Data.Repositories
 
         public async Task<(int segmentId, (int x, int y)? coords)> NewSegmentAsync(IUser user)
         {
-            var userId = await _userRepository.GetUserId(user);
+            var userId = await _userRepository.GetUserIdAsync(user).ConfigureAwait(false);
 
-            var dbUser = await _botContext.Users.FirstAsync(u => u.UserId == userId);
+            var dbUser = await _botContext.Users.FirstAsync(u => u.UserId == userId).ConfigureAwait(false);
             var dbSegment = new SQL.Models.Segment
             {
                 User = dbUser,
@@ -39,147 +39,147 @@ namespace Stupify.Data.Repositories
                 UnitsPerTick = 0
             };
             _botContext.Segments.Add(dbSegment);
-            await _botContext.SaveChangesAsync();
+            await _botContext.SaveChangesAsync().ConfigureAwait(false);
 
-            await _segments.NewSegmentAsync(dbSegment.SegmentId);
-            return (dbSegment.SegmentId, await _universeRepository.NewSegmentAsync(dbSegment.SegmentId));
+            await _segments.NewSegmentAsync(dbSegment.SegmentId).ConfigureAwait(false);
+            return (dbSegment.SegmentId, await _universeRepository.NewSegmentAsync(dbSegment.SegmentId).ConfigureAwait(false));
         }
 
-        public async Task<Segment> GetSegmentAsync(int segmentId)
+        public Task<Segment> GetSegmentAsync(int segmentId)
         {
-            return await _segments.GetAsync(segmentId);
+            return _segments.GetAsync(segmentId);
         }
 
         public async Task SetSegmentAsync(int segmentId, Segment segment)
         {
-            await _segments.SetAsync(segmentId, segment);
+            await _segments.SetAsync(segmentId, segment).ConfigureAwait(false);
 
-            var dBSegment = await _botContext.Segments.FirstAsync(s => s.SegmentId == segmentId);
+            var dBSegment = await _botContext.Segments.FirstAsync(s => s.SegmentId == segmentId).ConfigureAwait(false);
             dBSegment.EnergyPerTick = segment.ResourcePerTick(Resource.Energy);
             dBSegment.UnitsPerTick = segment.ResourcePerTick(Resource.Unit);
-            await _botContext.SaveChangesAsync();
+            await _botContext.SaveChangesAsync().ConfigureAwait(false);
         }
 
         public async Task<(int x, int y)?> DeleteSegmentAsync(int segmentId)
         {
-            var dbSegment = await _botContext.Segments.FirstAsync(s => s.SegmentId == segmentId);
+            var dbSegment = await _botContext.Segments.FirstAsync(s => s.SegmentId == segmentId).ConfigureAwait(false);
             _botContext.Segments.Remove(dbSegment);
-            await _botContext.SaveChangesAsync();
+            await _botContext.SaveChangesAsync().ConfigureAwait(false);
 
-            await Task.Run(() => _segments.DeleteSegment(segmentId));
-            return await _universeRepository.DeleteSegmentAsync(segmentId);
+            await Task.Run(() => _segments.DeleteSegment(segmentId)).ConfigureAwait(false);
+            return await _universeRepository.DeleteSegmentAsync(segmentId).ConfigureAwait(false);
         }
 
-        public async Task<Dictionary<BlockType, int>> ResetSegmentAsync(int segmentId)
+        public Task<Dictionary<BlockType, int>> ResetSegmentAsync(int segmentId)
         {
-            return await _segments.ResetSegmentAsync(segmentId);
+            return _segments.ResetSegmentAsync(segmentId);
         }
 
         public async Task<bool> AddBlockAsync(int segmentId, int x, int y, BlockType blockType)
         {
-            var segment = await _segments.GetAsync(segmentId);
+            var segment = await _segments.GetAsync(segmentId).ConfigureAwait(false);
 
             var addBlockResult = segment.AddBlock(x, y, blockType);
 
             if (!addBlockResult) return false;
 
-            var dBSegment = await _botContext.Segments.FirstAsync(s => s.SegmentId == segmentId);
+            var dBSegment = await _botContext.Segments.FirstAsync(s => s.SegmentId == segmentId).ConfigureAwait(false);
             dBSegment.EnergyPerTick = segment.ResourcePerTick(Resource.Energy);
             dBSegment.UnitsPerTick = segment.ResourcePerTick(Resource.Unit);
-            await _botContext.SaveChangesAsync();
+            await _botContext.SaveChangesAsync().ConfigureAwait(false);
 
-            await _segments.SetAsync(segmentId, segment);
+            await _segments.SetAsync(segmentId, segment).ConfigureAwait(false);
 
             return true;
         }
 
         public async Task<BlockType?> DeleteBlockAsync(int segmentId, int x, int y)
         {
-            var segment = await _segments.GetAsync(segmentId);
+            var segment = await _segments.GetAsync(segmentId).ConfigureAwait(false);
             var deleteBlockResult = segment.DeleteBlock(x, y);
 
             if (!deleteBlockResult.HasValue) return null;
 
-            await _segments.SetAsync(segmentId, segment);
+            await _segments.SetAsync(segmentId, segment).ConfigureAwait(false);
 
-            var dBSegment = await _botContext.Segments.FirstAsync(s => s.SegmentId == segmentId);
+            var dBSegment = await _botContext.Segments.FirstAsync(s => s.SegmentId == segmentId).ConfigureAwait(false);
             dBSegment.EnergyPerTick = segment.ResourcePerTick(Resource.Energy);
             dBSegment.UnitsPerTick = segment.ResourcePerTick(Resource.Unit);
-            await _botContext.SaveChangesAsync();
+            await _botContext.SaveChangesAsync().ConfigureAwait(false);
 
             return deleteBlockResult;
         }
 
-        public async Task<Dictionary<Resource, decimal>> GetOutput(int segmentId)
+        public async Task<Dictionary<Resource, decimal>> GetOutputAsync(int segmentId)
         {
-            return (await _segments.GetAsync(segmentId)).ResourcePerTick();
+            return (await _segments.GetAsync(segmentId).ConfigureAwait(false)).ResourcePerTick();
         }
 
-        public async Task<bool> Exists(int segmentId)
+        public Task<bool> ExistsAsync(int segmentId)
         {
-            return await _botContext.Segments.AnyAsync(s => s.SegmentId == segmentId);
+            return _botContext.Segments.AnyAsync(s => s.SegmentId == segmentId);
         }
 
         public async Task<int> SegmentCountAsync(IUser user)
         {
-            var userId = await _userRepository.GetUserId(user);
-            return await _botContext.Segments.CountAsync(s => s.User.UserId == userId);
+            var userId = await _userRepository.GetUserIdAsync(user).ConfigureAwait(false);
+            return await _botContext.Segments.CountAsync(s => s.User.UserId == userId).ConfigureAwait(false);
         }
 
-        public async Task<IEnumerable<Segment>> GetSegments(IUser user)
+        public async Task<IEnumerable<Segment>> GetSegmentsAsync(IUser user)
         {
-            var userId = await _userRepository.GetUserId(user);
+            var userId = await _userRepository.GetUserIdAsync(user).ConfigureAwait(false);
 
             var segments = new List<Segment>();
-            foreach (var segment in await _botContext.Segments.Where(s => s.User.UserId == userId).ToArrayAsync())
+            foreach (var segment in await _botContext.Segments.Where(s => s.User.UserId == userId).ToArrayAsync().ConfigureAwait(false))
             {
-                segments.Add(await GetSegmentAsync(segment.SegmentId));
+                segments.Add(await GetSegmentAsync(segment.SegmentId).ConfigureAwait(false));
             }
 
             return segments;
         }
 
-        public async Task<IEnumerable<int>> GetSegmentIds(IUser user)
+        public async Task<IEnumerable<int>> GetSegmentIdsAsync(IUser user)
         {
-            var userId = await _userRepository.GetUserId(user);
-            return await _botContext.Segments.Where(s => s.User.UserId == userId).Select(s => s.SegmentId).ToArrayAsync();
+            var userId = await _userRepository.GetUserIdAsync(user).ConfigureAwait(false);
+            return await _botContext.Segments.Where(s => s.User.UserId == userId).Select(s => s.SegmentId).ToArrayAsync().ConfigureAwait(false);
         }
 
         public async Task<bool> UserHasSegmentAsync(IUser user, int segmentId)
         {
-            var userId = await _userRepository.GetUserId(user);
-            return await _botContext.Segments.AnyAsync(s => s.User.UserId == userId && s.SegmentId == segmentId);
+            var userId = await _userRepository.GetUserIdAsync(user).ConfigureAwait(false);
+            return await _botContext.Segments.AnyAsync(s => s.User.UserId == userId && s.SegmentId == segmentId).ConfigureAwait(false);
         }
 
         public async Task UpdateBalancesAsync()
         {
-            var bank = await _botContext.GetBankAsync();
+            var bank = await _botContext.GetBankAsync().ConfigureAwait(false);
 
-            foreach (var dbSegment in await _botContext.Segments.Include(s => s.User).ToArrayAsync())
+            foreach (var dbSegment in await _botContext.Segments.Include(s => s.User).ToArrayAsync().ConfigureAwait(false))
             {
                 var amount = bank.Balance / 100000000m + dbSegment.UnitsPerTick;
                 dbSegment.User.Balance += amount;
                 bank.Balance -= amount;
             }
 
-            await _botContext.SaveChangesAsync();
+            await _botContext.SaveChangesAsync().ConfigureAwait(false);
         }
 
-        public async Task<Dictionary<Resource, decimal>> GetSegmentResourcePerTickAsync(int segmentId)
+        public Task<Dictionary<Resource, decimal>> GetSegmentResourcePerTickAsync(int segmentId)
         {
-            return await _botContext.GetSegmentResourcePerTickAsync(segmentId);
+            return _botContext.GetSegmentResourcePerTickAsync(segmentId);
         }
 
-        public async Task<Dictionary<Resource, decimal>> GetSegmentResourcesAsync(int segmentId)
+        public Task<Dictionary<Resource, decimal>> GetSegmentResourcesAsync(int segmentId)
         {
-            return await _botContext.GetSegmentResourcesAsync(segmentId);
+            return _botContext.GetSegmentResourcesAsync(segmentId);
         }
 
-        public async Task<IUser> GetOwner(int segmentId)
+        public async Task<IUser> GetOwnerAsync(int segmentId)
         {
-            var segment = await _botContext.Segments.Include(s => s.User).FirstAsync(s => s.SegmentId == segmentId);
+            var segment = await _botContext.Segments.Include(s => s.User).FirstAsync(s => s.SegmentId == segmentId).ConfigureAwait(false);
             var discordUserId = segment.User.DiscordUserId;
-            return await _client.GetUserAsync((ulong)discordUserId);
+            return await _client.GetUserAsync((ulong)discordUserId).ConfigureAwait(false);
         }
     }
 }

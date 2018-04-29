@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using DiscordBotsList.Api;
 using Google.Apis.Services;
 using Google.Apis.YouTube.v3;
 using Microsoft.Extensions.Configuration;
@@ -14,10 +15,14 @@ using NYoutubeDL;
 using Serilog;
 using Serilog.Events;
 using Stupify.Data;
+using Stupify.Data.CustomCommandBuiltIns.HarryPotterApiCommands;
+using Stupify.Data.Encryption;
+using Stupify.Data.Models;
 using StupifyConsoleApp.Client;
 using StupifyConsoleApp.Client.Audio;
 using StupifyConsoleApp.Client.CustomTypeReaders;
 using StupifyConsoleApp.TicTacZapManagement;
+using TwitchApi;
 
 namespace StupifyConsoleApp
 {
@@ -35,13 +40,19 @@ namespace StupifyConsoleApp
             Configuration = builder.Build();
         }
 
-        public static string DbConnectionString => Configuration["DbConnectionString"];
+        public static string DbConnectionString => Configuration["SQL:ConnectionString"];
         public static string DiscordBotUserToken => Configuration["DiscordBotUserToken"];
+
         public static string YoutubeApiKey => Configuration["YoutubeApiKey"];
-        public static bool Debug => bool.Parse(Configuration["Debug"]);
+        public static string TwitchClientId => Configuration["TwitchClientId"];
+        public static string TwitchClientSecret => Configuration["TwitchClientSecret"];
+        public static string HarryPotterApiKey => Configuration["HarryPotterApiKey"];
+
         public static string CommandPrefix => Configuration["CommandPrefix"];
-        public static ulong DeveloperRole => ulong.Parse(Configuration["DeveloperRole"]);
+        public static string CustomCommandPrefix => Configuration["CustomCommandPrefix"];
         public static bool DeleteCommands => bool.Parse(Configuration["DeleteCommands"]);
+        public static ulong DeveloperRole => ulong.Parse(Configuration["DeveloperRole"]);
+        public static bool Debug => bool.Parse(Configuration["Debug"]);
 
         public static string DataDirectory => Configuration["DataDirectory"];
         public static string UniverseName => Configuration["UniverseName"];
@@ -66,7 +77,7 @@ namespace StupifyConsoleApp
                     .AddRepositories(DataDirectory)
                     .AddSingleton<IDiscordClient>(sp => new DiscordSocketClient(new DiscordSocketConfig{AlwaysDownloadUsers = true, MessageCacheSize = 1000}))
                     .AddSingleton<IMessageHandler, MessageHandler>()
-                    .AddTransient<SegmentEditReactionHandler>()
+                    .AddTransient<IReactionHandler, SegmentEditReactionHandler>()
                     .AddTransient<IHotKeyHandler, HotKeyHandler>()
                     .AddSingleton(sp =>
                     {
@@ -94,9 +105,21 @@ namespace StupifyConsoleApp
                     .AddTransient<GameRunner>()
                     .AddSingleton<AudioService>()
                     .AddSingleton<MusicSearches>()
-                    .AddTransient(sp => new YoutubeDL($"{Directory.GetCurrentDirectory()}/youtube-dl.exe"));
+                    .AddTransient(sp => new YoutubeDL($"{Directory.GetCurrentDirectory()}/youtube-dl.exe"))
+                    .AddTransient(sp => new TwitchClient(TwitchClientId))
+                    .AddTransient(sp => new HarryPotterApiClient(HarryPotterApiKey))
+                    .AddTransient(sp => new AuthDiscordBotListApi(ulong.Parse(Configuration["DiscordBotList:Id"]), Configuration["DiscordBotList:Token"]))
+                    .AddTransient(sp => new AesCryptography(Configuration["SQL:EncryptionPassword"]));
+
+                collection.AddOptions();
+                collection.Configure<SpotifyOptions>(options =>
+                {
+                    options.AppId = Configuration["Spotify:AppId"];
+                    options.AppSecret = Configuration["Spotify:AppSecret"];
+                });
 
                 ConfigureLogging();
+
                 _serviceProvider = collection.BuildServiceProvider();
                 return _serviceProvider;
             }

@@ -9,6 +9,7 @@ namespace Stupify.Data.SQL.Models
         public int ServerId { get; set; }
 
         public bool Muted { get; set; }
+        public bool? IsOwner { get; set; }
 
         public virtual User User { get; set; }
         public virtual Server Server { get; set; }

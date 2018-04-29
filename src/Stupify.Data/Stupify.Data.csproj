@@ -12,9 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\TicTacZap\TicTacZap.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <ProjectReference Include="..\TwitchApi\TwitchApi.csproj" />
   </ItemGroup>
 
 </Project>
