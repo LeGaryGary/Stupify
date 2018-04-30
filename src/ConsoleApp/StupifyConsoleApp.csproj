@@ -33,6 +33,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\SpotifyApi\SpotifyApi.csproj" />
+    <ProjectReference Include="..\ImageGeneration\ImageGeneration.csproj" />
     <ProjectReference Include="..\Stupify.Data\Stupify.Data.csproj" />
     <ProjectReference Include="..\TicTacZap\TicTacZap.csproj" />
     <ProjectReference Include="..\TwitchApi\TwitchApi.csproj" />
