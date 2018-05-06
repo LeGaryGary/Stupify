@@ -1,4 +1,6 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
@@ -38,6 +40,9 @@ namespace StupifyConsoleApp.Commands.Modules.Moderation
             if (!(Context.Channel is ITextChannel channel)) return;
 
             var kickChannelId = await _settingsRepository.GetKickChannelAsync(Context.Guild.Id).ConfigureAwait(false);
+
+            var roles = userToKick.RoleIds.Select(roleId => Context.Guild.GetRole(roleId)).ToList();
+            await userToKick.RemoveRolesAsync(roles);
 
             await userToKick.KickAsync(kickReason).ConfigureAwait(false);
             var message = await _customTextRepository.GetKickTextAsync(userToKick, kickReason).ConfigureAwait(false);
