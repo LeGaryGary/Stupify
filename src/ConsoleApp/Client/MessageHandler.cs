@@ -50,7 +50,7 @@ namespace StupifyConsoleApp.Client
 
                 // Check for blocked words
                 var blockedWords = settings.BlockedWords?.Split(',');
-                if (blockedWords?.Any(word => context.Message.Content.ToLowerInvariant().Replace(" ", "").Contains(word.ToLowerInvariant())) ?? false)
+                if (blockedWords?.Any(word => context.Message.Content.ToLowerInvariant().Replace(" ", "").Contains(word.ToLowerInvariant().Replace(" ", ""))) ?? false)
                 {
                     await context.Message.DeleteAsync().ConfigureAwait(false);
                     await context.Channel.SendMessageAsync(await _customTextRepository.GetBlockedWordTextAsync(guildUser).ConfigureAwait(false)).ConfigureAwait(false);
