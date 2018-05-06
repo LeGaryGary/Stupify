@@ -60,19 +60,21 @@ namespace StupifyConsoleApp.Commands.Modules
         {
             if (!(Context.User is IGuildUser user) || user.VoiceChannel == null) return;
 
-            
-
             var uriString = requestUri.AbsoluteUri;
 
             var spotifyTrackIndex = -1;
             var spotifyUserIndex = -1;
             var spotifyPlaylistIndex = -1;
+            var spotifyAlbumIndex = -1;
+
             if (uriString.Contains("open.spotify.com"))
             {
                 spotifyTrackIndex = uriString.IndexOf("track", StringComparison.OrdinalIgnoreCase);
                 spotifyPlaylistIndex = uriString.IndexOf("playlist", StringComparison.OrdinalIgnoreCase);
                 spotifyUserIndex = uriString.IndexOf("user", StringComparison.OrdinalIgnoreCase);
+                spotifyAlbumIndex = uriString.IndexOf("album", StringComparison.OrdinalIgnoreCase);
             }
+
             var query = HttpUtility.ParseQueryString(requestUri.Query);
 
             var listValues = query.GetValues("list");
@@ -121,9 +123,21 @@ namespace StupifyConsoleApp.Commands.Modules
             }
             else if (uriString.Contains("spotify:track:"))
             {
-                var trackId = uriString.Substring("spotify:track:".Length, 22);
-                await TryQueueSpotifyTrackAsync(trackId).ConfigureAwait(false);
-            } 
+                var id = uriString.Substring("spotify:track:".Length, 22);
+                await TryQueueSpotifyTrackAsync(id).ConfigureAwait(false);
+            }
+
+            // Handle Spotify Albums
+            else if (spotifyAlbumIndex > 0)
+            {
+                var id = uriString.Substring(spotifyAlbumIndex + "album/".Length, 22);
+                await TryQueueSpotifyAlbumAsync(id);
+            }
+            else if (uriString.Contains("spotify:album:"))
+            {
+                var id = uriString.Substring("spotify:album:".Length, 22);
+                await TryQueueSpotifyAlbumAsync(id);
+            }
         }
 
         [Command("play"), Priority(0)]
@@ -260,9 +274,27 @@ namespace StupifyConsoleApp.Commands.Modules
 
             foreach (var playlistTrack in playlist.Tracks.Items)
             {
-                var youtubeId = await FindYoutubeIdAsync(playlistTrack.Track.Name + " " + playlistTrack.Track.Artists.FirstOrDefault()?.Name)
-                    .ConfigureAwait(false);
+                var youtubeId = await FindYoutubeIdAsync(playlistTrack.Track.Name + " " + playlistTrack.Track.Artists.FirstOrDefault()?.Name).ConfigureAwait(false);
                 if (youtubeId == null) continue;
+                await VerifyAndQueueAsync(youtubeId).ConfigureAwait(false);
+            }
+        }
+
+        private async Task TryQueueSpotifyAlbumAsync(string albumId)
+        {
+            var spotifyClient = await GetSpotifyClientAsync().ConfigureAwait(false);
+
+            if (spotifyClient == null)
+            {
+                await ReplyAsync(LinkSpotify).ConfigureAwait(false);
+                return;
+            }
+
+            var album = await spotifyClient.GetAlbumAsync(albumId);
+
+            foreach (var track in album.Tracks.Items)
+            {
+                var youtubeId = await FindYoutubeIdAsync(track.Name + " " + track.Artists.FirstOrDefault()?.Name).ConfigureAwait(false);
                 await VerifyAndQueueAsync(youtubeId).ConfigureAwait(false);
             }
         }

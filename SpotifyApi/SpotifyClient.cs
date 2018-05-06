@@ -37,6 +37,11 @@ namespace SpotifyApi
             return GetAsync<FullPlaylist>($"users/{userId}/playlists/{playlistId}");
         }
 
+        public Task<FullAlbum> GetAlbumAsync(string albumId)
+        {
+            return GetAsync<FullAlbum>($"albums/{albumId}");
+        }
+
         private async Task<T> GetAsync<T>(string relative)
         {
             var requestUri = BaseUri.AbsoluteUri + relative;
