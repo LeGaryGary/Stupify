@@ -16,7 +16,7 @@ namespace StupifyConsoleApp.Commands.Modules
         }
 
         [Command("BeginStory")]
-        public async Task StoryStartAsync(string line)
+        public async Task StoryStartAsync([Remainder]string line)
         {
             if (Context.User is IGuildUser user &&
                 await _storyRepository.StartNewStoryAsync(user, line).ConfigureAwait(false))
@@ -34,7 +34,7 @@ namespace StupifyConsoleApp.Commands.Modules
         }
 
         [Command("AndThen")]
-        public async Task AddStoryPartAsync(string line)
+        public async Task AddStoryPartAsync([Remainder]string line)
         {
             if (Context.User is IGuildUser user &&
                 await _storyRepository.AddToCurrentStoryAsync(user, line).ConfigureAwait(false))
